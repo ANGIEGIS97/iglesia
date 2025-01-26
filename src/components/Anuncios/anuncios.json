@@ -1,0 +1,28 @@
+{
+  "anuncios": [
+    {
+      "id": 1,
+      "image": "https://i.ibb.co/RzRrTRX/1.jpg",
+      "titulo": "",
+      "descripcion": "",
+      "textoBoton": "",
+      "linkBoton": "#"
+    },
+    {
+      "id": 2,
+      "image": "https://i.ibb.co/bKfVw1Y/2.jpg",
+      "titulo": "",
+      "descripcion": "",
+      "textoBoton": "",
+      "linkBoton": "#"
+    },
+    {
+      "id": 3,
+      "image": "https://i.ibb.co/k8SpDdf/3.jpg",
+      "titulo": "",
+      "descripcion": "",
+      "textoBoton": "",
+      "linkBoton": "#"
+    }
+  ]
+}

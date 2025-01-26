@@ -1,0 +1,55 @@
+---
+import { ViewTransitions } from "astro:transitions";
+import MenuInicio from "../components/MenuInicio.vue";
+const { titulo } = Astro.props;
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <title>{titulo}</title>
+    <ViewTransitions />
+    <style is:global>
+      html {
+        scroll-padding-top: 96px;
+      }
+    </style>
+  </head>
+  <body class="dark:bg-gray-800">
+    <MenuInicio client:load />
+    <slot />
+    <script>
+      // RefTagger
+      window.refTagger = {
+        settings: {
+          bibleVersion: "RVR60",
+          tooltipStyle: "dark",
+          libronixBibleVersion: "DEFAULT",
+          addLogosLink: false,
+          appendIconToLibLinks: false,
+          libronixLinkIcon: "dark",
+          noSearchClassNames: ["commentList"],
+          useTooltip: true,
+          noSearchTagNames: ["h1", "h2", "h3"],
+          linksOpenNewWindow: true,
+          convertHyperlinks: false,
+          caseInsensitive: false,
+          tagChapters: true,
+        },
+      };
+
+      // Cargar RefTagger
+      const script = document.createElement("script");
+      script.src = "https://api.reftagger.com/v2/reftagger.es.js";
+      script.async = true;
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

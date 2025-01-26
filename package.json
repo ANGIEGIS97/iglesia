@@ -1,0 +1,24 @@
+{
+  "name": "iglesia-proyecto",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/tailwind": "^5.1.0",
+    "@astrojs/vue": "^4.5.0",
+    "astro": "^4.11.5",
+    "axios": "^1.7.9",
+    "iglesia-proyecto": "file:",
+    "jwt-decode": "^4.0.0",
+    "swiper": "^11.1.5",
+    "tailwindcss": "^3.4.6",
+    "tippy.js": "^6.3.7",
+    "vue": "^3.4.31"
+  }
+}
