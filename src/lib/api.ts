@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://backend-production-a783.up.railway.app/api";
+const API_URL = "https://back-admin-production.up.railway.app/api";
 // const API_URL = "http://localhost:3000/api";
 
 const api = axios.create({
@@ -31,10 +31,11 @@ export const auth = {
     api.put("/auth/cambiar-password", passwords),
 };
 
-export const calendario = {
-  getAll: () => api.get("/calendario"),
-  getById: (id: string) => api.get(`/calendario/${id}`),
-  create: (data: any) => api.post("/calendario", data),
-  update: (id: string, data: any) => api.put(`/calendario/${id}`, data),
-  delete: (id: string) => api.delete(`/calendario/${id}`),
+export const fechas = {
+  getAll: () => api.get("/fechas"),
+  getById: (id: string) => api.get(`/fechas/${id}`),
+  create: (data: any) => api.post("/fechas", data),
+  update: (id: string, data: any) => api.put(`/fechas/${id}`, data),
+  delete: (id: string) => api.delete(`/fechas/${id}`),
 };
+

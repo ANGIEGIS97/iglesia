@@ -5,11 +5,30 @@
     class="fixed inset-0 backdrop-blur-sm bg-gray-900/50 flex items-center justify-center z-50"
   >
     <div
-      class="max-w-xl w-full relative p-[2px] dark:bg-gradient-to-r from-teal-500 to-blue-500 rounded-lg shadow-xl animate-gradient"
+      :class="[
+        'max-w-xl w-full relative p-[2px] dark:bg-gradient-to-r from-teal-500 to-blue-500 rounded-lg shadow-xl animate-gradient animate__animated animate__fadeInDown'
+      ]"
     >
       <div class="bg-white dark:bg-slate-600/85 rounded-lg">
         <div
-          class="bg-teal-500 dark:bg-transparent p-4 rounded-t-lg flex justify-between items-center"
+          :class="[
+            'p-4 rounded-t-lg flex justify-between items-center',
+            'dark:bg-transparent',
+            evento.infoIconoTexto === 'Canasta de amor' ? 'bg-red-500' : '',
+            evento.infoIconoTexto === 'Cena del Señor' ? 'bg-red-700' : '',
+            evento.infoIconoTexto === 'Reunión de damas' ? 'bg-pink-500' : '',
+            evento.infoIconoTexto === 'Domingo misionero' ? 'bg-green-500' : '',
+            evento.infoIconoTexto === 'Culto de oración' ? 'bg-violet-500' : '',
+            ![
+              'Canasta de amor',
+              'Cena del Señor',
+              'Reunión de damas',
+              'Domingo misionero',
+              'Culto de oración',
+            ].includes(evento.infoIconoTexto)
+              ? 'bg-teal-500'
+              : '',
+          ]"
         >
           <h2 class="text-xl sm:text-2xl font-bold text-white">
             {{ evento.titulo }}
@@ -73,16 +92,25 @@
                 <strong>Fecha:</strong> {{ evento.dia }} de
                 {{ evento.mes }}
               </p>
-              <p class="mb-2"><strong>Hora:</strong> {{ evento.hora }}</p>
               <p class="mb-2">
-                <strong>{{ evento.lugar ? "Lugar" : "Link" }}:</strong>
-                {{ evento.lugar || evento.link }}
+                <strong>Hora:</strong> {{ formatTime(evento.hora) }}
+              </p>
+              <p class="mb-2">
+                <strong>{{ isUrl(evento.lugar) ? 'Link' : 'Lugar' }}: </strong>
+                <template v-if="isUrl(evento.lugar)">
+                  <a :href="evento.lugar" target="_blank" class="text-blue-500 hover:text-blue-700 underline">
+                    {{ evento.lugar }}
+                  </a>
+                </template>
+                <template v-else>
+                  {{ evento.lugar }}
+                </template>
               </p>
               <p class="mb-2">
                 <strong>Descripción:</strong>
                 {{ evento.descripcion }}
               </p>
-              <p class="text-teal-500 dark:text-white">
+              <p class="dark:text-white">
                 <strong>Días restantes:</strong>
                 {{
                   evento.diasRestantes === 0
@@ -113,6 +141,7 @@
 </template>
 
 <script>
+import 'animate.css';
 export default {
   props: {
     evento: {
@@ -126,6 +155,27 @@ export default {
     };
   },
   methods: {
+    formatTime(time) {
+      if (!time) return "";
+      const [hours, minutes] = time.split(":");
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? "pm" : "am";
+      const formattedHour = hour % 12 || 12;
+      return `${formattedHour}:${minutes} ${ampm}`;
+    },
+    isUrl(str) {
+      if (!str) return false;
+      // Agregar soporte para URLs que empiezan con www.
+      if (str.startsWith('www.')) {
+        str = 'http://' + str;
+      }
+      try {
+        new URL(str);
+        return true;
+      } catch {
+        return false;
+      }
+    },
     cerrar() {
       document.body.classList.remove("modal-open");
       this.$emit("cerrar");
@@ -154,5 +204,16 @@ export default {
 <style>
 .modal-open {
   overflow: hidden;
+}
+
+.animate__fadeInDown {
+  animation-duration: 0.5s !important;
+  animation-fill-mode: both !important;
+  animation-iteration-count: 1 !important;
+}
+
+/* Aseguramos que el fondo tenga su propia transición suave */
+.backdrop-blur-sm {
+  transition: all 0.3s ease-in-out;
 }
 </style>

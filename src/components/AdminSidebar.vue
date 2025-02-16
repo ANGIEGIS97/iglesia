@@ -43,7 +43,12 @@
         <nav class="space-y-2">
           <a
             href="/admin/eventos"
-            class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            :class="[
+              'flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700',
+              currentPath === '/admin/eventos'
+                ? 'text-teal-500 dark:text-teal-400'
+                : 'text-gray-700 dark:text-gray-200',
+            ]"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -62,8 +67,38 @@
           </a>
 
           <a
+            href="/admin/fechas"
+            :class="[
+              'flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700',
+              currentPath === '/admin/fechas'
+                ? 'text-teal-500 dark:text-teal-400'
+                : 'text-gray-700 dark:text-gray-200',
+            ]"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Administrar Fechas
+          </a>
+
+          <a
             href="/cambiopass"
-            class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            :class="[
+              'flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700',
+              currentPath === '/cambiopass'
+                ? 'text-teal-500 dark:text-teal-400'
+                : 'text-gray-700 dark:text-gray-200',
+            ]"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -115,11 +150,31 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      currentPath: "",
+    };
+  },
   methods: {
     handleLogout() {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      window.location.href = "/logout";
     },
+    updateCurrentPath() {
+      this.currentPath = window.location.pathname;
+    },
+  },
+  mounted() {
+    this.updateCurrentPath();
+    window.addEventListener("popstate", this.updateCurrentPath);
+  },
+  beforeUnmount() {
+    window.removeEventListener("popstate", this.updateCurrentPath);
   },
 };
 </script>
+
+<style scoped>
+a {
+  transition: color 0.3s ease;
+}
+</style>

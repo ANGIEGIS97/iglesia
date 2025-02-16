@@ -1,0 +1,16 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdminFechasList from "../../components/panel/AdminFechasList.vue";
+import { redirectIfNotAuthenticated } from "../../middleware/auth";
+---
+
+<Layout title="Admin - Gestión de Fechas">
+  <main class="container mx-auto px-4 py-8">
+    <AdminFechasList client:load />
+  </main>
+</Layout>
+
+<script>
+  import { redirectIfNotAuthenticated } from "../../middleware/auth";
+  redirectIfNotAuthenticated();
+</script> 

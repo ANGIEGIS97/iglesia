@@ -1,14 +1,14 @@
 <template>
   <form
     @submit.prevent="handleSubmit"
-    class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-32"
+    class="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mt-32"
   >
-    <h2 class="text-2xl font-bold mb-6 text-gray-800">Cambiar Contraseña</h2>
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Cambiar Contraseña</h2>
 
     <!-- Old Password Field -->
     <div class="mb-4">
       <label
-        class="block text-gray-700 text-sm font-bold mb-2"
+        class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
         for="oldPassword"
       >
         Contraseña Actual
@@ -18,13 +18,13 @@
           v-model="formData.oldPassword"
           :type="showOldPassword ? 'text' : 'password'"
           id="oldPassword"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
           required
         />
         <button
           type="button"
           @click="showOldPassword = !showOldPassword"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
         >
           <i class="material-icons text-xl">
             {{ showOldPassword ? "visibility_off" : "visibility" }}
@@ -39,7 +39,7 @@
     <!-- New Password Field -->
     <div class="mb-4">
       <label
-        class="block text-gray-700 text-sm font-bold mb-2"
+        class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
         for="newPassword"
       >
         Nueva Contraseña
@@ -49,13 +49,13 @@
           v-model="formData.newPassword"
           :type="showNewPassword ? 'text' : 'password'"
           id="newPassword"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
           required
         />
         <button
           type="button"
           @click="showNewPassword = !showNewPassword"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
         >
           <i class="material-icons text-xl">
             {{ showNewPassword ? "visibility_off" : "visibility" }}
@@ -70,7 +70,7 @@
     <!-- Confirm New Password Field -->
     <div class="mb-6">
       <label
-        class="block text-gray-700 text-sm font-bold mb-2"
+        class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
         for="confirmPassword"
       >
         Confirmar Nueva Contraseña
@@ -80,13 +80,13 @@
           v-model="confirmPassword"
           :type="showConfirmPassword ? 'text' : 'password'"
           id="confirmPassword"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
           required
         />
         <button
           type="button"
           @click="showConfirmPassword = !showConfirmPassword"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
         >
           <i class="material-icons text-xl">
             {{ showConfirmPassword ? "visibility_off" : "visibility" }}
@@ -107,8 +107,8 @@
     <div class="relative">
       <button
         type="submit"
-        class="w-full font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden transition-colors duration-300 relative text-white"
-        :class="[isSuccess ? 'text-white' : 'bg-blue-500']"
+        class="w-full font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden transition-colors duration-300 relative text-white"
+        :class="[isSuccess ? 'text-white' : 'bg-teal-500 hover:bg-teal-600']"
         :disabled="isLoading || isSuccess"
       >
         <div class="relative z-10">
@@ -121,7 +121,7 @@
           }}
         </div>
         <div
-          class="absolute inset-0 bg-green-400 transition-all duration-1000 ease-out"
+          class="absolute inset-0 bg-green-400 dark:bg-green-500 transition-all duration-1000 ease-out"
           :style="{ clipPath: `inset(0 ${100 - progress}% 0 0)` }"
         ></div>
       </button>

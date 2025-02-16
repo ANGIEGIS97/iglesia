@@ -11,36 +11,43 @@
       </h1>
 
       <!-- Carrusel para pantallas pequeñas -->
-      <div class="md:hidden">
+      <div class="md:hidden mb-4 ">
         <swiper
           :slides-per-view="1"
           :space-between="10"
           :pagination="{ clickable: true }"
           :navigation="true"
           :modules="modules"
+          class="w-full h-full rounded-lg"
         >
-          <swiper-slide v-for="(image, index) in images" :key="index">
-            <img
-              :src="image.src"
-              :alt="image.alt"
-              class="w-full shadow-1-strong rounded mb-4 hover:scale-[1.01]"
-            />
+          <swiper-slide v-for="(image, index) in images" :key="index" class="aspect-[4/3]">
+            <div class="relative w-full h-full">
+              <img
+                :src="image.src"
+                :alt="image.alt"
+                class="w-full h-full object-cover rounded-lg shadow-lg transition-transform duration-300"
+              />
+              <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 rounded-lg"></div>
+            </div>
           </swiper-slide>
         </swiper>
       </div>
 
       <!-- Grid para pantallas medianas y grandes -->
       <div
-        class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 p-0 sm:p-8"
+        class="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-4 p-0 sm:p-8"
       >
-        <div v-for="(column, colIndex) in imageColumns" :key="colIndex">
+        <div
+          v-for="(image, index) in images"
+          :key="index"
+          class="relative mb-4"
+        >
           <img
-            v-for="(image, imgIndex) in column"
-            :key="imgIndex"
             :src="image.src"
             :alt="image.alt"
-            class="w-full shadow-1-strong rounded mb-4 hover:scale-[1.01]"
+            class="w-full aspect-[4/3] object-cover shadow-lg rounded-lg transition-all duration-300 hover:scale-[1.02]"
           />
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 rounded-lg"></div>
         </div>
       </div>
 
@@ -129,3 +136,35 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+:deep(.swiper-pagination-bullet) {
+  background-color: #14b8a6;
+  opacity: 0.7;
+}
+
+:deep(.swiper-pagination-bullet-active) {
+  background-color: #14b8a6;
+  opacity: 1;
+}
+
+:deep(.swiper-button-next),
+:deep(.swiper-button-prev) {
+  color: #14b8a6;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 20px;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+}
+
+:deep(.swiper-button-next)::after,
+:deep(.swiper-button-prev)::after {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+:deep(.swiper) {
+  padding: 2px;
+}
+</style>

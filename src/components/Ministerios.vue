@@ -78,21 +78,21 @@ export default {
       ministerios: [
         {
           titulo: "Varones",
-          image: "https://i.ibb.co/GTx9hbH/varones.jpg",
+          image: "/ministerios/varones.jpg",
           descripcion:
             "Dos hombres recorriendo juntos el camino, compartiendo una amistad y un propósito: guiar al otro hacia un encuentro íntimo con Cristo. Con cada paso, sus corazones se abren, las dudas se disipan y el amor se fortalece. Unidos en esta travesía espiritual, descubren la belleza de una relación profunda con el Salvador.",
           versiculos: ["Salmo 1:1", "Santiago 1:12"],
         },
         {
           titulo: "Mujeres",
-          image: "https://i.ibb.co/685N22d/damas.jpg",
+          image: "/ministerios/damas.jpg",
           descripcion:
             "El ministerio para las mujeres es un lugar donde las líderes siervas sirven a las mujeres y al mismo tiempo, las enseñan a servir a otros de una forma bíblica. Aunque tengamos tiempos de entretenimiento, no es un club social, sino un lugar donde aprendemos a hacer todo para la gloria de Dios.",
           versiculos: ["Proverbios 31:30", "1 Pedro 3:2-4"],
         },
         {
           titulo: "Niños",
-          image: "https://i.ibb.co/VJNnxkL/ni-os.jpg",
+          image: "/ministerios/ninos.jpg",
           descripcion:
             "El ministerio de Niños está orientado a trabajar, educar y formar niños en el conocimiento de la Palabra de Dios; con enseñanzas y actividades de acuerdo a su edad. Es por eso que nos esforzamos por crear una atmósfera llena de diversión, risas y presencia de Dios.",
           versiculos: [
@@ -104,14 +104,14 @@ export default {
         },
         {
           titulo: "Misioneros",
-          image: "https://i.ibb.co/zfR5Pwc/misioneros.jpg",
+          image: "/ministerios/misioneros.jpg",
           descripcion:
             "Se llama misionero a aquella persona cuyo objetivo principal es el anuncio del evangelio mediante obras y palabras entre aquellos que no creen.",
           versiculos: ["Romanos 10:14-15", "Hechos 20:24", "Marcos 16:15"],
         },
         {
           titulo: "Evangelismo",
-          image: "https://i.ibb.co/5ssh4wn/evangelismo.jpg",
+          image: "/ministerios/evangelismo.jpg",
           descripcion:
             "Por tanto, id, y haced discípulos a todas las naciones, bautizándolos en el nombre del Padre, y del Hijo, y del Espíritu Santo; enseñándoles que guarden todas las cosas que os he mandado; y he aquí yo estoy con vosotros todos los días, hasta el fin del mundo. Amén.",
           versiculos: [
@@ -123,14 +123,14 @@ export default {
         },
         {
           titulo: "Reuniones Caseras",
-          image: "https://i.ibb.co/0Z6Fv0p/Rcaseras.jpg",
+          image: "/ministerios/reuniones-Caseras.jpg",
           descripcion:
             '"Y perseveraban en la doctrina de los apóstoles, en la comunión unos con otros, en el partimiento del pan y en las oraciones… perseveraban unidos cada día en el templo, y partiendo el pan en las casas comían juntos con alegría y sencillez de corazón"',
           versiculos: ["Hechos 2:42,46"],
         },
         {
           titulo: "Jóvenes",
-          image: "https://i.ibb.co/BgpQ4Ry/jovenes.jpg",
+          image: "/ministerios/jovenes.jpg",
           descripcion:
             "Un ministerio de jóvenes saludable busca estar sujeto a la visión de su iglesia. Se interesa por conocer lo que Dios ha colocado en el corazón de sus pastores, quienes tienen la tarea y compromiso de guiar a la iglesia.",
           versiculos: [

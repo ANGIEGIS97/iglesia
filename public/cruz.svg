@@ -1,9 +1,0 @@
-<svg
-  aria-hidden="true"
-  xmlns="http://www.w3.org/2000/svg"
-  fill="currentColor"
-  viewBox="0 0 24 24"
-  :class="iconSizeClasses"
->
-  <path d="M11 2h2v7h7v2h-7v11h-2V11H4V9h7V2z"/>
-</svg>

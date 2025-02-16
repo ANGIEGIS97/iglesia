@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import { eventos } from "../../lib/api.ts";
-import EventForm from "./EventForm.vue";
+import EventoModal from "./modals/EventoModal.vue";
 
 const eventList = ref([]);
 const error = ref("");
@@ -107,48 +107,51 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mx-auto px-1 py-8 mt-24">
-    <div class="sticky top-0 z-10 pb-4">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+  <div class="space-y-6 mt-24">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 sm:px-0">
+      <div>
+        <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent">
           Administrar Anuncios
         </h2>
-        <button
-          v-if="formMode === 'closed'"
-          @click="formMode = 'create'"
-          class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-sm"
-        >
-          Agregar Anuncio
-        </button>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gestiona los anuncios y eventos especiales</p>
       </div>
-
-      <div
-        v-if="error"
-        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+      <button
+        @click="formMode = 'create'"
+        class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600"
       >
-        <span class="block sm:inline">{{ error }}</span>
-        <span
-          class="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer"
-          @click="error = ''"
-        >
-          <svg
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </span>
-      </div>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nuevo Anuncio
+      </button>
     </div>
 
-    <EventForm
+    <div
+      v-if="error"
+      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+    >
+      <span class="block sm:inline">{{ error }}</span>
+      <span
+        class="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer"
+        @click="error = ''"
+      >
+        <svg
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </span>
+    </div>
+
+    <EventoModal
       :event="editingEvent || {}"
       :isEdit="formMode === 'edit'"
       :isOpen="formMode !== 'closed'"
@@ -164,7 +167,7 @@ onMounted(() => {
       <div
         v-for="(evento, index) in eventList"
         :key="evento.id"
-        class="bg-white p-2 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative"
+        class="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative"
       >
         <div
           class="absolute top-4 right-4 z-[5] bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-md"
@@ -176,13 +179,13 @@ onMounted(() => {
             <img
               :src="evento.image"
               :alt="evento.titulo"
-              class="w-full h-48 object-cover rounded-md"
+              class="w-full h-[200px] object-cover rounded-md"
             />
             <div
               class="absolute inset-0 bg-black bg-opacity-50 rounded-md flex flex-col justify-center p-4 text-white"
             >
-              <h3 class="text-xl font-bold mb-2">{{ evento.titulo }}</h3>
-              <p class="text-sm mb-4">{{ evento.descripcion }}</p>
+              <h3 class="sm:text-xl text-[16px] font-bold mb-1">{{ evento.titulo }}</h3>
+              <p class="text-sm mb-2">{{ evento.descripcion }}</p>
               <div v-if="evento.textoBoton || evento.linkBoton" class="text-sm">
                 <a
                   v-if="evento.linkBoton"
@@ -218,7 +221,7 @@ onMounted(() => {
           <div class="flex space-x-2 mt-auto">
             <button
               @click="startEdit(evento)"
-              class="flex-1 px-3 py-2 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600 transition duration-300"
+              class="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"
             >
               Editar
             </button>
