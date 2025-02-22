@@ -1,29 +1,27 @@
-import { jwtDecode } from "jwt-decode";
+import { auth_api } from "../lib/api";
 
 export const checkAuth = () => {
   if (typeof window === "undefined") return false;
 
+  // Verificar tanto el usuario actual como el token
   const token = localStorage.getItem("token");
-  if (!token) return false;
-
-  try {
-    const decoded = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-
-    if (decoded.exp < currentTime) {
-      localStorage.removeItem("token");
-      return false;
-    }
-
-    return true;
-  } catch {
-    localStorage.removeItem("token");
-    return false;
-  }
+  return !!auth_api.getCurrentUser() || !!token;
 };
 
-export const redirectIfNotAuthenticated = () => {
-  if (typeof window !== "undefined" && !checkAuth()) {
-    window.location.href = "/login";
-  }
+export const redirectIfNotAuthenticated = async () => {
+  if (typeof window === "undefined") return;
+
+  // Esperar a que Firebase inicialice
+  return new Promise((resolve) => {
+    const unsubscribe = auth_api.onAuthStateChange((user) => {
+      const token = localStorage.getItem("token");
+
+      if (!user && !token) {
+        window.location.href = "/";
+      }
+
+      unsubscribe();
+      resolve(user);
+    });
+  });
 };

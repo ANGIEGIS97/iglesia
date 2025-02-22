@@ -31,10 +31,12 @@
       </a>
 
       <!-- Menú de navegación (visible solo en desktop) -->
-      <div class="hidden md:flex items-center justify-between flex-grow">
+      <div class="hidden lg:flex items-center justify-between flex-grow">
         <div class="relative p-[2px] rounded-lg mx-auto">
           <div class="bg-gray-800 md:bg-transparent rounded-lg">
-            <ul class="flex font-medium space-x-8 rtl:space-x-reverse nav-menu px-4 py-2">
+            <ul
+              class="flex font-medium space-x-8 rtl:space-x-reverse nav-menu px-4 py-2"
+            >
               <li>
                 <a
                   href="/#inicio"
@@ -44,39 +46,71 @@
                 </a>
               </li>
 
+              <!-- Menú desplegable de Conócenos -->
+              <li class="relative">
+                <button
+                  @click.stop="toggleConocenosMenu"
+                  class="flex items-center ease-in duration-150 text-white hover:text-teal-400"
+                >
+                  Conócenos
+                  <svg
+                    class="w-4 h-4 ml-2 transition-transform duration-200"
+                    :class="{ 'rotate-180': isConocenosOpen }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  v-show="isConocenosOpen"
+                  class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl py-2 z-50 dropdown-menu border border-white"
+                  style="top: calc(100% + 8px)"
+                >
+                  <div
+                    class="absolute -top-[9px] left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 bg-gray-800"
+                  >
+                    <div
+                      class="absolute inset-0 border-l border-t border-white"
+                    ></div>
+                  </div>
+                  <a
+                    href="/#pastor"
+                    class="block px-4 py-2 text-white hover:bg-gray-700 hover:text-teal-400 transition-colors duration-200 mt-1"
+                    @click="closeConocenosMenu"
+                  >
+                    Pastor
+                  </a>
+                  <a
+                    href="/#servicio"
+                    class="block px-4 py-2 text-white hover:bg-gray-700 hover:text-teal-400 transition-colors duration-200"
+                    @click="closeConocenosMenu"
+                  >
+                    Servicios
+                  </a>
+                  <a
+                    href="/#ministerios"
+                    class="block px-4 py-2 text-white hover:bg-gray-700 hover:text-teal-400 transition-colors duration-200"
+                    @click="closeConocenosMenu"
+                  >
+                    Ministerios
+                  </a>
+                </div>
+              </li>
+
               <li>
                 <a
                   href="/#anuncios"
                   class="ease-in duration-150 text-white hover:text-teal-400"
                 >
                   Anuncios y Eventos
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="/#pastor"
-                  class="ease-in duration-150 text-white hover:text-teal-400"
-                >
-                  Pastor
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="/#servicio"
-                  class="ease-in duration-150 text-white hover:text-teal-400"
-                >
-                  Servicios
-                </a>
-              </li>
-
-              <li>
-                <a
-                  href="/#ministerios"
-                  class="ease-in duration-150 text-white hover:text-teal-400"
-                >
-                  Ministerios
                 </a>
               </li>
 
@@ -95,6 +129,15 @@
                   class="ease-in duration-150 text-white hover:text-teal-400"
                 >
                   Preguntas frecuentes
+                </a>
+              </li>
+
+              <li>
+                <a
+                  href="/donaciones"
+                  class="ease-in duration-150 text-white hover:text-teal-400"
+                >
+                  Donaciones
                 </a>
               </li>
             </ul>
@@ -133,6 +176,7 @@
           >
             <svg
               class="w-6 h-6 text-teal-400"
+              :class="{ 'fill-current': adminMenuVisible }"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -176,10 +220,10 @@
           </svg>
         </button>
 
-        <!-- Botón de hamburguesa (visible solo en móvil) -->
+        <!-- Botón de hamburguesa (visible solo en móvil y tablet) -->
         <button
           @click="toggleMenu"
-          class="h-10 w-10 rounded-lg p-2 hover:bg-gray-700 flex md:hidden items-center justify-center relative group"
+          class="h-10 w-10 rounded-lg p-2 hover:bg-gray-700 flex lg:hidden items-center justify-center relative group"
         >
           <!-- Icono de menú -->
           <svg
@@ -216,13 +260,26 @@
     </div>
   </nav>
 
+  <!-- Overlay para cerrar el menú al hacer clic fuera -->
+  <div
+    v-if="isMenuOpen"
+    class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+    @click="closeMenu"
+  ></div>
+
   <!-- Menú móvil -->
   <div
     v-show="isMenuOpen"
-    class="fixed top-[72px] left-0 right-0 z-40 animate__animated md:hidden p-4 bg-gray-800"
-    :class="{ 'animate__slideInDown': isMenuOpen }"
+    class="fixed top-[72px] left-0 right-0 z-40 animate__animated lg:hidden p-4 bg-gray-800"
+    :class="{
+      animate__slideInDown: isMenuOpen && !isClosing,
+      animate__slideOutUp: isClosing,
+    }"
+    @animationend="handleAnimationEnd"
   >
-    <div class="relative p-[2px] rounded-lg shadow-xl sm:shadow-none bg-gray-100 dark:bg-gradient-to-r dark:from-teal-500 dark:to-blue-500 dark:animate-gradient">
+    <div
+      class="relative p-[2px] rounded-lg shadow-xl sm:shadow-none bg-gray-100 dark:bg-gradient-to-r dark:from-teal-500 dark:to-blue-500 dark:animate-gradient"
+    >
       <div class="bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg">
         <div class="container mx-auto px-4 py-4">
           <ul class="space-y-4 nav-menu">
@@ -248,7 +305,7 @@
   <BarraProgreso />
 
   <!-- Login Form -->
-  <LoginForm ref="loginForm" @login-success="handleLoginSuccess" />
+  <LoginForm ref="loginFormRef" @login-success="handleLoginSuccess" />
 </template>
 
 <script>
@@ -256,7 +313,7 @@ import BarraProgreso from "./BarraProgreso.vue";
 import AdminSidebar from "./AdminSidebar.vue";
 import LoginForm from "./panel/LoginForm.vue";
 import { checkAuth } from "../middleware/auth";
-import 'animate.css';
+import "animate.css";
 
 export default {
   components: {
@@ -269,38 +326,43 @@ export default {
     return {
       adminMenuVisible: false,
       isAuthenticated: false,
-      activeSection: '',
-      currentPath: '',
+      activeSection: "",
+      currentPath: "",
       isMenuOpen: false,
+      isClosing: false,
+      isConocenosOpen: false,
       menuItems: [
-        { href: '/#inicio', text: 'Inicio' },
-        { href: '/#anuncios', text: 'Anuncios y Eventos' },
-        { href: '/#pastor', text: 'Pastor' },
-        { href: '/#servicio', text: 'Servicios' },
-        { href: '/#ministerios', text: 'Ministerios' },
-        { href: '/confesion', text: 'Confesión de fe' },
-        { href: '/preguntas', text: 'Preguntas frecuentes' }
-      ]
+        { href: "/#inicio", text: "Inicio" },
+        { href: "/#anuncios", text: "Anuncios y Eventos" },
+        { href: "/#pastor", text: "Pastor" },
+        { href: "/#servicio", text: "Servicios" },
+        { href: "/#ministerios", text: "Ministerios" },
+        { href: "/confesion", text: "Confesión de fe" },
+        { href: "/preguntas", text: "Preguntas frecuentes" },
+        { href: "/donaciones", text: "Donaciones" },
+      ],
     };
   },
   methods: {
     toggleMenu() {
       this.isMenuOpen = !this.isMenuOpen;
-      if (this.isMenuOpen) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
+      this.isClosing = false;
+      document.body.style.overflow = this.isMenuOpen ? "hidden" : "auto";
     },
     closeMenu() {
-      this.isMenuOpen = false;
-      document.body.style.overflow = '';
-      this.$nextTick(() => {
-        if (this.currentPath === '/') {
-          this.handleScroll();
-        }
-        this.updateActiveLink();
-      });
+      if (this.isMenuOpen) {
+        this.isClosing = true;
+        document.body.style.overflow = "auto";
+      }
+      this.isAdminMenuVisible = false;
+      this.isConocenosOpen = false;
+    },
+    handleAnimationEnd() {
+      if (this.isClosing) {
+        this.isMenuOpen = false;
+        this.isClosing = false;
+        document.body.style.overflow = "auto";
+      }
     },
     toggleDarkMode() {
       const isDarkMode = !document.documentElement.classList.contains("dark");
@@ -309,7 +371,11 @@ export default {
     },
     loadDarkModePreference() {
       const darkMode = localStorage.getItem("darkMode");
-      if (darkMode === "true") {
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+
+      if (darkMode === "true" || (!darkMode && prefersDark)) {
         document.documentElement.classList.add("dark");
       } else {
         document.documentElement.classList.remove("dark");
@@ -326,38 +392,67 @@ export default {
       window.location.href = "/login";
     },
     handleDocumentClick(event) {
-      const adminMenu = this.$el.querySelector(".relative");
-      if (adminMenu && !adminMenu.contains(event.target)) {
-        this.closeAdminMenu();
+      // Si el menú móvil está abierto y se hace clic fuera de él
+      if (this.isMenuOpen) {
+        const mobileMenu = this.$el.querySelector(".fixed.top-\\[72px\\]");
+        const hamburgerButton = this.$el.querySelector(
+          "button[class*='lg:hidden']"
+        );
+
+        // Verificar si el clic fue fuera del menú y del botón hamburguesa
+        if (
+          mobileMenu &&
+          !mobileMenu.contains(event.target) &&
+          !hamburgerButton.contains(event.target)
+        ) {
+          this.closeMenu();
+        }
+      }
+
+      // Manejo del menú admin
+      if (this.adminMenuVisible) {
+        const adminMenu = this.$el.querySelector(".relative");
+        if (adminMenu && !adminMenu.contains(event.target)) {
+          this.closeAdminMenu();
+        }
       }
     },
     checkAuthStatus() {
       this.isAuthenticated = checkAuth();
     },
     handleScroll() {
-      if (this.currentPath === '/') {
-        const sections = ['inicio', 'anuncios', 'pastor', 'servicio', 'ministerios'];
+      if (this.currentPath === "/") {
+        const sections = [
+          "inicio",
+          "anuncios",
+          "pastor",
+          "servicio",
+          "ministerios",
+        ];
         const navLinks = document.querySelectorAll('.nav-menu a[href^="/#"]');
-        
+
         const scrollPosition = window.scrollY + 100;
 
-        sections.forEach(sectionId => {
+        sections.forEach((sectionId) => {
           const section = document.getElementById(sectionId);
           if (section) {
             const sectionTop = section.offsetTop;
             const sectionHeight = section.offsetHeight;
 
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+            if (
+              scrollPosition >= sectionTop &&
+              scrollPosition < sectionTop + sectionHeight
+            ) {
               this.activeSection = sectionId;
-              
-              navLinks.forEach(link => {
-                const href = link.getAttribute('href').substring(2);
+
+              navLinks.forEach((link) => {
+                const href = link.getAttribute("href").substring(2);
                 if (href === sectionId) {
-                  link.classList.add('text-teal-400');
-                  link.classList.remove('text-white');
+                  link.classList.add("text-teal-400");
+                  link.classList.remove("text-white");
                 } else {
-                  link.classList.remove('text-teal-400');
-                  link.classList.add('text-white');
+                  link.classList.remove("text-teal-400");
+                  link.classList.add("text-white");
                 }
               });
             }
@@ -366,16 +461,19 @@ export default {
       }
     },
     updateActiveLink() {
-      const allLinks = document.querySelectorAll('.nav-menu a');
-      
-      allLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (href === this.currentPath || (this.currentPath === '/' && href === '/')) {
-          link.classList.add('text-teal-400');
-          link.classList.remove('text-white');
-        } else if (!href.startsWith('/#')) {
-          link.classList.remove('text-teal-400');
-          link.classList.add('text-white');
+      const allLinks = document.querySelectorAll(".nav-menu a");
+
+      allLinks.forEach((link) => {
+        const href = link.getAttribute("href");
+        if (
+          href === this.currentPath ||
+          (this.currentPath === "/" && href === "/")
+        ) {
+          link.classList.add("text-teal-400");
+          link.classList.remove("text-white");
+        } else if (!href.startsWith("/#")) {
+          link.classList.remove("text-teal-400");
+          link.classList.add("text-white");
         }
       });
     },
@@ -385,32 +483,52 @@ export default {
     },
     handleLoginSuccess(data) {
       this.checkAuthStatus();
+      this.closeMenu(); // Cerrar el menú móvil si está abierto
     },
     openLoginModal() {
-      this.$refs.loginForm.openModal();
+      if (this.$refs.loginFormRef) {
+        this.$refs.loginFormRef.openModal();
+      } else {
+        console.error(
+          "No se pudo encontrar la referencia al formulario de login"
+        );
+      }
+    },
+    toggleConocenosMenu() {
+      this.isConocenosOpen = !this.isConocenosOpen;
+    },
+    closeConocenosMenu() {
+      this.isConocenosOpen = false;
     },
   },
   mounted() {
     this.loadDarkModePreference();
     this.checkAuthStatus();
-    document.addEventListener("click", this.handleDocumentClick);
-    
+
+    // Agregar el event listener al document
+    document.body.addEventListener("click", this.handleDocumentClick);
+
     this.updateCurrentPath();
-    
-    if (this.currentPath === '/') {
-      window.addEventListener('scroll', this.handleScroll);
+
+    if (this.currentPath === "/") {
+      window.addEventListener("scroll", this.handleScroll);
       this.$nextTick(() => {
         this.handleScroll();
       });
     }
 
-    window.addEventListener('popstate', this.updateCurrentPath);
+    window.addEventListener("popstate", this.updateCurrentPath);
+
+    if (!this.$refs.loginFormRef) {
+      console.warn("LoginForm no está disponible en el montaje inicial");
+    }
   },
   beforeUnmount() {
-    document.removeEventListener("click", this.handleDocumentClick);
-    window.removeEventListener('scroll', this.handleScroll);
-    window.removeEventListener('popstate', this.updateCurrentPath);
-    document.body.style.overflow = '';
+    // Remover el event listener del document
+    document.body.removeEventListener("click", this.handleDocumentClick);
+    window.removeEventListener("scroll", this.handleScroll);
+    window.removeEventListener("popstate", this.updateCurrentPath);
+    document.body.style.overflow = "";
   },
 };
 </script>
@@ -418,6 +536,24 @@ export default {
 <style scoped>
 .nav-menu a {
   transition: color 0.3s ease;
+}
+
+/* Estilos para el menú desplegable */
+.nav-menu .relative > div {
+  transform-origin: top;
+  transition: all 0.3s ease;
+}
+
+.nav-menu button {
+  cursor: pointer;
+}
+
+.nav-menu .relative > div a {
+  transition: all 0.2s ease;
+}
+
+.nav-menu .relative > div a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 @keyframes gradient {
@@ -451,42 +587,56 @@ export default {
 
 /* Estilos globales para la transición del modo oscuro */
 :root {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-:root * {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-}
-
-/* Aseguramos que el contenido se empuje hacia abajo por la altura de la barra de navegación fija */
-:root {
   --nav-height: 72px;
+  transition: background-color 0.3s ease;
 }
 
 body {
   padding-top: var(--nav-height);
 }
 
-/* Ajustes para la animación del menú móvil */
 .animate__animated {
   --animate-duration: 0.3s;
-}
-
-/* Animación del gradiente */
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 .dark .dark\:animate-gradient {
   background-size: 200% 200%;
   animation: gradient 6s ease infinite;
+}
+
+/* Estilos para el menú desplegable */
+.dropdown-menu {
+  position: absolute;
+  min-width: 200px;
+}
+
+.dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 9px 9px 9px;
+  border-style: solid;
+  border-color: transparent transparent white transparent;
+  z-index: 1;
+}
+
+.dropdown-menu::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 8px 8px 8px;
+  border-style: solid;
+  border-color: transparent transparent #1f2937 transparent;
+  z-index: 2;
+}
+
+/* Ajuste para el triángulo decorativo */
+.dropdown-menu > div:first-child {
+  overflow: visible;
+  z-index: 3;
 }
 </style>

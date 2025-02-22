@@ -7,7 +7,9 @@
         <i class="fas fa-calendar-alt text-3xl text-teal-500"> </i>
         <h2 class="text-3xl font-semibold dark:text-white">Próximos eventos</h2>
       </div>
-      <p class="text-gray-600 dark:text-gray-300 ml-1">Mantente al día con nuestras próximas actividades y servicios</p>
+      <p class="text-gray-600 dark:text-gray-300 ml-1">
+        Mantente al día con nuestras próximas actividades y servicios
+      </p>
     </div>
 
     <!-- Estado de carga -->
@@ -62,6 +64,9 @@
                     <div
                       :class="[
                         'relative text-3xl font-bold text-black border py-2 px-6 rounded-md shadow-md bg-white folded-corner',
+                        evento.infoIconoTexto === 'Cumpleaños'
+                          ? 'border-t-yellow-500'
+                          : '',
                         evento.infoIconoTexto === 'Canasta de amor'
                           ? 'border-t-red-500'
                           : '',
@@ -77,6 +82,7 @@
                         evento.infoIconoTexto === 'Culto de oración'
                           ? 'border-t-violet-500'
                           : '',
+                        evento.infoIconoTexto !== 'Cumpleaños' &&
                         evento.infoIconoTexto !== 'Canasta de amor' &&
                         evento.infoIconoTexto !== 'Cena del Señor' &&
                         evento.infoIconoTexto !== 'Reunión de damas' &&
@@ -164,7 +170,9 @@
                     class="bg-teal-500 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-all duration-300 dark:bg-teal-500 dark:hover:bg-teal-700 transform hover:-translate-y-1 hover:shadow-lg w-full sm:w-auto flex items-center justify-center gap-2"
                   >
                     <span>Detalles</span>
-                    <i class="fas fa-arrow-right text-sm transition-transform group-hover:translate-x-1"></i>
+                    <i
+                      class="fas fa-arrow-right text-sm transition-transform group-hover:translate-x-1"
+                    ></i>
                   </button>
                 </div>
               </div>
@@ -223,7 +231,10 @@ export default {
         "Viernes",
         "Sábado",
       ];
-      return dias[fecha.getDay()];
+      // Aseguramos que la fecha esté en la zona horaria de Bogotá
+      const fechaBogota =
+        fecha instanceof Date ? fecha : new Date(fecha + "T00:00:00-05:00");
+      return dias[fechaBogota.getDay()];
     };
 
     const formatTime = (time) => {
@@ -238,8 +249,8 @@ export default {
     const isUrl = (str) => {
       if (!str) return false;
       // Agregar soporte para URLs que empiezan con www.
-      if (str.startsWith('www.')) {
-        str = 'http://' + str;
+      if (str.startsWith("www.")) {
+        str = "http://" + str;
       }
       try {
         new URL(str);
@@ -251,26 +262,36 @@ export default {
 
     const generarServiciosDominicales = (inicio, fin) => {
       const servicios = [];
-      let fecha = new Date(inicio);
+      // Aseguramos que la fecha inicial esté en la zona horaria de Bogotá
+      let fecha = new Date(
+        inicio.toLocaleString("en-US", { timeZone: "America/Bogota" })
+      );
       fecha.setDate(fecha.getDate() + ((7 - fecha.getDay()) % 7));
 
-      while (fecha <= fin) {
+      let iteraciones = 0;
+      const maxIteraciones = 5; // Máximo de 5 domingos
+      const finTime = fin.getTime();
+      while (fecha.getTime() <= finTime && iteraciones < maxIteraciones) {
         const esPrimerDomingo = fecha.getDate() <= 7;
+        const fechaServicio = new Date(
+          fecha.toLocaleString("en-US", { timeZone: "America/Bogota" })
+        );
         servicios.push({
-          fecha: new Date(fecha),
+          fecha: fechaServicio,
           titulo: "Servicio dominical",
-          hora: "10:00", // Modificado para consistencia
+          hora: "10:00",
           lugar: "Salón Comunal Asovivir",
           descripcion: esPrimerDomingo
             ? "Cena del Señor"
             : "Servicio dominical semanal.",
           infoAdicional: true,
           banner: null,
-          dia: fecha.getDate().toString().padStart(2, "0"),
-          mes: fecha.toLocaleString("es-CO", { month: "long" }),
+          dia: fechaServicio.getDate().toString().padStart(2, "0"),
+          mes: fechaServicio.toLocaleString("es-CO", { month: "long" }),
           diaSemana: "Domingo",
         });
         fecha.setDate(fecha.getDate() + 7);
+        iteraciones++;
       }
       return servicios;
     };
@@ -290,13 +311,18 @@ export default {
       try {
         cargando.value = true;
 
-        const hoy = new Date();
+        // Configuramos la fecha actual en la zona horaria de Bogotá
+        const hoy = new Date(
+          new Date().toLocaleString("en-US", { timeZone: "America/Bogota" })
+        );
         hoy.setHours(0, 0, 0, 0);
 
-        const finPeriodo = new Date(hoy);
-        finPeriodo.setDate(finPeriodo.getDate() + 27); //Cantidad dias en el calendario
+        const finPeriodo = new Date(
+          hoy.toLocaleString("en-US", { timeZone: "America/Bogota" })
+        );
+        finPeriodo.setDate(finPeriodo.getDate() + 27);
 
-        // Primero generamos los servicios dominicales
+        // Generamos los servicios dominicales
         const serviciosDominicales = generarServiciosDominicales(
           hoy,
           finPeriodo
@@ -306,12 +332,13 @@ export default {
         eventos.value = serviciosDominicales;
 
         try {
-          // Intentamos cargar los eventos de la API
+          // Cargamos los eventos de la API
           const response = await fechas.getAll();
           const datosAPI = response.data;
 
           const eventosAPI = datosAPI.map((evento) => {
-            const fechaEvento = new Date(evento.fecha);
+            // Convertimos la fecha a la zona horaria de Bogotá
+            const fechaEvento = new Date(evento.fecha + "T00:00:00-05:00");
             return {
               ...evento,
               fecha: fechaEvento,
@@ -321,40 +348,50 @@ export default {
             };
           });
 
-          // Combinamos los eventos de la API con los servicios dominicales
+          // Combinamos los eventos
           eventos.value = [...serviciosDominicales, ...eventosAPI]
             .filter((evento) => {
-              return evento.fecha >= hoy && evento.fecha <= finPeriodo;
+              const fechaEvento = new Date(evento.fecha);
+              return fechaEvento >= hoy && fechaEvento <= finPeriodo;
             })
-            .sort((a, b) => a.fecha - b.fecha)
-            .reduce((acc, evento) => {
-              const index = acc.findIndex(
-                (e) => e.fecha.getTime() === evento.fecha.getTime()
-              );
-              if (index === -1) {
-                acc.push(evento);
-              } else if (
-                !acc[index].infoAdicional ||
-                evento.modificarServicioDominical
-              ) {
-                acc[index] = { ...acc[index], ...evento };
-              }
-              return acc;
-            }, []);
+            .sort((a, b) => {
+              // Primero ordenamos por fecha
+              const fechaComparacion =
+                new Date(a.fecha).getTime() - new Date(b.fecha).getTime();
+              if (fechaComparacion !== 0) return fechaComparacion;
+
+              // Si las fechas son iguales, los servicios dominicales van primero
+              if (
+                a.titulo === "Servicio dominical" &&
+                b.titulo !== "Servicio dominical"
+              )
+                return -1;
+              if (
+                a.titulo !== "Servicio dominical" &&
+                b.titulo === "Servicio dominical"
+              )
+                return 1;
+
+              // Si ninguno es servicio dominical o ambos lo son, ordenar por hora
+              return a.hora.localeCompare(b.hora);
+            });
+
+          // Calculamos los días restantes
+          eventos.value.forEach((evento) => {
+            const fechaEvento = new Date(evento.fecha);
+            fechaEvento.setHours(0, 0, 0, 0);
+
+            const diferenciaTiempo = fechaEvento.getTime() - hoy.getTime();
+            evento.diasRestantes = Math.floor(
+              diferenciaTiempo / (1000 * 60 * 60 * 24)
+            );
+          });
         } catch (apiError) {
           console.warn(
             "No se pudieron cargar los eventos de la API, usando solo servicios dominicales:",
             apiError
           );
-          // Si la API falla, ya tenemos los servicios dominicales cargados
         }
-
-        // Calculamos los días restantes para todos los eventos
-        eventos.value.forEach((evento) => {
-          evento.diasRestantes = Math.ceil(
-            (evento.fecha - hoy) / (1000 * 60 * 60 * 24)
-          );
-        });
       } catch (err) {
         console.error("Error al procesar los eventos:", err);
         error.value =
@@ -408,7 +445,8 @@ export default {
 
 .folded-corner:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .folded-corner::after {

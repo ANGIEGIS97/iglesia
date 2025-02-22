@@ -7,10 +7,10 @@
     <div class="relative z-10">
       <h2 class="sr-only">Footer</h2>
       <div
-        class="flex flex-col-reverse sm:flex-row md:justify-between lg:justify-around"
+        class="flex flex-col-reverse md:flex-row md:justify-between lg:justify-around gap-8 md:gap-4"
       >
         <div
-          class="relative mt-14 sm:mt-0 px-5 flex flex-col justify-center items-center text-gray-200"
+          class="relative mt-14 md:mt-0 px-5 flex flex-col justify-center items-center text-gray-200 md:w-1/2 lg:w-auto"
         >
           <h1 class="font-title text-4xl text-center font-semibold mt-auto">
             Iglesia Bautista su Gracia es Mayor
@@ -74,9 +74,9 @@
             aria-hidden="true"
           />
         </div>
-        <div class="grid grid-cols-2 gap-5 text-gray-400">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-gray-400 md:w-1/2 lg:w-auto">
           <div
-            class="col-span-2 md:col-span-1 pb-0 md:py-3 px-4 flex flex-col items-center sm:items-start"
+            class="col-span-1 pb-0 md:py-3 px-4 flex flex-col items-center sm:items-start"
           >
             <h3
               class="py-1.5 md:py-4 text-xl text-white font-bold tracking-wide flex items-center"
@@ -99,7 +99,7 @@
             </h3>
             <div class="w-full h-px bg-gray-600 mb-4"></div>
             <nav
-              class="flex justify-around md:flex-col font-medium list-none ml-4 gap-2"
+              class="flex flex-col sm:flex-row md:flex-col font-medium list-none gap-3 sm:gap-4 md:gap-2 items-center sm:items-start"
             >
               <li><a href="#inicio" class="hover:text-gray-200">Inicio</a></li>
               <li><a href="#pastor" class="hover:text-gray-200">Pastor</a></li>
@@ -129,7 +129,7 @@
           </div>
 
           <div
-            class="col-span-2 md:col-span-1 pb-0 md:py-3 px-4 flex flex-col items-center sm:items-start"
+            class="col-span-1 pb-0 md:py-3 px-4 flex flex-col items-center sm:items-start"
           >
             <h3
               class="py-1.5 md:py-4 text-xl text-white font-bold tracking-wide flex items-center"

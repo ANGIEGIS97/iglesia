@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, defineEmits, defineProps, watch, onMounted, onUnmounted } from "vue";
-import 'animate.css';
+import { ref, defineEmits, defineProps, watch } from "vue";
+import "animate.css";
 
 const props = defineProps({
   event: {
@@ -28,7 +28,8 @@ const emit = defineEmits(["submit", "cancel"]);
 const formData = ref({ ...props.event });
 const selectedImageOption = ref("");
 const customImageUrl = ref("");
-const defaultImageUrl = "https://i.ibb.co/bM0Y4b9K/Captura-de-pantalla-2025-02-12-125243.png";
+const defaultImageUrl =
+  "https://i.ibb.co/bM0Y4b9K/Captura-de-pantalla-2025-02-12-125243.png";
 
 const imageOptions = [
   {
@@ -66,15 +67,18 @@ const imageOptions = [
 
 const showModal = ref(false);
 
-watch(() => props.isOpen, (newValue) => {
-  if (newValue) {
-    showModal.value = true;
-    document.body.classList.add('modal-open');
-  } else {
-    showModal.value = false;
-    document.body.classList.remove('modal-open');
+watch(
+  () => props.isOpen,
+  (newValue) => {
+    if (newValue) {
+      showModal.value = true;
+      document.body.classList.add("modal-open");
+    } else {
+      showModal.value = false;
+      document.body.classList.remove("modal-open");
+    }
   }
-});
+);
 
 watch(
   () => props.event,
@@ -111,20 +115,49 @@ watch([selectedImageOption, customImageUrl], () => {
   }
 });
 
-onUnmounted(() => {
-  document.body.classList.remove('modal-open');
-});
+const handleSubmit = async () => {
+  try {
+    // Asegurarse de que la imagen tenga un valor válido
+    if (!formData.value.image || formData.value.image === "") {
+      formData.value.image = defaultImageUrl;
+    }
 
-const handleSubmit = () => {
-  emit("submit", formData.value);
+    // Si es una URL personalizada, validar que sea una URL válida
+    if (selectedImageOption.value === "custom" && customImageUrl.value) {
+      try {
+        new URL(customImageUrl.value);
+      } catch (e) {
+        alert("La URL de la imagen no es válida");
+        return;
+      }
+    }
+
+    // Formatear los datos antes de enviar
+    const dataToSubmit = {
+      titulo: formData.value.titulo?.trim() || "",
+      descripcion: formData.value.descripcion?.trim() || "",
+      textoBoton: formData.value.textoBoton?.trim() || "",
+      linkBoton: formData.value.linkBoton?.trim() || "",
+      image: formData.value.image,
+      fecha: new Date().toISOString(),
+    };
+
+    // Validar que si hay textoBoton también haya linkBoton
+    if (dataToSubmit.textoBoton && !dataToSubmit.linkBoton) {
+      alert("Si agregas un texto de botón, debes agregar también un enlace");
+      return;
+    }
+
+    emit("submit", dataToSubmit);
+  } catch (error: any) {
+    console.error("Error al procesar el formulario:", error);
+    alert(error.message || "Error al procesar el formulario");
+  }
 };
 </script>
 
 <template>
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 z-50 overflow-y-auto"
-  >
+  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen p-4">
       <div
         class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
@@ -136,9 +169,7 @@ const handleSubmit = () => {
         <!-- Modal header -->
         <div class="bg-gray-100 dark:bg-gray-700 px-4 py-3 rounded-t-lg">
           <div class="flex justify-between items-center">
-            <h3
-              class="text-lg font-semibold text-gray-900 dark:text-gray-100"
-            >
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {{ isEdit ? "Editar Anuncio" : "Nuevo Anuncio" }}
             </h3>
             <button
@@ -170,7 +201,7 @@ const handleSubmit = () => {
                   v-model="formData.titulo"
                   type="text"
                   id="titulo"
-                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer"
                   placeholder=" "
                 />
                 <label
@@ -188,7 +219,7 @@ const handleSubmit = () => {
                   v-model="formData.descripcion"
                   id="descripcion"
                   rows="4"
-                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer"
                   placeholder=" "
                 ></textarea>
                 <label
@@ -205,12 +236,13 @@ const handleSubmit = () => {
                 <select
                   v-model="selectedImageOption"
                   id="imagen"
-                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer dark:bg-gray-700"
                 >
                   <option
                     v-for="option in imageOptions"
                     :key="option.value"
                     :value="option.value"
+                    class="dark:bg-gray-700 dark:text-gray-300"
                   >
                     {{ option.label }}
                   </option>
@@ -239,7 +271,7 @@ const handleSubmit = () => {
                     v-model="customImageUrl"
                     type="text"
                     id="customUrl"
-                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer"
                     placeholder=" "
                   />
                   <label
@@ -258,7 +290,7 @@ const handleSubmit = () => {
                   v-model="formData.textoBoton"
                   type="text"
                   id="textoBoton"
-                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer"
                   placeholder=" "
                 />
                 <label
@@ -276,7 +308,7 @@ const handleSubmit = () => {
                   v-model="formData.linkBoton"
                   type="text"
                   id="linkBoton"
-                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer"
                   placeholder=" "
                 />
                 <label
@@ -291,7 +323,7 @@ const handleSubmit = () => {
             <div class="flex justify-end space-x-3">
               <button
                 type="submit"
-                class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-300"
+                class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-300"
               >
                 {{ isEdit ? "Actualizar" : "Crear" }}
               </button>
@@ -341,4 +373,4 @@ body.modal-open {
     min-height: -webkit-fill-available;
   }
 }
-</style> 
+</style>

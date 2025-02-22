@@ -2,6 +2,8 @@
 import Layout from "../../layouts/Layout.astro";
 import AdminFechasList from "../../components/panel/AdminFechasList.vue";
 import { redirectIfNotAuthenticated } from "../../middleware/auth";
+
+// Ejecutar la redirección del lado del cliente
 ---
 
 <Layout title="Admin - Gestión de Fechas">
@@ -12,5 +14,9 @@ import { redirectIfNotAuthenticated } from "../../middleware/auth";
 
 <script>
   import { redirectIfNotAuthenticated } from "../../middleware/auth";
-  redirectIfNotAuthenticated();
-</script> 
+
+  // Esperar a que la autenticación se complete antes de redirigir
+  document.addEventListener("DOMContentLoaded", async () => {
+    await redirectIfNotAuthenticated();
+  });
+</script>

@@ -15,10 +15,17 @@
     "animate.css": "^4.1.1",
     "astro": "^4.11.5",
     "axios": "^1.7.9",
+    "firebase": "^11.3.1",
     "jwt-decode": "^4.0.0",
     "swiper": "^11.1.5",
     "tailwindcss": "^3.4.6",
     "tippy.js": "^6.3.7",
     "vue": "^3.4.31"
+  },
+  "devDependencies": {
+    "@firebase/app-types": "^0.9.3",
+    "@firebase/auth-types": "^0.13.0",
+    "@firebase/firestore-types": "^3.0.3",
+    "@types/firebase": "^2.4.32"
   }
 }

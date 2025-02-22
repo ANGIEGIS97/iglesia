@@ -10,6 +10,18 @@ const { titulo } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
+    <!-- Script para evitar el parpadeo del modo oscuro -->
+    <script is:inline>
+      if (
+        localStorage.getItem("darkMode") === "true" ||
+        (!localStorage.getItem("darkMode") &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    </script>
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
@@ -22,11 +34,11 @@ const { titulo } = Astro.props;
     <ViewTransitions />
     <style is:global>
       html {
-        scroll-padding-top: 96px;
-        font-family: 'Poppins', sans-serif;
+        scroll-padding-top: 85px;
+        font-family: "Poppins", sans-serif;
       }
       body {
-        font-family: 'Poppins', sans-serif;
+        font-family: "Poppins", sans-serif;
       }
     </style>
   </head>

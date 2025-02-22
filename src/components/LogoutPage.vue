@@ -1,33 +1,73 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from "vue";
+import { auth_api } from "../lib/api";
 
-const countdown = ref(10);
-const redirecting = ref(false);
+const countdown = ref(7);
+let timer: NodeJS.Timeout;
+
+const clearAuthState = () => {
+  // Limpiar el estado de autenticación
+  localStorage.removeItem("token");
+  sessionStorage.clear();
+
+  // Limpiar cualquier otra información de usuario que puedas tener almacenada
+  try {
+    indexedDB.deleteDatabase("firebaseLocalStorageDb");
+  } catch (e) {
+    console.error("Error al limpiar IndexedDB:", e);
+  }
+};
 
 onMounted(() => {
-  // Eliminar el token al montar el componente
-  localStorage.removeItem("token");
-  
-  // Iniciar la cuenta regresiva
-  redirecting.value = true;
-  const timer = setInterval(() => {
+  // Iniciar la cuenta regresiva directamente
+  timer = setInterval(() => {
     countdown.value--;
     if (countdown.value <= 0) {
       clearInterval(timer);
-      window.location.href = "/";
+      window.location.replace("/");
     }
   }, 1000);
 });
+
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer);
+  }
+});
+
+const handleLogout = async () => {
+  try {
+    // Usar auth_api para cerrar sesión
+    await auth_api.logout();
+
+    // Iniciar la cuenta regresiva
+    timer = setInterval(() => {
+      countdown.value--;
+      if (countdown.value <= 0) {
+        clearInterval(timer);
+        // Forzar recarga completa para limpiar el estado de la aplicación
+        window.location.replace("/");
+      }
+    }, 1000);
+  } catch (error) {
+    console.error("Error al cerrar sesión:", error);
+    // En caso de error, limpiar el estado de todas formas y redirigir
+    clearAuthState();
+    window.location.replace("/");
+  }
+};
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+  <div
+    class="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4"
+  >
     <div class="max-w-md w-full text-center space-y-8">
       <!-- Imagen central -->
       <div class="flex justify-center">
-        <img 
-          src="/desconectado.png" 
-          alt="Sesión cerrada" 
+        <img
+          src="/desconectado.png"
+          alt="Sesión cerrada"
           class="w-48 h-48 object-contain"
         />
       </div>
@@ -57,4 +97,4 @@ onMounted(() => {
 .min-h-screen {
   min-height: 100vh;
 }
-</style> 
+</style>

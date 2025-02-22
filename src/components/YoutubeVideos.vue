@@ -73,7 +73,6 @@ import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { Navigation, Pagination } from "swiper/modules";
 
 export default {
   components: {
@@ -82,7 +81,7 @@ export default {
   },
   data() {
     return {
-      apiKey: "AIzaSyCqHZk1vP6pAVMIuPWpzdzfB92SCLbF-d4",
+      apiKey: "",
       channelId: "UCPP7f0ZyCyZo8I_qgwFqveQ",
       videos: [],
       error: null,
@@ -116,5 +115,3 @@ export default {
   },
 };
 </script>
-
-<style></style>
