@@ -46,6 +46,15 @@
                 </a>
               </li>
 
+              <li>
+                <a
+                  href="/#anuncios"
+                  class="ease-in duration-150 text-white hover:text-teal-400"
+                >
+                  Anuncios y Eventos
+                </a>
+              </li>
+
               <!-- Menú desplegable de Conócenos -->
               <li class="relative">
                 <button
@@ -103,15 +112,6 @@
                     Ministerios
                   </a>
                 </div>
-              </li>
-
-              <li>
-                <a
-                  href="/#anuncios"
-                  class="ease-in duration-150 text-white hover:text-teal-400"
-                >
-                  Anuncios y Eventos
-                </a>
               </li>
 
               <li>
