@@ -260,7 +260,7 @@
                   :title="fecha.infoIconoTexto"
                 >
                   <img
-                    v-if="fecha.infoAdiccional === '1'"
+                    v-if="fecha.infoAdiccional === 1"
                     :src="`/insignias/${getIconFileName(fecha.infoIconoTexto)}`"
                     :alt="fecha.infoIconoTexto"
                     class="w-4 h-4"
@@ -488,7 +488,7 @@
                           :title="fecha.infoIconoTexto"
                         >
                           <img
-                            v-if="fecha.infoAdiccional === '1'"
+                            v-if="fecha.infoAdiccional === 1"
                             :src="`/insignias/${getIconFileName(
                               fecha.infoIconoTexto
                             )}`"
@@ -637,7 +637,12 @@ export default {
       try {
         this.isLoading = true;
         const response = await fechas.getAll();
-        this.fechas = this.sortFechas(response.data);
+        // Convertir infoAdiccional a número en cada fecha
+        const fechasConvertidas = response.data.map((fecha) => ({
+          ...fecha,
+          infoAdiccional: Number(fecha.infoAdiccional),
+        }));
+        this.fechas = this.sortFechas(fechasConvertidas);
       } catch (error) {
         console.error("Error al cargar fechas:", error);
         this.errorMessage = "Error al cargar las fechas";
@@ -700,18 +705,19 @@ export default {
       });
     },
     getColorClass(value) {
+      if (value === "Info") return "bg-teal-500";
       const iconOptions = [
         { value: "Cumpleaños", colorClass: "bg-yellow-500" },
         { value: "Canasta de amor", colorClass: "bg-red-500" },
         { value: "Cena del Señor", colorClass: "bg-red-700" },
         { value: "Reunión de damas", colorClass: "bg-pink-500" },
         { value: "Reunión de varones", colorClass: "bg-blue-500" },
-        { value: "Reunión de jovenes", colorClass: "bg-teal-500" },
+        { value: "Reunión de jovenes", colorClass: "bg-indigo-500" },
         { value: "Domingo misionero", colorClass: "bg-green-500" },
         { value: "Culto de oración", colorClass: "bg-violet-500" },
       ];
       const option = iconOptions.find((opt) => opt.value === value);
-      return option ? option.colorClass : "";
+      return option ? option.colorClass : "bg-teal-500";
     },
     getDiasRestantes(fecha) {
       // Obtener fecha actual en Bogotá
@@ -803,6 +809,7 @@ export default {
       }
     },
     getIconFileName(value) {
+      if (value === "Info") return "default.svg";
       const iconOptions = [
         { value: "Cumpleaños", icon: "cumple.svg" },
         { value: "Canasta de amor", icon: "canasta-de-amor.svg" },
