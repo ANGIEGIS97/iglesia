@@ -1,10 +1,10 @@
 <template>
   <section class="px-4 sm:px-6 2xl:px-80 py-10" id="pastor">
     <div
-      class="grid grid-cols-1 lg:h-screen lg:grid-cols-2 selection:bg-teal-500 selection:text-white"
+      class="grid grid-cols-1 lg:grid-cols-2 selection:bg-teal-500 selection:text-white"
     >
       <div class="relative z-10 lg:py-16">
-        <div class="relative h-64 sm:h-80 lg:h-full">
+        <div class="relative h-64 sm:h-80 lg:h-[600px]">
           <img
             alt="Pastor Oscar Páez"
             src="https://i.ibb.co/3ByrqHS/pastor2.jpg"

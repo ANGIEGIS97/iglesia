@@ -1,6 +1,6 @@
 <template>
   <section
-    class="px-4 sm:px-6 2xl:px-72 py-10 mt-4 bg-gray-100 dark:bg-slate-700 dark:border-slate-600 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
+    class="relative px-4 sm:px-6 2xl:px-72 py-10 mt-4 bg-gray-100 dark:bg-slate-700 dark:border-slate-600 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
     id="servicio"
   >
     <article>
@@ -166,5 +166,10 @@ export default {
 
 :deep(.swiper) {
   padding: 2px;
+}
+
+#servicio {
+  position: relative;
+  z-index: 1;
 }
 </style>
