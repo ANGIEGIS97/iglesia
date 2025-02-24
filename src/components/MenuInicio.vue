@@ -11,23 +11,15 @@
       <!-- Logo y nombre de la iglesia -->
       <a
         href="/"
-        class="group flex items-center space-x-3 rtl:space-x-reverse relative overflow-hidden rounded-lg"
+        class="flex items-center space-x-3 rtl:space-x-reverse relative overflow-hidden rounded-lg"
       >
         <div class="relative">
           <img
-            src="https://i.ibb.co/HtyYRq5/logo.png"
-            class="h-14 transition-transform duration-300 ease-in-out group-hover:scale-105"
+            src="/logoiglesia2.png"
+            class="h-14"
             alt="Logo iglesia"
           />
-          <div
-            class="absolute inset-0 group-hover:opacity-20 transition-opacity duration-300 ease-in-out"
-          ></div>
         </div>
-        <span
-          class="self-center text-[14px] font-semibold whitespace-nowrap text-white text-center transition-colors duration-300 ease-in-out group-hover:text-teal-500"
-          >Iglesia Bautista <br />
-          Su Gracia es Mayor</span
-        >
       </a>
 
       <!-- Menú de navegación (visible solo en desktop) -->

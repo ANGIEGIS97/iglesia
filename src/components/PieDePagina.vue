@@ -12,9 +12,11 @@
         <div
           class="relative mt-14 md:mt-0 px-5 flex flex-col justify-center items-center text-gray-200 md:w-1/2 lg:w-auto"
         >
-          <h1 class="font-title text-4xl text-center font-semibold mt-auto">
-            Iglesia Bautista su Gracia es Mayor
-          </h1>
+          <img 
+            src="/logoiglesia2.png" 
+            alt="Iglesia Bautista su Gracia es Mayor" 
+            class="h-24 object-contain mt-auto"
+          />
           <blockquote class="text-center">
             "Porque por gracia sois salvos por medio de la fe; y esto no de
             vosotros, pues es don de Dios; <br />
