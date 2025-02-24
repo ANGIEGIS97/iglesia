@@ -392,29 +392,18 @@ export default {
       window.location.href = "/login";
     },
     handleDocumentClick(event) {
-      // Si el menú móvil está abierto y se hace clic fuera de él
-      if (this.isMenuOpen) {
-        const mobileMenu = this.$el.querySelector(".fixed.top-\\[72px\\]");
-        const hamburgerButton = this.$el.querySelector(
-          "button[class*='lg:hidden']"
-        );
+      // Obtener el botón y el menú desplegable
+      const conocenosButton = document.querySelector(".nav-menu button");
+      const dropdownMenu = document.querySelector(".dropdown-menu");
 
-        // Verificar si el clic fue fuera del menú y del botón hamburguesa
-        if (
-          mobileMenu &&
-          !mobileMenu.contains(event.target) &&
-          !hamburgerButton.contains(event.target)
-        ) {
-          this.closeMenu();
-        }
-      }
-
-      // Manejo del menú admin
-      if (this.adminMenuVisible) {
-        const adminMenu = this.$el.querySelector(".relative");
-        if (adminMenu && !adminMenu.contains(event.target)) {
-          this.closeAdminMenu();
-        }
+      // Si el clic no fue en el botón ni en el menú desplegable, cerrar el menú
+      if (
+        conocenosButton &&
+        dropdownMenu &&
+        !conocenosButton.contains(event.target) &&
+        !dropdownMenu.contains(event.target)
+      ) {
+        this.isConocenosOpen = false;
       }
     },
     checkAuthStatus() {

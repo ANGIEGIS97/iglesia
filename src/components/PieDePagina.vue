@@ -112,6 +112,9 @@
                 >
               </li>
               <li>
+                <a href="#anuncios" class="hover:text-gray-200">Anuncios y Eventos</a>
+              </li>
+              <li>
                 <a
                   href="confesion.html"
                   class="hover:text-gray-200 hidden lg:block"
