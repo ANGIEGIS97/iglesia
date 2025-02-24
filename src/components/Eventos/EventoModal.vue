@@ -148,6 +148,8 @@
 
 <script>
 import "animate.css";
+import confetti from 'canvas-confetti';
+
 export default {
   props: {
     evento: {
@@ -267,12 +269,42 @@ export default {
     cerrarImagenAmpliada() {
       this.imagenAmpliada = false;
     },
+    lanzarConfeti() {
+      // Basic confetti burst
+      confetti({
+        particleCount: 60,
+        spread: 40,
+        origin: { y: 0.6 }
+      });
+
+      // Side bursts
+      setTimeout(() => {
+        confetti({
+          particleCount: 40,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0, y: 0.6 }
+        });
+        confetti({
+          particleCount: 40,
+          angle: 120,
+          spread: 80,
+          origin: { x: 1, y: 0.6 }
+        });
+      }, 100);
+    }
   },
   mounted() {
     document.body.classList.add("modal-open");
     this.calcularTiempoRestante();
-    // Actualizar el tiempo restante cada minuto
     this.intervalId = setInterval(this.calcularTiempoRestante, 60000);
+    
+    // Lanzar confeti solo si es un cumpleaños y tiene icono activo
+    if (this.evento && this.evento.infoAdiccional && this.evento.infoIconoTexto === 'Cumpleaños') {
+      setTimeout(() => {
+        this.lanzarConfeti();
+      }, 500);
+    }
   },
   beforeUnmount() {
     document.body.classList.remove("modal-open");
