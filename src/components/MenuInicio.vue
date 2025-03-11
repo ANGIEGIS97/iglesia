@@ -346,7 +346,7 @@ export default {
         this.isClosing = true;
         document.body.style.overflow = "auto";
       }
-      this.isAdminMenuVisible = false;
+      this.adminMenuVisible = false;
       this.isConocenosOpen = false;
     },
     handleAnimationEnd() {
@@ -363,9 +363,7 @@ export default {
     },
     loadDarkModePreference() {
       const darkMode = localStorage.getItem("darkMode");
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
       if (darkMode === "true" || (!darkMode && prefersDark)) {
         document.documentElement.classList.add("dark");
@@ -379,16 +377,10 @@ export default {
     closeAdminMenu() {
       this.adminMenuVisible = false;
     },
-    handleLogout() {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-    },
     handleDocumentClick(event) {
-      // Obtener el botón y el menú desplegable
       const conocenosButton = document.querySelector(".nav-menu button");
       const dropdownMenu = document.querySelector(".dropdown-menu");
 
-      // Si el clic no fue en el botón ni en el menú desplegable, cerrar el menú
       if (
         conocenosButton &&
         dropdownMenu &&
@@ -402,59 +394,45 @@ export default {
       this.isAuthenticated = checkAuth();
     },
     handleScroll() {
-      if (this.currentPath === "/") {
-        const sections = [
-          "inicio",
-          "anuncios",
-          "pastor",
-          "servicio",
-          "ministerios",
-        ];
-        const navLinks = document.querySelectorAll('.nav-menu a[href^="/#"]');
+      if (this.currentPath !== "/") return;
+      
+      const sections = ["inicio", "anuncios", "pastor", "servicio", "ministerios"];
+      const navLinks = document.querySelectorAll('.nav-menu a[href^="/#"]');
+      const scrollPosition = window.scrollY + 100;
 
-        const scrollPosition = window.scrollY + 100;
+      sections.forEach((sectionId) => {
+        const section = document.getElementById(sectionId);
+        if (!section) return;
+        
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.offsetHeight;
 
-        sections.forEach((sectionId) => {
-          const section = document.getElementById(sectionId);
-          if (section) {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
+        if (
+          scrollPosition >= sectionTop &&
+          scrollPosition < sectionTop + sectionHeight
+        ) {
+          this.activeSection = sectionId;
 
-            if (
-              scrollPosition >= sectionTop &&
-              scrollPosition < sectionTop + sectionHeight
-            ) {
-              this.activeSection = sectionId;
-
-              navLinks.forEach((link) => {
-                const href = link.getAttribute("href").substring(2);
-                if (href === sectionId) {
-                  link.classList.add("text-teal-400");
-                  link.classList.remove("text-white");
-                } else {
-                  link.classList.remove("text-teal-400");
-                  link.classList.add("text-white");
-                }
-              });
-            }
-          }
-        });
-      }
+          navLinks.forEach((link) => {
+            const href = link.getAttribute("href").substring(2);
+            const isActive = href === sectionId;
+            link.classList.toggle("text-teal-400", isActive);
+            link.classList.toggle("text-white", !isActive);
+          });
+        }
+      });
     },
     updateActiveLink() {
       const allLinks = document.querySelectorAll(".nav-menu a");
 
       allLinks.forEach((link) => {
         const href = link.getAttribute("href");
-        if (
-          href === this.currentPath ||
-          (this.currentPath === "/" && href === "/")
-        ) {
-          link.classList.add("text-teal-400");
-          link.classList.remove("text-white");
-        } else if (!href.startsWith("/#")) {
-          link.classList.remove("text-teal-400");
-          link.classList.add("text-white");
+        const isActive = href === this.currentPath || 
+                         (this.currentPath === "/" && href === "/");
+        
+        if (isActive || !href.startsWith("/#")) {
+          link.classList.toggle("text-teal-400", isActive);
+          link.classList.toggle("text-white", !isActive);
         }
       });
     },
@@ -462,17 +440,15 @@ export default {
       this.currentPath = window.location.pathname;
       this.updateActiveLink();
     },
-    handleLoginSuccess(data) {
+    handleLoginSuccess() {
       this.checkAuthStatus();
-      this.closeMenu(); // Cerrar el menú móvil si está abierto
+      this.closeMenu();
     },
     openLoginModal() {
       if (this.$refs.loginFormRef) {
         this.$refs.loginFormRef.openModal();
       } else {
-        console.error(
-          "No se pudo encontrar la referencia al formulario de login"
-        );
+        console.error("No se pudo encontrar la referencia al formulario de login");
       }
     },
     toggleConocenosMenu() {
@@ -485,27 +461,17 @@ export default {
   mounted() {
     this.loadDarkModePreference();
     this.checkAuthStatus();
-
-    // Agregar el event listener al document
     document.body.addEventListener("click", this.handleDocumentClick);
-
     this.updateCurrentPath();
 
     if (this.currentPath === "/") {
       window.addEventListener("scroll", this.handleScroll);
-      this.$nextTick(() => {
-        this.handleScroll();
-      });
+      this.$nextTick(this.handleScroll);
     }
 
     window.addEventListener("popstate", this.updateCurrentPath);
-
-    if (!this.$refs.loginFormRef) {
-      console.warn("LoginForm no está disponible en el montaje inicial");
-    }
   },
   beforeUnmount() {
-    // Remover el event listener del document
     document.body.removeEventListener("click", this.handleDocumentClick);
     window.removeEventListener("scroll", this.handleScroll);
     window.removeEventListener("popstate", this.updateCurrentPath);
@@ -538,28 +504,16 @@ export default {
 }
 
 @keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Animación para el botón de modo oscuro */
 @keyframes rotateMode {
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-  50% {
-    transform: rotate(180deg) scale(0.8);
-  }
-  100% {
-    transform: rotate(360deg) scale(1);
-  }
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(0.8); }
+  100% { transform: rotate(360deg) scale(1); }
 }
 
 .dark-mode-button svg {
