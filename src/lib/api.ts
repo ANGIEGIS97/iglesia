@@ -448,8 +448,13 @@ export const auth_api = {
   logout: async () => {
     try {
       await auth.signOut();
+      
+      // Eliminar solo el token actual, pero mantener las cuentas recordadas
       localStorage.removeItem("token");
+      
+      // Limpiar sessionStorage
       sessionStorage.clear();
+      
       // Limpiar IndexedDB si es necesario
       try {
         indexedDB.deleteDatabase("firebaseLocalStorageDb");

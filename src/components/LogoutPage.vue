@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { auth_api } from "../lib/api";
 
-const countdown = ref(7);
+const countdown = ref(3);
 let timer: NodeJS.Timeout;
 
 const clearAuthState = () => {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref} from "vue";
 import { auth_api, usuarios } from "../../lib/api";
+import AccountSelector from "./AccountSelector.vue";
 
 const username = ref("");
 const password = ref("");
@@ -15,6 +16,7 @@ const tiempoRestante = ref(0);
 const bloqueosPrevios = ref(0);
 const showPassword = ref(false);
 const rememberMe = ref(false);
+const showAccountSelector = ref(false);
 let temporizador: ReturnType<typeof setInterval> | null = null;
 
 const emit = defineEmits(["login-success", "close"]);
@@ -63,30 +65,35 @@ const iniciarBloqueo = () => {
 };
 
 const openModal = () => {
-  isOpen.value = true;
-  document.body.style.overflow = "hidden"; // Deshabilitar scroll
+  // Verificar si hay cuentas guardadas
+  const hasSavedAccounts = checkForSavedAccounts();
   
-  // Cargar usuario recordado si existe
-  if (typeof window !== "undefined") {
-    try {
-      const rememberedUser = localStorage.getItem("rememberUser");
-      const rememberedPassword = localStorage.getItem("rememberPassword");
-      if (rememberedUser) {
-        username.value = rememberedUser;
-        rememberMe.value = true;
+  if (hasSavedAccounts) {
+    showAccountSelector.value = true;
+  } else {
+    isOpen.value = true;
+  }
+};
+
+const checkForSavedAccounts = (): boolean => {
+  try {
+    // Verificar si hay al menos una cuenta guardada
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("rememberUser_")) {
+        return true;
       }
-      if (rememberedPassword) {
-        password.value = rememberedPassword;
-      }
-    } catch (error) {
-      console.error("Error al cargar usuario recordado:", error);
     }
+    return false;
+  } catch (error) {
+    console.error("Error al verificar cuentas guardadas:", error);
+    return false;
   }
 };
 
 const closeModal = () => {
   isOpen.value = false;
-  document.body.style.overflow = ""; // Restaurar scroll
+  showAccountSelector.value = false;
   // Limpiar el formulario y estado
   if (!rememberMe.value) {
     username.value = "";
@@ -146,15 +153,26 @@ const guardarPerfilUsuario = async (userProfile: any) => {
   
   try {
     const profile = await usuarios.getById(userProfile.uid);
-    if (profile?.data?.displayName && typeof window !== "undefined") {
+    if (profile?.data && typeof window !== "undefined") {
       try {
-        localStorage.setItem("userDisplayName", profile.data.displayName);
+        // Guardar el nombre para mostrar en la sesión actual
+        localStorage.setItem("userDisplayName", profile.data.displayName || "");
+        
         if (rememberMe.value) {
-          localStorage.setItem("rememberUser", username.value);
-          localStorage.setItem("rememberPassword", password.value);
-        } else {
-          localStorage.removeItem("rememberUser");
-          localStorage.removeItem("rememberPassword");
+          // Guardar con un prefijo para identificar múltiples cuentas
+          const userKey = `rememberUser_${userProfile.uid}`;
+          localStorage.setItem(userKey, username.value);
+          localStorage.setItem(`rememberPassword_${username.value}`, password.value);
+          
+          // Guardar el nombre para mostrar asociado a este usuario
+          if (profile.data.displayName) {
+            localStorage.setItem(`displayName_${username.value}`, profile.data.displayName);
+          }
+          
+          // También guardar el email si está disponible
+          if (profile.data.email) {
+            localStorage.setItem(`email_${username.value}`, profile.data.email);
+          }
         }
       } catch (error) {
         console.error("Error guardando en localStorage:", error);
@@ -229,10 +247,34 @@ const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
 };
 
+const handleSelectAccount = (account: any) => {
+  username.value = account.username;
+  password.value = account.password;
+  rememberMe.value = true;
+  showAccountSelector.value = false;
+  isOpen.value = true;
+};
+
+const handleUseAnotherAccount = () => {
+  showAccountSelector.value = false;
+  isOpen.value = true;
+  username.value = "";
+  password.value = "";
+  rememberMe.value = false;
+};
+
 defineExpose({ openModal, closeModal });
 </script>
 
 <template>
+  <!-- Selector de cuentas -->
+  <AccountSelector 
+    :is-open="showAccountSelector" 
+    @close="closeModal" 
+    @select-account="handleSelectAccount"
+    @use-another="handleUseAnotherAccount"
+  />
+
   <!-- Overlay del modal -->
   <div
     v-if="isOpen"
@@ -240,7 +282,7 @@ defineExpose({ openModal, closeModal });
   >
     <!-- Modal -->
     <div
-      class="relative bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-lg shadow-xl max-w-md w-full m-4 border border-white/20 animate__animated animate__fadeInDown"
+      class="relative bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-lg shadow-xl max-w-md w-full m-4 border border-white/20 animate-fadeIn"
     >
       <!-- Header con título y botón de cerrar -->
       <div
@@ -388,3 +430,21 @@ defineExpose({ openModal, closeModal });
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Animaciones para el formulario de login */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s both;
+}
+</style>
