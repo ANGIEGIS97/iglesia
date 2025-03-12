@@ -70,9 +70,13 @@ const openModal = () => {
   if (typeof window !== "undefined") {
     try {
       const rememberedUser = localStorage.getItem("rememberUser");
+      const rememberedPassword = localStorage.getItem("rememberPassword");
       if (rememberedUser) {
         username.value = rememberedUser;
         rememberMe.value = true;
+      }
+      if (rememberedPassword) {
+        password.value = rememberedPassword;
       }
     } catch (error) {
       console.error("Error al cargar usuario recordado:", error);
@@ -84,8 +88,10 @@ const closeModal = () => {
   isOpen.value = false;
   document.body.style.overflow = ""; // Restaurar scroll
   // Limpiar el formulario y estado
-  username.value = "";
-  password.value = "";
+  if (!rememberMe.value) {
+    username.value = "";
+    password.value = "";
+  }
   error.value = "";
   isSuccess.value = false;
   progress.value = 0;
@@ -145,8 +151,10 @@ const guardarPerfilUsuario = async (userProfile: any) => {
         localStorage.setItem("userDisplayName", profile.data.displayName);
         if (rememberMe.value) {
           localStorage.setItem("rememberUser", username.value);
+          localStorage.setItem("rememberPassword", password.value);
         } else {
           localStorage.removeItem("rememberUser");
+          localStorage.removeItem("rememberPassword");
         }
       } catch (error) {
         console.error("Error guardando en localStorage:", error);
@@ -304,7 +312,7 @@ defineExpose({ openModal, closeModal });
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
               id="password"
-              placeholder="••••••••"
+              placeholder="Ingrese su contraseña"
               class="w-full pl-10 pr-10 py-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               required
             />
