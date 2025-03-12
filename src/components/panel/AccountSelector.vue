@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { auth_api, usuarios } from "../../lib/api";
 
 interface SavedAccount {
   username: string;
@@ -18,6 +19,9 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "select-account", "use-another"]);
 const savedAccounts = ref<SavedAccount[]>([]);
+const isLoading = ref(false);
+const error = ref("");
+const isLoggingIn = ref(false);  // Agregamos esta ref
 
 // Función para obtener la inicial del nombre de usuario
 const getUserInitial = (username: string) => {
@@ -54,15 +58,54 @@ const getUserColor = (username: string) => {
 // Función para obtener el nombre a mostrar
 const getDisplayName = (username: string) => {
   const displayName = localStorage.getItem(`displayName_${username}`);
-  if (displayName) {
-    return displayName;
-  }
-  // Si no hay displayName, mostrar la parte del correo antes del @
-  return username.split('@')[0];
+  return displayName || username.split('@')[0];
 };
 
-const selectAccount = (account: SavedAccount) => {
-  emit("select-account", account);
+// Modificar la función selectAccount para manejar el inicio de sesión
+const selectAccount = async (account: SavedAccount) => {
+  try {
+    isLoading.value = true;
+    isLoggingIn.value = true;  // Agregamos este estado
+    error.value = "";
+    
+    const response = await auth_api.login({
+      username: account.username,
+      password: account.password
+    });
+
+    if (response.data?.token) {
+      // Guardar el token en localStorage
+      localStorage.setItem("token", response.data.token);
+      
+      // Obtener y guardar el perfil del usuario
+      const userProfile = await auth_api.getCurrentUser();
+      if (userProfile?.uid) {
+        const profile = await usuarios.getById(userProfile.uid);
+        if (profile?.data?.displayName) {
+          localStorage.setItem("userDisplayName", profile.data.displayName);
+        }
+      }
+
+      // Emitir evento con toda la información necesaria
+      emit("select-account", {
+        ...response.data,
+        userProfile,
+        account
+      });
+      
+      // Cerrar el modal
+      emit("close");
+    } else {
+      throw new Error("No se recibió un token válido");
+    }
+  } catch (err: any) {
+    console.error("Error al iniciar sesión:", err);
+    error.value = "Error al iniciar sesión. Por favor, intenta de nuevo.";
+    isLoggingIn.value = false;  // Reseteamos el estado en caso de error
+  } finally {
+    isLoading.value = false;
+    isLoggingIn.value = false;
+  }
 };
 
 const useAnotherAccount = () => {
@@ -163,7 +206,7 @@ onMounted(() => {
           Selecciona una cuenta
         </h2>
         <button
-          @click="$emit('close')"
+          @click="emit('close')"
           class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
           <svg
@@ -184,12 +227,18 @@ onMounted(() => {
       </div>
 
       <div class="p-6">
+        <!-- Mostrar error si existe -->
+        <div v-if="error" class="mb-4 text-red-500 text-sm text-center">
+          {{ error }}
+        </div>
+
         <!-- Lista de cuentas guardadas -->
         <div class="space-y-3 mb-6">
           <div 
             v-for="account in savedAccounts" 
             :key="account.username"
-            class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors account-item group"
+            :class="['flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors account-item group', 
+                    { 'pointer-events-none opacity-50': isLoading }]"
             :style="{ '--index': account.index }"
           >
             <div
@@ -214,12 +263,12 @@ onMounted(() => {
             
             <!-- Botón para eliminar cuenta -->
             <button
-              @click="(event) => removeAccount(event, account)"
-              class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors opacity-0 group-hover:opacity-100"
+              @click.stop="removeAccount($event, account)"
+              class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
               title="Eliminar cuenta"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </button>
           </div>
@@ -228,9 +277,10 @@ onMounted(() => {
         <!-- Botón para usar otra cuenta -->
         <button
           @click="useAnotherAccount"
-          class="w-full py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          :disabled="isLoading || isLoggingIn"
+          class="w-full py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
         >
-          Usar otra cuenta
+          {{ isLoggingIn ? 'Iniciando sesión...' : 'Usar otra cuenta' }}
         </button>
       </div>
     </div>
@@ -261,9 +311,9 @@ onMounted(() => {
   position: relative;
 }
 
-/* Transición suave para el botón de eliminar */
+/* Transición suave para el botón */
 .account-item button {
-  transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Efecto de eliminación */
@@ -281,4 +331,4 @@ onMounted(() => {
 .removing {
   animation: removeItem 0.3s forwards;
 }
-</style> 
+</style>

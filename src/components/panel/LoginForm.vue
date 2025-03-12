@@ -19,7 +19,7 @@ const rememberMe = ref(false);
 const showAccountSelector = ref(false);
 let temporizador: ReturnType<typeof setInterval> | null = null;
 
-const emit = defineEmits(["login-success", "close"]);
+const emit = defineEmits(["login-success", "close", "auth-state-change"]);
 
 const calcularTiempoBloqueo = (): number => {
   // Tiempo base de 30 segundos
@@ -247,12 +247,10 @@ const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
 };
 
-const handleSelectAccount = (account: any) => {
-  username.value = account.username;
-  password.value = account.password;
-  rememberMe.value = true;
-  showAccountSelector.value = false;
-  isOpen.value = true;
+const handleSelectAccount = async (response: any) => {
+  await updateAuthState();
+  emit("login-success", response);
+  closeModal();
 };
 
 const handleUseAnotherAccount = () => {
@@ -261,6 +259,20 @@ const handleUseAnotherAccount = () => {
   username.value = "";
   password.value = "";
   rememberMe.value = false;
+};
+
+const handleAccountSelection = async (account) => {
+  showAccountSelector.value = false;
+  await updateAuthState();
+};
+
+// Función para actualizar el estado de autenticación
+const updateAuthState = async () => {
+  const token = localStorage.getItem('token');
+  const user = auth_api.getCurrentUser();
+  if (user && token) {
+    emit('auth-state-change', { authenticated: true, user });
+  }
 };
 
 defineExpose({ openModal, closeModal });
