@@ -22,7 +22,7 @@ export class GeminiService {
 
   private sanitizeResponse(text: string): string {
     // Remover cualquier contenido inapropiado o no relacionado
-    const inappropriateTerms = ['secta', 'culto', 'ritual'];
+    const inappropriateTerms = ['secta', 'culto', 'ritual', 'florecer'];
     let sanitized = text;
     
     inappropriateTerms.forEach(term => {

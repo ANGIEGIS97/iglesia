@@ -32,6 +32,10 @@ const customImageUrl = ref("");
 const defaultImageUrl =
   "https://i.ibb.co/bM0Y4b9K/Captura-de-pantalla-2025-02-12-125243.png";
 
+// Sugerencias para textos de botones
+const buttonSuggestions = ref<string[]>([]);
+const isGeneratingSuggestions = ref(false);
+
 const imageOptions = [
   {
     value: "default",
@@ -77,7 +81,7 @@ const generateDescription = async () => {
 
   try {
     isGeneratingDescription.value = true;
-    const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 50 palabras) para un evento de iglesia titulado: "${formData.value.titulo}".
+    const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 45 palabras) para un evento de iglesia titulado: "${formData.value.titulo}".
     La descripción debe:
     - Reflejar valores y principios cristianos
     - Incluir referencias bíblicas sutiles si es apropiado
@@ -92,6 +96,43 @@ const generateDescription = async () => {
   } finally {
     isGeneratingDescription.value = false;
   }
+};
+
+// Función para generar sugerencias de textos para botones
+const generateButtonSuggestions = async () => {
+  if (!formData.value.titulo && !formData.value.descripcion) {
+    alert("Por favor, ingresa un título o descripción primero");
+    return;
+  }
+
+  try {
+    isGeneratingSuggestions.value = true;
+    const prompt = `Como escritor cristiano, genera 4 sugerencias breves (máximo 3 palabras cada una) para el texto de un botón de llamada a la acción para un evento de iglesia con la siguiente información:
+    
+    Título: "${formData.value.titulo || 'Sin título'}"
+    Descripción: "${formData.value.descripcion || 'Sin descripción'}"
+    
+    Las sugerencias deben:
+    - Ser motivadoras y atractivas
+    - Reflejar valores cristianos
+    - Invitar a la acción
+    - Ser concisas (máximo 3 palabras)
+    
+    Devuelve solo las 4 sugerencias separadas por punto y coma (;) sin explicaciones adicionales.`;
+    
+    const response = await geminiService.generateContent(prompt);
+    buttonSuggestions.value = response.split(';').map(text => text.trim()).filter(text => text);
+  } catch (error) {
+    console.error("Error al generar sugerencias de botones:", error);
+    alert("No se pudo generar sugerencias. Por favor, intenta nuevamente.");
+  } finally {
+    isGeneratingSuggestions.value = false;
+  }
+};
+
+// Función para aplicar una sugerencia al texto del botón
+const applyButtonSuggestion = (suggestion: string) => {
+  formData.value.textoBoton = suggestion;
 };
 
 watch(
@@ -141,6 +182,15 @@ watch([selectedImageOption, customImageUrl], () => {
     formData.value.image = selected?.url || defaultImageUrl;
   }
 });
+
+// Observar cambios en título y descripción para sugerir regenerar sugerencias
+watch(
+  [() => formData.value.titulo, () => formData.value.descripcion],
+  () => {
+    // Limpiar sugerencias cuando cambia el contexto
+    buttonSuggestions.value = [];
+  }
+);
 
 const handleSubmit = async () => {
   try {
@@ -246,7 +296,7 @@ const handleSubmit = async () => {
                   v-model="formData.descripcion"
                   id="descripcion"
                   rows="4"
-                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer"
+                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer pr-9"
                   placeholder=" "
                 ></textarea>
                 <label
@@ -259,7 +309,7 @@ const handleSubmit = async () => {
                   type="button"
                   @click="generateDescription"
                   :disabled="isGeneratingDescription || !formData.titulo"
-                  class="absolute right-2 top-2 px-3 py-1 text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                  class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
                 >
                   {{ isGeneratingDescription ? 'Generando...' : 'IA' }}
                 </button>
@@ -325,15 +375,36 @@ const handleSubmit = async () => {
                   v-model="formData.textoBoton"
                   type="text"
                   id="textoBoton"
-                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer"
+                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer pr-20"
                   placeholder=" "
                 />
                 <label
                   for="textoBoton"
                   class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
-                  Texto del botón (Opcional)
+                  Texto botón (Opcional)
                 </label>
+                <button
+                  type="button"
+                  @click="generateButtonSuggestions"
+                  :disabled="isGeneratingSuggestions || (!formData.titulo && !formData.descripcion)"
+                  class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  {{ isGeneratingSuggestions ? 'Generando...' : 'Sugerir' }}
+                </button>
+              </div>
+              
+              <!-- Sugerencias de textos para botones -->
+              <div v-if="buttonSuggestions.length > 0" class="mt-2 flex flex-wrap gap-2">
+                <button
+                  v-for="(suggestion, index) in buttonSuggestions"
+                  :key="index"
+                  type="button"
+                  @click="applyButtonSuggestion(suggestion)"
+                  class="px-3 py-1 text-xs bg-teal-100 text-teal-800 dark:bg-teal-800 dark:text-teal-100 rounded-full hover:bg-teal-200 dark:hover:bg-teal-700 transition-colors duration-200"
+                >
+                  {{ suggestion }}
+                </button>
               </div>
             </div>
 

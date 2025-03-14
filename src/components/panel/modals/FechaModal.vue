@@ -138,7 +138,7 @@
                   type="button"
                   @click="generateDescription"
                   :disabled="isGeneratingDescription || !fechaForm.titulo || !fechaForm.hora"
-                  class="absolute right-2 top-2 px-3 py-1 text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                  class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
                 >
                   {{ isGeneratingDescription ? 'Generando...' : 'IA' }}
                 </button>
