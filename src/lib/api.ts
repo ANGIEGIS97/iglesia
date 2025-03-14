@@ -50,7 +50,7 @@ export interface EventoAPI {
   id: string;
   titulo?: string;
   descripcion?: string;
-  textoBoton?: string;
+  eslogan?: string;
   linkBoton?: string;
   image?: string;
   fecha?: string;
@@ -62,7 +62,7 @@ export interface EventoAPI {
 
 export interface Evento
   extends Required<Pick<EventoAPI, "id" | "titulo" | "descripcion">> {
-  textoBoton?: string;
+  eslogan?: string;
   linkBoton?: string;
   image?: string;
   fecha?: string;
@@ -210,20 +210,13 @@ export const eventos = {
       const eventData = {
         titulo: data.titulo?.trim() || "",
         descripcion: data.descripcion?.trim() || "",
-        textoBoton: data.textoBoton?.trim() || "",
+        eslogan: data.eslogan?.trim() || "",
         linkBoton: data.linkBoton?.trim() || "",
         image: data.image || "",
         fecha: data.fecha || new Date().toISOString(),
         createdAt: serverTimestamp(),
         createdBy: auth.currentUser.uid,
       };
-
-      // Validar que si hay textoBoton también haya linkBoton
-      if (eventData.textoBoton && !eventData.linkBoton) {
-        throw new Error(
-          "Si agregas un texto de botón, debes agregar también un enlace"
-        );
-      }
 
       const eventosRef = collection(db, "eventos");
       const docRef = await addDoc(eventosRef, eventData);
@@ -254,20 +247,13 @@ export const eventos = {
       const updateData = {
         titulo: data.titulo?.trim() || "",
         descripcion: data.descripcion?.trim() || "",
-        textoBoton: data.textoBoton?.trim() || "",
+        eslogan: data.eslogan?.trim() || "",
         linkBoton: data.linkBoton?.trim() || "",
         image: data.image || "",
         fecha: data.fecha || new Date().toISOString(),
         updatedAt: serverTimestamp(),
         updatedBy: auth.currentUser.uid,
       };
-
-      // Validar que si hay textoBoton también haya linkBoton
-      if (updateData.textoBoton && !updateData.linkBoton) {
-        throw new Error(
-          "Si agregas un texto de botón, debes agregar también un enlace"
-        );
-      }
 
       await updateDoc(docRef, updateData);
 

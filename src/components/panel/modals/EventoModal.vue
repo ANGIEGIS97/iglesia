@@ -10,7 +10,7 @@ const props = defineProps({
     default: () => ({
       titulo: "",
       descripcion: "",
-      textoBoton: "",
+      eslogan: "",
       linkBoton: "",
       image: "/imagenes/default.png",
     }),
@@ -134,7 +134,7 @@ const generateButtonSuggestions = async () => {
 
 // Función para aplicar una sugerencia al texto del botón
 const applyButtonSuggestion = (suggestion: string) => {
-  formData.value.textoBoton = suggestion;
+  formData.value.eslogan = suggestion;
 };
 
 const generateImage = async () => {
@@ -244,17 +244,11 @@ const handleSubmit = async () => {
     const dataToSubmit = {
       titulo: formData.value.titulo?.trim() || "",
       descripcion: formData.value.descripcion?.trim() || "",
-      textoBoton: formData.value.textoBoton?.trim() || "",
+      eslogan: formData.value.eslogan?.trim() || "",
       linkBoton: formData.value.linkBoton?.trim() || "",
       image: formData.value.image,
       fecha: new Date().toISOString(),
     };
-
-    // Validar que si hay textoBoton también haya linkBoton
-    if (dataToSubmit.textoBoton && !dataToSubmit.linkBoton) {
-      alert("Si agregas un texto de botón, debes agregar también un enlace");
-      return;
-    }
 
     emit("submit", dataToSubmit);
   } catch (error: any) {
@@ -411,17 +405,17 @@ const handleSubmit = async () => {
             <div>
               <div class="relative">
                 <input
-                  v-model="formData.textoBoton"
+                  v-model="formData.eslogan"
                   type="text"
-                  id="textoBoton"
+                  id="eslogan"
                   class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer pr-20"
                   placeholder=" "
                 />
                 <label
-                  for="textoBoton"
+                  for="eslogan"
                   class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
-                  Texto botón (Opcional)
+                  Eslogan (Opcional)
                 </label>
                 <button
                   type="button"
@@ -460,7 +454,7 @@ const handleSubmit = async () => {
                   for="linkBoton"
                   class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
-                  Link del botón (Opcional)
+                  Link del Eslogan (Opcional)
                 </label>
               </div>
             </div>

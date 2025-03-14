@@ -44,7 +44,7 @@ const loadEvents = async () => {
         id: item.id,
         titulo: item.titulo || "",
         descripcion: item.descripcion || "",
-        textoBoton: item.textoBoton,
+        eslogan: item.eslogan,
         linkBoton: item.linkBoton,
         image: item.image,
         fecha: item.fecha,
@@ -289,17 +289,22 @@ onMounted(() => {
                 {{ evento.titulo }}
               </h3>
               <p class="text-sm mb-2">{{ evento.descripcion }}</p>
-              <div v-if="evento.textoBoton || evento.linkBoton" class="text-sm">
+              <div v-if="evento.eslogan || evento.linkBoton" class="text-sm">
                 <a
                   v-if="evento.linkBoton"
                   :href="evento.linkBoton"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition duration-300"
+                  class="border border-white bg-transparent text-white px-2 rounded hover:bg-white hover:bg-opacity-20 transition duration-300 font-vivaldi text-xl inline-block"
                 >
-                  {{ evento.textoBoton || "Ver más" }}
+                  {{ evento.eslogan || "Ver más" }}
                 </a>
-                <span v-else class="text-white">{{ evento.textoBoton }}</span>
+                <span
+                  v-else
+                  style="font-family: 'Vivaldi', cursive !important"
+                  class="font-vivaldi text-2xl text-white"
+                  >{{ evento.eslogan }}</span
+                >
               </div>
             </div>
           </div>
@@ -313,12 +318,17 @@ onMounted(() => {
             </p>
 
             <div
-              v-if="evento.textoBoton || evento.linkBoton"
+              v-if="evento.eslogan || evento.linkBoton"
               class="text-sm text-gray-500 dark:text-gray-400 mb-3"
             >
-              <p v-if="evento.textoBoton">
-                Texto del botón: {{ evento.textoBoton }}
+              <p
+                v-if="evento.eslogan && !evento.linkBoton"
+                style="font-family: 'Vivaldi', cursive !important"
+                class="font-vivaldi text-2xl text-teal-600 dark:text-teal-400"
+              >
+                {{ evento.eslogan }}
               </p>
+              <p v-else-if="evento.eslogan">Eslogan: {{ evento.eslogan }}</p>
               <p v-if="evento.linkBoton">Link: {{ evento.linkBoton }}</p>
             </div>
           </div>
@@ -327,23 +337,25 @@ onMounted(() => {
           <div
             class="text-xs text-gray-500 dark:text-gray-400 mt-2 mb-2 space-y-1 border-t border-gray-200 dark:border-gray-600 pt-2"
           >
-            <div
-              v-if="evento.createdBy && userProfiles[evento.createdBy]"
-              class="flex items-center"
-            >
-              <span class="font-medium mr-1">Agregado por:</span>
-              <span class="text-teal-600 dark:text-teal-400">
-                {{ userProfiles[evento.createdBy].displayName || "Usuario" }}
-              </span>
-            </div>
-            <div
-              v-if="evento.updatedBy && userProfiles[evento.updatedBy]"
-              class="flex items-center"
-            >
-              <span class="font-medium mr-1">Modificado por:</span>
-              <span class="text-teal-600 dark:text-teal-400">
-                {{ userProfiles[evento.updatedBy].displayName || "Usuario" }}
-              </span>
+            <div class="flex flex-wrap items-center gap-x-4">
+              <div
+                v-if="evento.createdBy && userProfiles[evento.createdBy]"
+                class="flex items-center"
+              >
+                <span class="font-medium mr-1">Agregado por:</span>
+                <span class="text-teal-600 dark:text-teal-400">
+                  {{ userProfiles[evento.createdBy].displayName || "Usuario" }}
+                </span>
+              </div>
+              <div
+                v-if="evento.updatedBy && userProfiles[evento.updatedBy]"
+                class="flex items-center"
+              >
+                <span class="font-medium mr-1">Modificado por:</span>
+                <span class="text-teal-600 dark:text-teal-400">
+                  {{ userProfiles[evento.updatedBy].displayName || "Usuario" }}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -366,3 +378,17 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style>
+@font-face {
+  font-family: "Vivaldi";
+  src: url("/fonts/vivaldi.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-vivaldi {
+  font-family: "Vivaldi", cursive !important;
+}
+</style>
