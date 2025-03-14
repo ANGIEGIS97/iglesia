@@ -53,7 +53,7 @@
               <div class="w-full max-w-4xl sm:px-6 text-center sm:space-y-6">
                 <h3
                   v-if="slide.titulo"
-                  class="text-3xl sm:text-5xl font-asap font-bold mb-2 sm:mb-4 text-center animate-fade-in-up text-white"
+                  class="text-2xl sm:text-5xl font-asap font-bold mb-2 sm:mb-4 text-center animate-fade-in-up text-white"
                 >
                   {{ slide.titulo }}
                 </h3>
