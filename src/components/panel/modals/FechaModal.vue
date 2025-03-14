@@ -134,6 +134,14 @@
                 >
                   Descripción
                 </label>
+                <button
+                  type="button"
+                  @click="generateDescription"
+                  :disabled="isGeneratingDescription || !fechaForm.titulo || !fechaForm.hora"
+                  class="absolute right-2 top-2 px-3 py-1 text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  {{ isGeneratingDescription ? 'Generando...' : 'IA' }}
+                </button>
               </div>
 
               <div class="relative">
@@ -252,7 +260,7 @@
                       type="checkbox"
                       id="tieneBanner"
                       v-model="fechaForm.tieneBanner"
-                      class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded dark:border-gray-600"
+                      class="h-4 w-4 text-teal-500 focus:ring-teal-500 border-gray-300 rounded dark:border-gray-600"
                     />
                   </div>
                   <div class="ml-3 text-sm">
@@ -304,6 +312,7 @@
 
 <script>
 import "animate.css";
+import { geminiService } from "../../../lib/gemini";
 
 export default {
   name: "FechaModal",
@@ -321,6 +330,7 @@ export default {
     return {
       isClosing: false,
       showDropdown: false,
+      isGeneratingDescription: false,
       iconOptions: [
         {
           value: "Info",
@@ -466,6 +476,42 @@ export default {
     getColorName(value) {
       const option = this.iconOptions.find((opt) => opt.value === value);
       return option ? option.colorName : "";
+    },
+    async generateDescription() {
+      if (!this.fechaForm.titulo || !this.fechaForm.hora) {
+        alert("Por favor, ingresa un título y hora primero");
+        return;
+      }
+
+      try {
+        this.isGeneratingDescription = true;
+        const hora = parseInt(this.fechaForm.hora.split(":")[0]);
+        let momentoDelDia = "";
+        
+        if (hora >= 5 && hora < 12) {
+          momentoDelDia = "mañana";
+        } else if (hora >= 12 && hora < 18) {
+          momentoDelDia = "tarde";
+        } else {
+          momentoDelDia = "noche";
+        }
+
+        const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 50 palabras) para un evento de iglesia titulado: "${this.fechaForm.titulo}" que se realizará en la ${momentoDelDia}.
+        La descripción debe:
+        - Reflejar valores y principios cristianos
+        - Incluir referencias bíblicas sutiles si es apropiado
+        - Motivar la participación de la congregación
+        - Mantener un tono espiritual y edificante
+        - Considerar que es un evento de ${momentoDelDia}`;
+        
+        const description = await geminiService.generateContent(prompt);
+        this.fechaForm.descripcion = description;
+      } catch (error) {
+        console.error("Error al generar la descripción:", error);
+        alert("No se pudo generar la descripción. Por favor, intenta nuevamente.");
+      } finally {
+        this.isGeneratingDescription = false;
+      }
     },
     saveFecha() {
       this.fechaForm.infoIconoTexto = this.fechaForm.tipoIcono;

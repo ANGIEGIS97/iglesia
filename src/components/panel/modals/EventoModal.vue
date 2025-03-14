@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, defineEmits, defineProps, watch } from "vue";
 import "animate.css";
+import { geminiService } from "../../../lib/gemini";
 
 const props = defineProps({
   event: {
@@ -66,6 +67,32 @@ const imageOptions = [
 ];
 
 const showModal = ref(false);
+const isGeneratingDescription = ref(false);
+
+const generateDescription = async () => {
+  if (!formData.value.titulo) {
+    alert("Por favor, ingresa un título primero");
+    return;
+  }
+
+  try {
+    isGeneratingDescription.value = true;
+    const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 50 palabras) para un evento de iglesia titulado: "${formData.value.titulo}".
+    La descripción debe:
+    - Reflejar valores y principios cristianos
+    - Incluir referencias bíblicas sutiles si es apropiado
+    - Motivar la participación de la congregación
+    - Mantener un tono espiritual y edificante`;
+    
+    const description = await geminiService.generateContent(prompt);
+    formData.value.descripcion = description;
+  } catch (error) {
+    console.error("Error al generar la descripción:", error);
+    alert("No se pudo generar la descripción. Por favor, intenta nuevamente.");
+  } finally {
+    isGeneratingDescription.value = false;
+  }
+};
 
 watch(
   () => props.isOpen,
@@ -228,6 +255,14 @@ const handleSubmit = async () => {
                 >
                   Descripción (Opcional)
                 </label>
+                <button
+                  type="button"
+                  @click="generateDescription"
+                  :disabled="isGeneratingDescription || !formData.titulo"
+                  class="absolute right-2 top-2 px-3 py-1 text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  {{ isGeneratingDescription ? 'Generando...' : 'IA' }}
+                </button>
               </div>
             </div>
 
