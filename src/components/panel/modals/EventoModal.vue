@@ -81,7 +81,7 @@ const generateDescription = async () => {
 
   try {
     isGeneratingDescription.value = true;
-    const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 45 palabras) para un evento de iglesia titulado: "${formData.value.titulo}".
+    const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 35 palabras) para un evento de iglesia titulado: "${formData.value.titulo}".
     La descripción debe:
     - Reflejar valores y principios cristianos
     - Incluir referencias bíblicas sutiles si es apropiado
