@@ -2,6 +2,7 @@
 import { ref, defineEmits, defineProps, watch } from "vue";
 import "animate.css";
 import { geminiService } from "../../../lib/gemini";
+import { unsplashService } from "../../../lib/unsplash";
 
 const props = defineProps({
   event: {
@@ -72,6 +73,7 @@ const imageOptions = [
 
 const showModal = ref(false);
 const isGeneratingDescription = ref(false);
+const isGeneratingImage = ref(false);
 
 const generateDescription = async () => {
   if (!formData.value.titulo) {
@@ -133,6 +135,35 @@ const generateButtonSuggestions = async () => {
 // Función para aplicar una sugerencia al texto del botón
 const applyButtonSuggestion = (suggestion: string) => {
   formData.value.textoBoton = suggestion;
+};
+
+const generateImage = async () => {
+  if (!formData.value.titulo && !formData.value.descripcion) {
+    alert("Por favor, ingresa un título o descripción primero");
+    return;
+  }
+
+  try {
+    isGeneratingImage.value = true;
+    const searchQuery = formData.value.titulo || formData.value.descripcion;
+    console.log('Iniciando generación de imagen para:', searchQuery);
+    
+    const imageUrl = await unsplashService.searchImage(searchQuery);
+    console.log('URL de imagen obtenida:', imageUrl);
+    
+    if (!imageUrl) {
+      throw new Error('No se pudo obtener la URL de la imagen');
+    }
+    
+    formData.value.image = imageUrl;
+    selectedImageOption.value = "custom";
+    customImageUrl.value = imageUrl;
+  } catch (error) {
+    console.error("Error completo al generar la imagen:", error);
+    alert(`Error al generar la imagen: ${error.message}`);
+  } finally {
+    isGeneratingImage.value = false;
+  }
 };
 
 watch(
@@ -338,6 +369,14 @@ const handleSubmit = async () => {
                 >
                   Imagen
                 </label>
+                <button
+                  type="button"
+                  @click="generateImage"
+                  :disabled="isGeneratingImage || (!formData.titulo && !formData.descripcion)"
+                  class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  {{ isGeneratingImage ? 'Generando...' : 'Sugerir' }}
+                </button>
               </div>
 
               <!-- Preview of selected image -->
