@@ -359,14 +359,27 @@ export default {
             // Si tiene link, forzamos el estilo clásico
             // Si tiene un estilo definido y no es solo imagen ni tiene link, lo respetamos
             // Si no tiene estilo definido, asignamos uno aleatorio
-            estilo: isOnlyImage
-              ? "none"
-              : hasLink
-              ? "clasico"
-              : anuncio.estilo || getRandomStyle(anuncio.linkBoton),
+            estilo: determinarEstilo(
+              isOnlyImage,
+              hasLink,
+              anuncio.estilo,
+              anuncio.linkBoton
+            ),
             source: "local",
           };
         });
+
+        // Función para determinar el estilo basado en las condiciones
+        function determinarEstilo(
+          esSoloImagen,
+          tieneEnlace,
+          estiloDefinido,
+          linkBoton
+        ) {
+          if (esSoloImagen) return "none";
+          if (tieneEnlace) return "clasico";
+          return estiloDefinido || getRandomStyle(linkBoton);
+        }
 
         try {
           // Intentar cargar anuncios de la API
@@ -390,11 +403,12 @@ export default {
               // Si tiene link, forzamos el estilo clásico
               // Si tiene un estilo definido y no es solo imagen ni tiene link, lo respetamos
               // Si no tiene estilo definido, asignamos uno aleatorio
-              estilo: isOnlyImage
-                ? "none"
-                : hasLink
-                ? "clasico"
-                : evento.estilo || getRandomStyle(evento.linkBoton),
+              estilo: determinarEstilo(
+                isOnlyImage,
+                hasLink,
+                evento.estilo,
+                evento.linkBoton
+              ),
               source: "api",
             };
           });
