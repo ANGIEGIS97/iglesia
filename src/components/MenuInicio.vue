@@ -6,7 +6,7 @@
   >
     <!-- Contenedor principal de la barra de navegación -->
     <div
-      class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-2"
+      class="container mx-auto px-2 lg:px-32 flex flex-wrap items-center justify-between p-2 transition duration-300 ease-in-out"
     >
       <!-- Logo y nombre de la iglesia -->
       <a
@@ -14,11 +14,7 @@
         class="flex items-center space-x-3 rtl:space-x-reverse relative overflow-hidden rounded-lg"
       >
         <div class="relative">
-          <img
-            src="/logoiglesia2.png"
-            class="h-14"
-            alt="Logo iglesia"
-          />
+          <img src="/logoiglesia2.png" class="h-14" alt="Logo iglesia" />
         </div>
       </a>
 
@@ -273,7 +269,9 @@
       class="relative p-[2px] rounded-lg shadow-xl sm:shadow-none bg-gray-100 dark:bg-gradient-to-r dark:from-teal-500 dark:to-blue-500 dark:animate-gradient"
     >
       <div class="bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg">
-        <div class="container mx-auto px-4 py-4">
+        <div
+          class="container mx-auto px-2 py-4 transition duration-300 ease-in-out"
+        >
           <ul class="space-y-4 nav-menu">
             <li v-for="item in menuItems" :key="item.href">
               <a
@@ -363,7 +361,9 @@ export default {
     },
     loadDarkModePreference() {
       const darkMode = localStorage.getItem("darkMode");
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
 
       if (darkMode === "true" || (!darkMode && prefersDark)) {
         document.documentElement.classList.add("dark");
@@ -395,15 +395,21 @@ export default {
     },
     handleScroll() {
       if (this.currentPath !== "/") return;
-      
-      const sections = ["inicio", "anuncios", "pastor", "servicio", "ministerios"];
+
+      const sections = [
+        "inicio",
+        "anuncios",
+        "pastor",
+        "servicio",
+        "ministerios",
+      ];
       const navLinks = document.querySelectorAll('.nav-menu a[href^="/#"]');
       const scrollPosition = window.scrollY + 100;
 
       sections.forEach((sectionId) => {
         const section = document.getElementById(sectionId);
         if (!section) return;
-        
+
         const sectionTop = section.offsetTop;
         const sectionHeight = section.offsetHeight;
 
@@ -427,9 +433,10 @@ export default {
 
       allLinks.forEach((link) => {
         const href = link.getAttribute("href");
-        const isActive = href === this.currentPath || 
-                         (this.currentPath === "/" && href === "/");
-        
+        const isActive =
+          href === this.currentPath ||
+          (this.currentPath === "/" && href === "/");
+
         if (isActive || !href.startsWith("/#")) {
           link.classList.toggle("text-teal-400", isActive);
           link.classList.toggle("text-white", !isActive);
@@ -448,7 +455,9 @@ export default {
       if (this.$refs.loginFormRef) {
         this.$refs.loginFormRef.openModal();
       } else {
-        console.error("No se pudo encontrar la referencia al formulario de login");
+        console.error(
+          "No se pudo encontrar la referencia al formulario de login"
+        );
       }
     },
     toggleConocenosMenu() {
@@ -504,16 +513,28 @@ export default {
 }
 
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Animación para el botón de modo oscuro */
 @keyframes rotateMode {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(0.8); }
-  100% { transform: rotate(360deg) scale(1); }
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.8);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
 }
 
 .dark-mode-button svg {

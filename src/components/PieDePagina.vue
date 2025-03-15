@@ -1,10 +1,12 @@
 <template>
   <footer
-    class="w-full py-5 sm:py-10 px-4 relative bg-cover bg-center bg-no-repeat text-gray-200 selection:bg-teal-500 selection:text-white"
+    class="w-full py-10 relative bg-cover bg-center bg-no-repeat text-gray-200 selection:bg-teal-500 selection:text-white"
     style="background-image: url('https://i.ibb.co/z4bPJTy/servicio.jpg')"
   >
     <div class="absolute inset-0 bg-gray-800 opacity-90"></div>
-    <div class="relative z-10">
+    <div
+      class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out relative z-10"
+    >
       <h2 class="sr-only">Footer</h2>
       <div
         class="flex flex-col-reverse md:flex-row md:justify-between lg:justify-around gap-8 md:gap-4"
@@ -12,9 +14,9 @@
         <div
           class="relative mt-14 md:mt-0 px-5 flex flex-col justify-center items-center text-gray-200 md:w-1/2 lg:w-auto"
         >
-          <img 
-            src="/logoiglesia2.png" 
-            alt="Iglesia Bautista su Gracia es Mayor" 
+          <img
+            src="/logoiglesia2.png"
+            alt="Iglesia Bautista su Gracia es Mayor"
             class="h-24 object-contain mt-auto"
           />
           <blockquote class="text-center">
@@ -76,7 +78,9 @@
             aria-hidden="true"
           />
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-gray-400 md:w-1/2 lg:w-auto">
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-gray-400 md:w-1/2 lg:w-auto"
+        >
           <div
             class="col-span-1 pb-0 md:py-3 px-4 flex flex-col items-center sm:items-start"
           >
@@ -103,33 +107,43 @@
             <nav
               class="flex flex-col sm:flex-row md:flex-col font-medium list-none gap-3 sm:gap-4 md:gap-2 items-center sm:items-start"
             >
-              <li><a href="#inicio" class="hover:text-gray-200">Inicio</a></li>
-              <li><a href="#pastor" class="hover:text-gray-200">Pastor</a></li>
-              <li>
-                <a href="#servicio" class="hover:text-gray-200">Servicios</a>
-              </li>
-              <li>
-                <a href="#ministerios" class="hover:text-gray-200"
-                  >Ministerios</a
-                >
-              </li>
-              <li>
-                <a href="#anuncios" class="hover:text-gray-200">Anuncios y Eventos</a>
-              </li>
-              <li>
-                <a
-                  href="confesion.html"
-                  class="hover:text-gray-200 hidden lg:block"
-                  >Confesion de fe</a
-                >
-              </li>
-              <li>
-                <a
-                  href="preguntas.html"
-                  class="hover:text-gray-200 hidden lg:block"
-                  >Preguntas frecuentes</a
-                >
-              </li>
+              <ul
+                class="flex flex-col sm:flex-row md:flex-col gap-3 sm:gap-4 md:gap-2 items-center sm:items-start"
+              >
+                <li>
+                  <a href="#inicio" class="hover:text-gray-200">Inicio</a>
+                </li>
+                <li>
+                  <a href="#pastor" class="hover:text-gray-200">Pastor</a>
+                </li>
+                <li>
+                  <a href="#servicio" class="hover:text-gray-200">Servicios</a>
+                </li>
+                <li>
+                  <a href="#ministerios" class="hover:text-gray-200"
+                    >Ministerios</a
+                  >
+                </li>
+                <li>
+                  <a href="#anuncios" class="hover:text-gray-200"
+                    >Anuncios y Eventos</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="confesion.html"
+                    class="hover:text-gray-200 hidden lg:block"
+                    >Confesion de fe</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="preguntas.html"
+                    class="hover:text-gray-200 hidden lg:block"
+                    >Preguntas frecuentes</a
+                  >
+                </li>
+              </ul>
             </nav>
           </div>
 
@@ -156,7 +170,7 @@
               Información
             </h3>
             <div class="w-full h-px bg-gray-600 mb-4"></div>
-            <ol>
+            <ol class="flex flex-col gap-2">
               <li>
                 Calle 70 Bis Sur #80-56 <br />
                 Salon comunal Asovivir, <br />

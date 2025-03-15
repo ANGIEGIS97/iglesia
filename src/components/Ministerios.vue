@@ -1,9 +1,11 @@
 <template>
   <section
-    class="text-gray-700 body-font selection:bg-teal-500 selection:text-white"
+    class="bg-white dark:bg-slate-700 py-10 transition duration-300 ease-in-out text-gray-700 selection:bg-teal-500 selection:text-white"
     id="ministerios"
   >
-    <div class="px-4 sm:px-6 2xl:px-80 py-10">
+    <div
+      class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out"
+    >
       <div
         class="flex flex-wrap w-full mb-20 flex-col items-center text-center"
       >
