@@ -2,12 +2,12 @@
   <footer
     class="w-full py-10 relative bg-cover bg-center bg-no-repeat text-gray-200 selection:bg-teal-500 selection:text-white"
     style="background-image: url('https://i.ibb.co/z4bPJTy/servicio.jpg')"
+    id="footer"
   >
     <div class="absolute inset-0 bg-gray-800 opacity-90"></div>
     <div
       class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out relative z-10"
     >
-      <h2 class="sr-only">Footer</h2>
       <div
         class="flex flex-col-reverse md:flex-row md:justify-between lg:justify-around gap-8 md:gap-4"
       >
