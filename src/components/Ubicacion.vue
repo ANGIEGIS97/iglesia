@@ -1,15 +1,20 @@
 <template>
   <section
     class="bg-white dark:bg-slate-700 py-10 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
+    id="ubicacion"
   >
     <div
       class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out"
     >
-      <h1
-        class="sm:text-3xl text-2xl font-medium title-font mb-2 text-gray-800 text-center dark:text-white"
+      <div
+        class="flex flex-wrap w-full mb-20 flex-col items-center text-center"
       >
-        Ubicación
-      </h1>
+        <h1
+          class="sm:text-3xl text-2xl font-medium mb-2 text-gray-800 dark:text-white"
+        >
+          Ubicación
+        </h1>
+      </div>
       <div class="h-80 border-2 p-2 rounded-lg">
         <iframe
           title="Ubicación del Salón Comunal de Asovivir"
