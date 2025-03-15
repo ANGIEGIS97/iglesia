@@ -121,7 +121,7 @@
                 </p>
                 <h3
                   v-if="slide.descripcion"
-                  class="text-white font-asap text-base sm:text-5xl mb-2 sm:mb-6 animate-fade-in-up px-2 font-semibold line-clamp-5 sm:line-clamp-none"
+                  class="text-white font-asap text-base sm:text-5xl mb-2 sm:mb-6 animate-fade-in-up px-2 font-semibold line-clamp-6 sm:line-clamp-none"
                 >
                   {{ slide.descripcion }}
                 </h3>
