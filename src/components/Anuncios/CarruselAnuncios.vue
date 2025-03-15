@@ -115,25 +115,25 @@
               >
                 <p
                   v-if="slide.titulo"
-                  class="text-white text-xs sm:text-3xl uppercase tracking-widest mb-1 sm:mb-4 font-light px-2"
+                  class="text-white text-xs sm:text-xl md:text-2xl lg:text-3xl uppercase tracking-widest mb-1 sm:mb-4 font-light px-2"
                 >
                   {{ slide.titulo }}
                 </p>
                 <h3
                   v-if="slide.descripcion"
-                  class="text-white font-asap text-base sm:text-5xl mb-2 sm:mb-6 animate-fade-in-up px-2 font-semibold line-clamp-7 sm:line-clamp-none"
+                  class="text-white font-asap text-base sm:text-3xl md:text-3xl lg:text-5xl mb-2 sm:mb-6 animate-fade-in-up px-2 font-semibold line-clamp-7 sm:line-clamp-none"
                 >
                   {{ slide.descripcion }}
                 </h3>
                 <p
                   v-if="slide.eslogan"
-                  class="text-white text-sm sm:text-2xl uppercase tracking-widest animate-fade-in-up delay-100 px-2"
+                  class="text-white text-sm sm:text-xl md:text-xl lg:text-2xl uppercase tracking-widest animate-fade-in-up delay-100 px-2"
                 >
                   {{ slide.eslogan }}
                 </p>
                 <p
                   v-if="slide.referencia"
-                  class="text-white text-xs sm:text-2xl mt-2 sm:mt-8 tracking-widest animate-fade-in-up delay-200"
+                  class="text-white text-xs sm:text-xl md:text-xl lg:text-2xl mt-2 sm:mt-8 tracking-widest animate-fade-in-up delay-200"
                 >
                   {{ slide.referencia }}
                 </p>
@@ -222,6 +222,53 @@
               </div>
             </div>
           </div>
+
+          <!-- Plantilla 5: Estilo Espíritu (como la primera imagen compartida) -->
+          <div v-else-if="slide.estilo === 'espiritu'" class="relative">
+            <img
+              :src="slide.image"
+              :alt="`Slide ${index + 1}`"
+              class="w-full h-[250px] sm:h-[600px] rounded-lg mb-10 object-cover"
+            />
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-full max-w-4xl flex flex-col items-center">
+                <!-- Contenedor central con fondo turquesa -->
+                <div
+                  class="relative w-[80%] sm:w-[60%] h-[60%] sm:h-[70%] flex flex-col items-center justify-center"
+                >
+                  <!-- Franja vertical turquesa -->
+                  <div
+                    class="absolute inset-0 bg-teal-400 bg-opacity-80 flex flex-col items-center justify-center"
+                  >
+                    <!-- Texto central con fondo negro -->
+                    <div
+                      class="bg-black bg-opacity-80 text-white p-2 sm:p-4 text-center mx-4 sm:mx-8 mb-4 rounded-lg"
+                    >
+                      <p v-if="slide.descripcion" class="text-sm sm:text-xl">
+                        {{ slide.descripcion }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div class="absolute bottom-[15%] w-full text-center">
+                  <p
+                    class="font-dancingScript text-white text-4xl sm:text-7xl drop-shadow-lg"
+                  >
+                    {{ slide.eslogan }}
+                  </p>
+                </div>
+                <!-- Referencia en la esquina -->
+                <div class="absolute top-4 left-4 sm:top-8 sm:left-8">
+                  <p class="text-white text-base sm:text-2xl drop-shadow-xl">
+                    {{ slide.titulo }}
+                    <span class="text-teal-400 mt-1 drop-shadow-xl">{{
+                      slide.referencia
+                    }}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </swiper-slide>
         <div class="swiper-button-next custom-swiper-button">
           <i class="fas fa-chevron-right"></i>
@@ -260,7 +307,13 @@ export default {
     const modules = [Navigation, Pagination, Autoplay, EffectFade];
 
     // Estilos disponibles para asignar aleatoriamente
-    const estilosDisponibles = ["clasico", "enmarcado", "natural", "luminoso"];
+    const estilosDisponibles = [
+      "clasico",
+      "enmarcado",
+      "natural",
+      "luminoso",
+      "espiritu",
+    ];
 
     // Función para verificar si un slide solo tiene imagen (sin textos)
     const isImageOnly = (slide) => {
