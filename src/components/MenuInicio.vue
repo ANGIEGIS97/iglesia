@@ -6,7 +6,7 @@
   >
     <!-- Contenedor principal de la barra de navegación -->
     <div
-      class="container mx-auto px-2 lg:px-32 flex flex-wrap items-center justify-between p-2 transition duration-300 ease-in-out"
+      class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-2"
     >
       <!-- Logo y nombre de la iglesia -->
       <a
@@ -269,9 +269,7 @@
       class="relative p-[2px] rounded-lg shadow-xl sm:shadow-none bg-gray-100 dark:bg-gradient-to-r dark:from-teal-500 dark:to-blue-500 dark:animate-gradient"
     >
       <div class="bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg">
-        <div
-          class="container mx-auto px-2 py-4 transition duration-300 ease-in-out"
-        >
+        <div class="container mx-auto px-4 py-4">
           <ul class="space-y-4 nav-menu">
             <li v-for="item in menuItems" :key="item.href">
               <a
