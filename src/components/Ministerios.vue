@@ -1,6 +1,6 @@
 <template>
   <section
-    class="bg-white dark:bg-slate-700 py-10 transition duration-300 ease-in-out text-gray-700 selection:bg-teal-500 selection:text-white"
+    class="bg-white dark:bg-slate-700 py-10 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white overflow-hidden w-full"
     id="ministerios"
   >
     <div
@@ -24,24 +24,24 @@
           impactar vidas y fortalecer la fe en Cristo.
         </p>
       </div>
-      <div class="flex flex-wrap -m-4">
+      <div class="flex flex-wrap mx-auto">
         <div
           v-for="ministerio in ministerios"
           :key="ministerio.titulo"
-          class="xl:w-1/3 md:w-1/2 p-4 tarjeta"
+          class="xl:w-1/3 md:w-1/2 w-full p-2 sm:p-3 tarjeta"
         >
           <img
-            class="w-430 h-270 rounded-t-lg"
+            class="w-full h-auto rounded-t-lg object-cover"
             :src="ministerio.image"
             :alt="ministerio.titulo"
           />
           <div
-            class="dark:p-0.5 dark:pt-0 dark:border-0 border-2 border-gray-200 rounded-b-lg border-t-0 bg-gray-100 dark:bg-gradient-to-tr from-teal-400 to-blue-800 dark:border-slate-600 animate-gradient"
+            class="dark:p-0.5 dark:pt-0 dark:border-0 border border-gray-200 rounded-b-lg border-t-0 bg-gray-100 dark:bg-gradient-to-tr from-teal-400 to-blue-800 dark:border-slate-600 animate-gradient"
           >
             <div
               class="h-full w-full dark:bg-slate-600/90 rounded-b-md transition duration-300 ease-in-out"
             >
-              <div class="p-6">
+              <div class="p-4 sm:p-6">
                 <h2
                   class="text-lg text-gray-900 titulo-font mb-2 dark:text-white font-semibold"
                 >
@@ -53,12 +53,12 @@
                   {{ ministerio.descripcion }}
                 </p>
                 <div
-                  class="flex flex-wrap border-t justify-start gap-2 border-gray-300 p-2"
+                  class="flex flex-wrap border-t justify-start gap-1 sm:gap-2 border-gray-300 p-2"
                 >
                   <span
                     v-for="verse in ministerio.versiculos"
                     :key="verse"
-                    class="border-2 border-teal-600 rounded-lg text-sm px-3 py-1 flex-shrink-0 text-teal-600 dark:text-teal-white dark:text-white dark:border-teal-400 hover:bg-teal-600 hover:text-white transition duration-300 cursor-pointer"
+                    class="border border-teal-600 rounded-lg text-xs sm:text-sm px-2 sm:px-3 py-1 flex-shrink-0 text-teal-600 dark:text-teal-white dark:text-white dark:border-teal-400 hover:bg-teal-600 hover:text-white transition duration-300 cursor-pointer"
                   >
                     {{ verse }}
                   </span>
