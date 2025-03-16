@@ -98,6 +98,28 @@
       </span>
     </div>
 
+    <!-- Indicador de carga para generación de anuncio -->
+    <div
+      v-if="isGeneratingAnuncio"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full"
+      >
+        <div class="flex flex-col items-center">
+          <div
+            class="w-16 h-16 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mb-4"
+          ></div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Generando anuncio
+          </h3>
+          <p class="text-gray-600 dark:text-gray-300 text-center">
+            {{ generatingStep }}
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Lista de Fechas -->
     <div v-if="isLoading" class="text-center py-4 dark:text-white">
       Cargando fechas...
@@ -306,6 +328,27 @@
                   </svg>
                 </button>
                 <button
+                  @click="convertirAAnuncio(fecha)"
+                  class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+                  title="Convertir a anuncio"
+                >
+                  <span class="hidden lg:inline">Crear anuncio</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 lg:hidden"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
+                  </svg>
+                </button>
+                <button
                   @click="deleteFecha(fecha.id)"
                   class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                 >
@@ -413,48 +456,70 @@
                       </div>
                     </div>
                     <div
-                      class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300"
+                      class="flex items-center justify-between space-x-4 text-sm text-gray-600 dark:text-gray-300"
                     >
-                      <div class="flex items-center">
+                      <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                          <svg
+                            class="h-4 w-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          {{ fecha.hora }}
+                        </div>
+                        <div class="flex items-center">
+                          <svg
+                            class="h-4 w-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                          {{ fecha.lugar }}
+                        </div>
+                      </div>
+                      <button
+                        @click="convertirAAnuncio(fecha)"
+                        class="px-2 py-1 bg-teal-600 text-white text-xs rounded-md hover:bg-teal-700 transition-colors duration-300 flex items-center ml-auto"
+                      >
                         <svg
-                          class="h-4 w-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
                           xmlns="http://www.w3.org/2000/svg"
+                          class="h-3 w-3 mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
                           <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                           />
                         </svg>
-                        {{ fecha.hora }}
-                      </div>
-                      <div class="flex items-center">
-                        <svg
-                          class="h-4 w-4 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                          />
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                        {{ fecha.lugar }}
-                      </div>
+                        Anuncio
+                      </button>
                     </div>
                     <div
                       class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-600/80 group-hover:border-gray-200 dark:group-hover:border-gray-500"
@@ -603,28 +668,42 @@
       @close="closeModal"
       @save="saveFecha"
     />
+
+    <!-- Componente para convertir fecha a evento -->
+    <FechaToEventoConverter
+      v-if="fechaParaConvertir"
+      :fecha="fechaParaConvertir"
+      @error="handleConverterError"
+      @success="handleConverterSuccess"
+      ref="fechaToEventoConverter"
+    />
   </div>
 </template>
 
 <script>
 import { fechas } from "../../lib/api";
 import FechaModal from "./modals/FechaModal.vue";
+import FechaToEventoConverter from "./utils/FechaToEventoConverter.vue";
 
 export default {
   name: "AdminFechasList",
   components: {
     FechaModal,
+    FechaToEventoConverter,
   },
   data() {
     return {
       fechas: [],
       showModal: false,
       editingFecha: null,
+      fechaParaConvertir: null,
       errorMessage: "",
       activeCard: null,
       swipeX: 0,
       swipeStartX: 0,
       isLoading: true,
+      isGeneratingAnuncio: false,
+      generatingStep: "",
       selectedFechas: [],
       isAllSelected: false,
     };
@@ -693,6 +772,21 @@ export default {
           }
         }
       }
+    },
+    async convertirAAnuncio(fecha) {
+      this.fechaParaConvertir = fecha;
+      // Esperar a que el componente se monte en el DOM
+      this.$nextTick(() => {
+        if (this.$refs.fechaToEventoConverter) {
+          this.$refs.fechaToEventoConverter.convertirFechaAEvento();
+        }
+      });
+    },
+    handleConverterError(mensaje) {
+      this.errorMessage = mensaje;
+    },
+    handleConverterSuccess(mensaje) {
+      alert(mensaje);
     },
     formatDate(date) {
       // Crear la fecha en la zona horaria de Bogotá
