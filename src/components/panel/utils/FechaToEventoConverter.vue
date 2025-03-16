@@ -76,8 +76,11 @@ export default {
         let lugarParaDescripcion = isUrl ? "" : this.fecha.lugar;
         let linkBoton = isUrl ? this.fecha.lugar : "";
 
+        // Formatear la hora en formato 12h
+        const horaFormateada = this.formatHora(this.fecha.hora);
+
         // Generar una descripción más atractiva con Gemini
-        let descripcion = `${this.fecha.titulo} - ${this.fecha.hora}${
+        let descripcion = `${this.fecha.titulo} - ${horaFormateada}${
           lugarParaDescripcion ? ` - ${lugarParaDescripcion}` : ""
         }`;
 
@@ -85,9 +88,11 @@ export default {
           this.generatingStep = "Generando descripción con IA...";
           const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 35 palabras) para un evento de iglesia titulado: "${
             this.fecha.titulo
-          }" que se realizará el ${this.formatDate(this.fecha.fecha)} a las ${
-            this.fecha.hora
-          }${lugarParaDescripcion ? ` en ${lugarParaDescripcion}` : ""}.
+          }" que se realizará el ${this.formatDate(
+            this.fecha.fecha
+          )} a las ${horaFormateada}${
+            lugarParaDescripcion ? ` en ${lugarParaDescripcion}` : ""
+          }.
           La descripción debe:
           - Reflejar valores y principios cristianos
           - Incluir referencias bíblicas sutiles si es apropiado
@@ -256,6 +261,33 @@ export default {
         month: "long",
         year: "numeric",
       });
+    },
+
+    formatHora(hora) {
+      // Convertir la hora de formato 24h a formato 12h
+      if (!hora) return "";
+
+      try {
+        // Dividir la hora y los minutos
+        const [horas, minutos] = hora.split(":");
+
+        // Convertir a números
+        let horasNum = parseInt(horas, 10);
+        const minutosStr = minutos || "00";
+
+        // Determinar AM o PM
+        const periodo = horasNum >= 12 ? "PM" : "AM";
+
+        // Convertir a formato 12h
+        horasNum = horasNum % 12;
+        horasNum = horasNum === 0 ? 12 : horasNum;
+
+        // Devolver la hora formateada
+        return `${horasNum}:${minutosStr} ${periodo}`;
+      } catch (error) {
+        console.error("Error al formatear la hora:", error);
+        return hora; // Devolver la hora original en caso de error
+      }
     },
   },
 };
