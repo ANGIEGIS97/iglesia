@@ -40,35 +40,35 @@ const isGeneratingSuggestions = ref(false);
 const imageOptions = [
   {
     value: "default",
-    label: "Imagen predeterminada",
+    label: "1- Imagen predeterminada",
     url: defaultImageUrl,
   },
   {
     value: "biblia1",
-    label: "Imagen biblia 1",
+    label: "2- Imagen biblia 1",
     url: "https://i.ibb.co/9Td3wVk/ben-white-W8-Qqn1-Pm-QH0-unsplash.jpg",
   },
   {
     value: "biblia2",
-    label: "Imagen biblia 2",
+    label: "3- Imagen biblia 2",
     url: "https://i.ibb.co/KW60XdT/aaron-burden-9zs-HNt5-Opq-E-unsplash.jpg",
   },
   {
     value: "biblia3",
-    label: "Imagen biblia 3",
+    label: "4- Imagen biblia 3",
     url: "https://i.ibb.co/b786r8G/biblia.jpg",
   },
   {
     value: "damas",
-    label: "Imagen damas",
+    label: "5- Imagen damas",
     url: "https://i.ibb.co/MBTgMV7/damas.jpg",
   },
   {
     value: "misionero",
-    label: "Imagen misionero",
+    label: "6- Imagen misionero",
     url: "https://i.ibb.co/nCJpgjQ/misionero.jpg",
   },
-  { value: "custom", label: "Imagen personalizada" },
+  { value: "custom", label: "7- Imagen personalizada" },
 ];
 
 const showModal = ref(false);
@@ -89,7 +89,7 @@ const generateDescription = async () => {
     - Incluir referencias bíblicas sutiles si es apropiado
     - Motivar la participación de la congregación
     - Mantener un tono espiritual y edificante`;
-    
+
     const description = await geminiService.generateContent(prompt);
     formData.value.descripcion = description;
   } catch (error) {
@@ -111,8 +111,8 @@ const generateButtonSuggestions = async () => {
     isGeneratingSuggestions.value = true;
     const prompt = `Como escritor cristiano, genera 4 sugerencias breves (máximo 3 palabras cada una) para el texto de un botón de llamada a la acción para un evento de iglesia con la siguiente información:
     
-    Título: "${formData.value.titulo || 'Sin título'}"
-    Descripción: "${formData.value.descripcion || 'Sin descripción'}"
+    Título: "${formData.value.titulo || "Sin título"}"
+    Descripción: "${formData.value.descripcion || "Sin descripción"}"
     
     Las sugerencias deben:
     - Ser motivadoras y atractivas
@@ -121,9 +121,12 @@ const generateButtonSuggestions = async () => {
     - Ser concisas (máximo 3 palabras)
     
     Devuelve solo las 4 sugerencias separadas por punto y coma (;) sin explicaciones adicionales.`;
-    
+
     const response = await geminiService.generateContent(prompt);
-    buttonSuggestions.value = response.split(';').map(text => text.trim()).filter(text => text);
+    buttonSuggestions.value = response
+      .split(";")
+      .map((text) => text.trim())
+      .filter((text) => text);
   } catch (error) {
     console.error("Error al generar sugerencias de botones:", error);
     alert("No se pudo generar sugerencias. Por favor, intenta nuevamente.");
@@ -146,15 +149,15 @@ const generateImage = async () => {
   try {
     isGeneratingImage.value = true;
     const searchQuery = formData.value.titulo || formData.value.descripcion;
-    console.log('Iniciando generación de imagen para:', searchQuery);
-    
+    console.log("Iniciando generación de imagen para:", searchQuery);
+
     const imageUrl = await unsplashService.searchImage(searchQuery);
-    console.log('URL de imagen obtenida:', imageUrl);
-    
+    console.log("URL de imagen obtenida:", imageUrl);
+
     if (!imageUrl) {
-      throw new Error('No se pudo obtener la URL de la imagen');
+      throw new Error("No se pudo obtener la URL de la imagen");
     }
-    
+
     formData.value.image = imageUrl;
     selectedImageOption.value = "custom";
     customImageUrl.value = imageUrl;
@@ -215,13 +218,10 @@ watch([selectedImageOption, customImageUrl], () => {
 });
 
 // Observar cambios en título y descripción para sugerir regenerar sugerencias
-watch(
-  [() => formData.value.titulo, () => formData.value.descripcion],
-  () => {
-    // Limpiar sugerencias cuando cambia el contexto
-    buttonSuggestions.value = [];
-  }
-);
+watch([() => formData.value.titulo, () => formData.value.descripcion], () => {
+  // Limpiar sugerencias cuando cambia el contexto
+  buttonSuggestions.value = [];
+});
 
 const handleSubmit = async () => {
   try {
@@ -336,7 +336,7 @@ const handleSubmit = async () => {
                   :disabled="isGeneratingDescription || !formData.titulo"
                   class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
                 >
-                  {{ isGeneratingDescription ? 'Generando...' : 'IA' }}
+                  {{ isGeneratingDescription ? "Generando..." : "IA" }}
                 </button>
               </div>
             </div>
@@ -366,10 +366,13 @@ const handleSubmit = async () => {
                 <button
                   type="button"
                   @click="generateImage"
-                  :disabled="isGeneratingImage || (!formData.titulo && !formData.descripcion)"
+                  :disabled="
+                    isGeneratingImage ||
+                    (!formData.titulo && !formData.descripcion)
+                  "
                   class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
                 >
-                  {{ isGeneratingImage ? 'Generando...' : 'Sugerir' }}
+                  {{ isGeneratingImage ? "Generando..." : "Sugerir" }}
                 </button>
               </div>
 
@@ -420,15 +423,21 @@ const handleSubmit = async () => {
                 <button
                   type="button"
                   @click="generateButtonSuggestions"
-                  :disabled="isGeneratingSuggestions || (!formData.titulo && !formData.descripcion)"
+                  :disabled="
+                    isGeneratingSuggestions ||
+                    (!formData.titulo && !formData.descripcion)
+                  "
                   class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
                 >
-                  {{ isGeneratingSuggestions ? 'Generando...' : 'Sugerir' }}
+                  {{ isGeneratingSuggestions ? "Generando..." : "Sugerir" }}
                 </button>
               </div>
-              
+
               <!-- Sugerencias de textos para botones -->
-              <div v-if="buttonSuggestions.length > 0" class="mt-2 flex flex-wrap gap-2">
+              <div
+                v-if="buttonSuggestions.length > 0"
+                class="mt-2 flex flex-wrap gap-2"
+              >
                 <button
                   v-for="(suggestion, index) in buttonSuggestions"
                   :key="index"

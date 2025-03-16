@@ -216,6 +216,11 @@
             <th
               class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
             >
+              Anuncios
+            </th>
+            <th
+              class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+            >
               Acciones
             </th>
           </tr>
@@ -306,6 +311,29 @@
               {{ fecha.updatedBy || "-" }}
             </td>
             <td class="px-3 md:px-4 lg:px-6 py-4">
+              <button
+                @click="convertirAAnuncio(fecha)"
+                class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+                title="Convertir a anuncio"
+              >
+                <span class="hidden lg:inline">Crear</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 lg:hidden"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </button>
+            </td>
+            <td class="px-3 md:px-4 lg:px-6 py-4">
               <div class="flex space-x-2">
                 <button
                   @click="openModal(fecha)"
@@ -324,27 +352,6 @@
                       stroke-linejoin="round"
                       stroke-width="2"
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
-                </button>
-                <button
-                  @click="convertirAAnuncio(fecha)"
-                  class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
-                  title="Convertir a anuncio"
-                >
-                  <span class="hidden lg:inline">Crear anuncio</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 lg:hidden"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                     />
                   </svg>
                 </button>

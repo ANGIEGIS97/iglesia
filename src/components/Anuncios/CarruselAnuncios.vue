@@ -230,7 +230,9 @@
               :alt="`Slide ${index + 1}`"
               class="w-full h-[250px] sm:h-[600px] rounded-lg mb-10 object-cover"
             />
-            <div class="absolute inset-0 flex items-center justify-center">
+            <div
+              class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
+            >
               <div class="w-full max-w-4xl flex flex-col items-center">
                 <!-- Contenedor central con fondo turquesa -->
                 <div
@@ -242,7 +244,7 @@
                   >
                     <!-- Texto central con fondo negro -->
                     <div
-                      class="bg-black bg-opacity-80 text-white p-2 sm:p-4 text-center mx-4 sm:mx-8 mb-4 rounded-lg"
+                      class="bg-black bg-opacity-50 text-white p-2 sm:p-4 text-center mx-4 sm:mx-8 mb-4 rounded-lg border border-white"
                     >
                       <p v-if="slide.descripcion" class="text-sm sm:text-xl">
                         {{ slide.descripcion }}
@@ -250,7 +252,9 @@
                     </div>
                   </div>
                 </div>
-                <div class="absolute bottom-[15%] w-full text-center">
+                <div
+                  class="absolute bottom-[4%] sm:bottom-[15%] w-full text-center"
+                >
                   <p
                     class="font-dancingScript text-white text-4xl sm:text-7xl drop-shadow-lg"
                   >
@@ -258,7 +262,7 @@
                   </p>
                 </div>
                 <!-- Referencia en la esquina -->
-                <div class="absolute top-4 left-4 sm:top-8 sm:left-8">
+                <div class="absolute top-3 left-4 sm:top-8 sm:left-8">
                   <p class="text-white text-base sm:text-2xl drop-shadow-xl">
                     {{ slide.titulo }}
                     <span class="text-teal-400 mt-1 drop-shadow-xl">{{
