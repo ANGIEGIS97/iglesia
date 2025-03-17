@@ -156,216 +156,181 @@
         class="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden"
       >
         <!-- Vista de tabla para tablet y desktop -->
-        <table
-          class="hidden md:table min-w-full divide-y divide-gray-200 dark:divide-gray-900 dark:text-white"
-        >
-          <thead class="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th
-                class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-8"
-              >
-                <input
-                  type="checkbox"
-                  :checked="isAllSelected"
-                  @change="toggleSelectAll"
-                  class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50"
-                />
-              </th>
-              <th
-                class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                #
-              </th>
-              <th
-                class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Fecha
-              </th>
-              <th
-                class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Título
-              </th>
-              <th
-                class="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Hora
-              </th>
-              <th
-                class="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Lugar/Link
-              </th>
-              <th
-                class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Detalles
-              </th>
-              <th
-                class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Días
-              </th>
-              <th
-                class="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Agregado por
-              </th>
-              <th
-                class="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Modificado por
-              </th>
-              <th
-                class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Anuncios
-              </th>
-              <th
-                class="px-3 md:px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-              >
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-900"
+        <div class="overflow-x-auto">
+          <table
+            class="hidden md:table min-w-full divide-y divide-gray-200 dark:divide-gray-900 dark:text-white overflow-x-auto"
           >
-            <tr
-              v-for="(fecha, index) in fechas"
-              :key="fecha.id"
-              class="hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th
+                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-8"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="isAllSelected"
+                    @change="toggleSelectAll"
+                    class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50"
+                  />
+                </th>
+                <th
+                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  #
+                </th>
+                <th
+                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Fecha
+                </th>
+                <th
+                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Título
+                </th>
+                <th
+                  class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Hora
+                </th>
+                <th
+                  class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Lugar/Link
+                </th>
+                <th
+                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Detalles
+                </th>
+                <th
+                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Días
+                </th>
+                <th
+                  class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Agregado por
+                </th>
+                <th
+                  class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Modificado por
+                </th>
+                <th
+                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Anuncios
+                </th>
+                <th
+                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-900"
             >
-              <td class="px-3 md:px-4 lg:px-6 py-4 whitespace-nowrap">
-                <input
-                  type="checkbox"
-                  v-model="selectedFechas"
-                  :value="fecha.id"
-                  class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50"
-                />
-              </td>
-              <td
-                class="px-3 md:px-4 lg:px-6 py-4 whitespace-nowrap font-medium"
+              <tr
+                v-for="(fecha, index) in fechas"
+                :key="fecha.id"
+                class="hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
               >
-                {{ index + 1 }}
-              </td>
-              <td class="px-3 md:px-4 lg:px-6 py-4 whitespace-nowrap">
-                {{ formatDate(fecha.fecha) }}
-              </td>
-              <td class="px-3 md:px-4 lg:px-6 py-4 max-w-[200px] truncate">
-                {{ fecha.titulo }}
-                <div class="lg:hidden text-sm text-gray-500">
-                  {{ fecha.hora }} - {{ fecha.lugar }}
-                </div>
-              </td>
-              <td class="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-4">
-                {{ fecha.hora }}
-              </td>
-              <td
-                class="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-4 max-w-[200px] truncate"
-              >
-                {{ fecha.lugar }}
-              </td>
-              <td class="px-3 md:px-4 lg:px-6 py-4">
-                <div class="flex items-center space-x-2">
-                  <span v-if="fecha.banner" title="Tiene banner">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-6 w-6 text-green-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </span>
-                  <span
-                    v-if="fecha.infoIconoTexto"
-                    :class="`inline-flex items-center justify-center w-5 h-5 rounded-full ${getColorClass(
-                      fecha.infoIconoTexto
-                    )}`"
-                    :title="fecha.infoIconoTexto"
-                  >
-                    <img
-                      v-if="fecha.infoAdiccional === 1"
-                      :src="`/insignias/${getIconFileName(
+                <td class="px-2 md:px-3 lg:px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    v-model="selectedFechas"
+                    :value="fecha.id"
+                    class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50"
+                  />
+                </td>
+                <td
+                  class="px-2 md:px-3 lg:px-6 py-4 whitespace-nowrap font-medium"
+                >
+                  {{ index + 1 }}
+                </td>
+                <td class="px-2 md:px-3 lg:px-6 py-4 whitespace-nowrap">
+                  {{ formatDate(fecha.fecha) }}
+                </td>
+                <td
+                  class="px-2 md:px-3 lg:px-6 py-4 max-w-[150px] md:max-w-[180px] lg:max-w-[200px] truncate"
+                >
+                  {{ fecha.titulo }}
+                  <div class="lg:hidden text-sm text-gray-500">
+                    {{ fecha.hora }} - {{ fecha.lugar }}
+                  </div>
+                </td>
+                <td class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-4">
+                  {{ fecha.hora }}
+                </td>
+                <td
+                  class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-4 max-w-[200px] truncate"
+                >
+                  {{ fecha.lugar }}
+                </td>
+                <td class="px-2 md:px-3 lg:px-6 py-4">
+                  <div class="flex items-center space-x-2">
+                    <span v-if="fecha.banner" title="Tiene banner">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-6 w-6 text-green-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      v-if="fecha.infoIconoTexto"
+                      :class="`inline-flex items-center justify-center w-5 h-5 rounded-full ${getColorClass(
                         fecha.infoIconoTexto
                       )}`"
-                      :alt="fecha.infoIconoTexto"
-                      class="w-4 h-4"
-                    />
+                      :title="fecha.infoIconoTexto"
+                    >
+                      <img
+                        v-if="fecha.infoAdiccional === 1"
+                        :src="`/insignias/${getIconFileName(
+                          fecha.infoIconoTexto
+                        )}`"
+                        :alt="fecha.infoIconoTexto"
+                        class="w-4 h-4"
+                      />
+                    </span>
+                  </div>
+                </td>
+                <td class="px-2 md:px-3 lg:px-6 py-4 whitespace-nowrap">
+                  <span :class="getDiasRestantesClass(fecha.fecha)">
+                    {{ getDiasRestantes(fecha.fecha) }}
                   </span>
-                </div>
-              </td>
-              <td class="px-3 md:px-4 lg:px-6 py-4 whitespace-nowrap">
-                <span :class="getDiasRestantesClass(fecha.fecha)">
-                  {{ getDiasRestantes(fecha.fecha) }}
-                </span>
-              </td>
-              <td
-                class="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-300"
-              >
-                {{ fecha.createdBy }}
-              </td>
-              <td
-                class="hidden lg:table-cell px-3 md:px-4 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-300"
-              >
-                {{ fecha.updatedBy || "-" }}
-              </td>
-              <td class="px-3 md:px-4 lg:px-6 py-4">
-                <button
-                  @click="convertirAAnuncio(fecha)"
-                  class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
-                  :title="
-                    fecha.eventoId ? 'Ver anuncio' : 'Convertir a anuncio'
-                  "
+                </td>
+                <td
+                  class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-300"
                 >
-                  <span class="hidden lg:inline">{{
-                    fecha.eventoId ? "Ver" : "Crear"
-                  }}</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 lg:hidden"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      v-if="!fecha.eventoId"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                    <path
-                      v-else
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      v-if="fecha.eventoId"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                </button>
-              </td>
-              <td class="px-3 md:px-4 lg:px-6 py-4">
-                <div class="flex space-x-2">
+                  {{ fecha.createdBy }}
+                </td>
+                <td
+                  class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-4 text-sm text-gray-600 dark:text-gray-300"
+                >
+                  {{ fecha.updatedBy || "-" }}
+                </td>
+                <td class="px-2 md:px-3 lg:px-6 py-4">
                   <button
-                    @click="openModal(fecha)"
-                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                    @click="convertirAAnuncio(fecha)"
+                    class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+                    :title="
+                      fecha.eventoId ? 'Ver anuncio' : 'Convertir a anuncio'
+                    "
                   >
-                    <span class="hidden lg:inline">Editar</span>
+                    <span class="hidden lg:inline">{{
+                      fecha.eventoId ? "Ver" : "Crear"
+                    }}</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       class="h-5 w-5 lg:hidden"
@@ -374,38 +339,77 @@
                       stroke="currentColor"
                     >
                       <path
+                        v-if="!fecha.eventoId"
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                       />
-                    </svg>
-                  </button>
-                  <button
-                    @click="deleteFecha(fecha.id)"
-                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                  >
-                    <span class="hidden lg:inline">Eliminar</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5 lg:hidden"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
                       <path
+                        v-else
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        v-if="fecha.eventoId"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                       />
                     </svg>
                   </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+                <td class="px-2 md:px-3 lg:px-6 py-4">
+                  <div class="flex space-x-2">
+                    <button
+                      @click="openModal(fecha)"
+                      class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      <span class="hidden lg:inline">Editar</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 lg:hidden"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      @click="deleteFecha(fecha.id)"
+                      class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      <span class="hidden lg:inline">Eliminar</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 lg:hidden"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <!-- Vista de tarjetas para móvil -->
         <div class="md:hidden">
