@@ -709,14 +709,15 @@ export default {
           infoAdiccional: Number(fecha.infoAdiccional),
         }));
 
-        // Verificar si hay eventos asociados que ya no existen
-        await this.verificarEventosAsociados(fechasConvertidas);
-
+        // Mostrar las fechas inmediatamente
         this.fechas = this.sortFechas(fechasConvertidas);
+        this.isLoading = false;
+
+        // Verificar eventos asociados de forma asíncrona después de mostrar las fechas
+        this.verificarEventosAsociados(fechasConvertidas);
       } catch (error) {
         console.error("Error al cargar fechas:", error);
         this.errorMessage = "Error al cargar las fechas";
-      } finally {
         this.isLoading = false;
       }
     },
@@ -727,15 +728,33 @@ export default {
       if (fechasConEventos.length === 0) return; // No hay fechas con eventos asociados
 
       try {
-        // Obtener todos los eventos para verificar cuáles existen
-        const eventosResponse = await eventos.getAll();
-        const eventosExistentes = eventosResponse.data.map(
-          (evento) => evento.id
+        // Obtener solo los IDs de los eventos asociados para verificar
+        const eventosIds = [
+          ...new Set(fechasConEventos.map((fecha) => fecha.eventoId)),
+        ];
+
+        // Comprobar la existencia de cada evento de forma individual
+        const verificaciones = await Promise.all(
+          eventosIds.map(async (eventoId) => {
+            try {
+              await eventos.getById(eventoId);
+              return { id: eventoId, existe: true };
+            } catch (error) {
+              return { id: eventoId, existe: false };
+            }
+          })
         );
 
+        // Filtrar los eventos que no existen
+        const eventosInexistentes = verificaciones
+          .filter((verificacion) => !verificacion.existe)
+          .map((verificacion) => verificacion.id);
+
+        if (eventosInexistentes.length === 0) return;
+
         // Identificar fechas con referencias a eventos que ya no existen
-        const fechasParaActualizar = fechasConEventos.filter(
-          (fecha) => !eventosExistentes.includes(fecha.eventoId)
+        const fechasParaActualizar = fechasConEventos.filter((fecha) =>
+          eventosInexistentes.includes(fecha.eventoId)
         );
 
         // Actualizar las fechas que tienen referencias a eventos eliminados
@@ -753,11 +772,11 @@ export default {
 
           // Actualizar las fechas en el array local
           fechasParaActualizar.forEach((fechaInvalida) => {
-            const index = fechasArray.findIndex(
+            const index = this.fechas.findIndex(
               (f) => f.id === fechaInvalida.id
             );
             if (index !== -1) {
-              fechasArray[index].eventoId = null;
+              this.fechas[index].eventoId = null;
             }
           });
 
