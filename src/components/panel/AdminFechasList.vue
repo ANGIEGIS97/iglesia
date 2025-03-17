@@ -324,12 +324,10 @@
                   <button
                     @click="convertirAAnuncio(fecha)"
                     class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
-                    :title="
-                      fecha.eventoId ? 'Ver anuncio' : 'Convertir a anuncio'
-                    "
+                    :title="fecha.eventoId ? 'Ver anuncio' : 'Crear anuncio'"
                   >
                     <span class="hidden lg:inline">{{
-                      fecha.eventoId ? "Ver" : "Crear"
+                      fecha.eventoId ? "Ver anuncio" : "Crear anuncio"
                     }}</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -449,29 +447,15 @@
                           >
                             {{ getDiasRestantes(fecha.fecha) }}
                           </span>
+                          <span class="text-gray-500 dark:text-gray-400 mt-1">
+                            {{ fecha.hora }}
+                          </span>
                         </div>
                       </div>
                       <div
                         class="flex items-center justify-between space-x-4 text-sm text-gray-600 dark:text-gray-300"
                       >
                         <div class="flex items-center space-x-4">
-                          <div class="flex items-center">
-                            <svg
-                              class="h-4 w-4 mr-1"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            {{ fecha.hora }}
-                          </div>
                           <div class="flex items-center">
                             <svg
                               class="h-4 w-4 mr-1"
@@ -529,7 +513,7 @@
                               d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                             />
                           </svg>
-                          {{ fecha.eventoId ? "Ver" : "Anuncio" }}
+                          {{ fecha.eventoId ? "Ver anuncio" : "Crear anuncio" }}
                         </button>
                       </div>
                       <div
