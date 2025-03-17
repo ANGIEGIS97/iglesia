@@ -416,54 +416,9 @@
               <li
                 v-for="(fecha, index) in fechas"
                 :key="fecha.id"
-                class="relative overflow-hidden touch-pan-y"
-                @touchstart="handleTouchStart($event, fecha.id)"
-                @touchmove="handleTouchMove($event, fecha.id)"
-                @touchend="handleTouchEnd(fecha.id)"
+                class="relative overflow-hidden"
               >
-                <!-- Acciones de deslizamiento -->
-                <div
-                  class="absolute inset-y-0 left-0 w-16 bg-blue-500 flex items-center justify-center transform transition-transform duration-200"
-                  :style="{
-                    transform: `translateX(${
-                      -100 + (activeCard === fecha.id ? swipeX : 0)
-                    }%)`,
-                  }"
-                >
-                  <button
-                    class="text-white flex items-center justify-center"
-                    @click="openModal(fecha)"
-                  >
-                    <img src="/svg/editar.svg" alt="Editar" class="w-7 h-7" />
-                  </button>
-                </div>
-                <div
-                  class="absolute inset-y-0 right-0 w-16 bg-red-500 flex items-center justify-center transform transition-transform duration-200"
-                  :style="{
-                    transform: `translateX(${
-                      100 + (activeCard === fecha.id ? swipeX : 0)
-                    }%)`,
-                  }"
-                >
-                  <button
-                    class="text-white flex items-center justify-center"
-                    @click="deleteFecha(fecha.id)"
-                  >
-                    <img
-                      src="/svg/eliminar.svg"
-                      alt="Eliminar"
-                      class="w-7 h-7"
-                    />
-                  </button>
-                </div>
-                <div
-                  class="relative bg-white dark:bg-gray-700 transform transition-transform duration-200"
-                  :style="{
-                    transform: `translateX(${
-                      activeCard === fecha.id ? swipeX : 0
-                    }px)`,
-                  }"
-                >
+                <div class="relative bg-white dark:bg-gray-700">
                   <div
                     class="p-4 hover:bg-gray-50 dark:hover:bg-gray-600/50 transition duration-150 ease-in-out"
                   >
@@ -622,57 +577,15 @@
                             </div>
                           </div>
                         </div>
-                        <!-- Indicadores de deslizamiento -->
-                        <div class="flex items-center space-x-4">
-                          <div class="flex items-center space-x-1">
+                        <div class="flex items-center space-x-3">
+                          <button
+                            @click="openModal(fecha)"
+                            class="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200"
+                            aria-label="Editar fecha"
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              class="h-4 w-4"
-                              :class="
-                                activeCard === fecha.id && swipeX < 0
-                                  ? 'text-red-500'
-                                  : 'text-gray-400 dark:text-gray-400'
-                              "
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M15 19l-7-7 7-7"
-                              />
-                            </svg>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-5 w-5 transition-colors duration-200"
-                              :class="
-                                activeCard === fecha.id && swipeX < 0
-                                  ? 'text-red-500'
-                                  : 'text-gray-400 dark:text-gray-400'
-                              "
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </div>
-                          <div class="flex items-center space-x-1">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-5 w-5 transition-colors duration-200"
-                              :class="
-                                activeCard === fecha.id && swipeX > 0
-                                  ? 'text-blue-500'
-                                  : 'text-gray-400 dark:text-gray-400'
-                              "
+                              class="h-5 w-5"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -684,14 +597,15 @@
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                               />
                             </svg>
+                          </button>
+                          <button
+                            @click="deleteFecha(fecha.id)"
+                            class="p-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors duration-200"
+                            aria-label="Eliminar fecha"
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              class="h-4 w-4"
-                              :class="
-                                activeCard === fecha.id && swipeX > 0
-                                  ? 'text-blue-500'
-                                  : 'text-gray-400 dark:text-gray-400'
-                              "
+                              class="h-5 w-5"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -700,10 +614,10 @@
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 stroke-width="2"
-                                d="M9 5l7 7-7 7"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                               />
                             </svg>
-                          </div>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -767,9 +681,6 @@ export default {
       editingFecha: null,
       fechaParaConvertir: null,
       errorMessage: "",
-      activeCard: null,
-      swipeX: 0,
-      swipeStartX: 0,
       isLoading: true,
       isGeneratingAnuncio: false,
       generatingStep: "",
@@ -777,8 +688,6 @@ export default {
       isAllSelected: false,
       eventoParaVer: null,
       showEventoModal: false,
-      touchStartTime: 0,
-      fechaToDelete: null,
     };
   },
   async created() {
@@ -927,7 +836,13 @@ export default {
     },
     async verEvento(eventoId) {
       try {
-        this.isLoading = true;
+        // Usaremos una variable local para el estado de carga en lugar de isLoading global
+        const loadingIndicator = document.createElement("div");
+        loadingIndicator.className =
+          "fixed top-4 right-4 bg-teal-500 text-white px-4 py-2 rounded-lg z-50";
+        loadingIndicator.textContent = "Cargando anuncio...";
+        document.body.appendChild(loadingIndicator);
+
         console.log("Obteniendo evento con ID:", eventoId);
 
         try {
@@ -953,7 +868,7 @@ export default {
             if (fechaConEventoEliminado) {
               // Actualizar la fecha para eliminar la referencia al evento eliminado
               await fechas.update(fechaConEventoEliminado.id, {
-                eventoId: null, // o undefined
+                eventoId: null,
               });
 
               alert(
@@ -972,59 +887,76 @@ export default {
         console.error("Error general:", error);
         this.errorMessage = "Error al procesar la solicitud";
       } finally {
-        this.isLoading = false;
+        // Eliminar el indicador de carga local
+        const loadingIndicator = document.querySelector(".fixed.top-4.right-4");
+        if (loadingIndicator) {
+          document.body.removeChild(loadingIndicator);
+        }
       }
     },
     handleUpdateEvento(eventoData) {
       // Actualizar el evento si se modificó
       if (this.eventoParaVer && this.eventoParaVer.id) {
-        this.isLoading = true;
-        eventos
-          .update(this.eventoParaVer.id, eventoData)
-          .then(() => {
-            this.closeEventoModal();
-            alert("Evento actualizado con éxito");
-            // Recargar las fechas para reflejar cualquier cambio
-            this.loadFechas();
-          })
-          .catch((error) => {
-            console.error("Error al actualizar el evento:", error);
+        // Verificar si realmente se modificó el evento comparando con los datos originales
+        const eventoModificado =
+          JSON.stringify(eventoData) !== JSON.stringify(this.eventoParaVer);
 
-            // Si el evento no existe, actualizar la fecha
-            if (error.message.includes("El evento no existe")) {
-              // Buscar la fecha que tiene este eventoId
-              const fechaConEventoEliminado = this.fechas.find(
-                (f) => f.eventoId === this.eventoParaVer.id
-              );
+        if (eventoModificado) {
+          this.isLoading = true;
+          eventos
+            .update(this.eventoParaVer.id, eventoData)
+            .then(() => {
+              this.closeEventoModal(true); // Pasar true para indicar que hubo cambios
+              alert("Evento actualizado con éxito");
+            })
+            .catch((error) => {
+              console.error("Error al actualizar el evento:", error);
 
-              if (fechaConEventoEliminado) {
-                // Actualizar la fecha para eliminar la referencia al evento eliminado
-                fechas
-                  .update(fechaConEventoEliminado.id, {
-                    eventoId: null, // o undefined
-                  })
-                  .then(() => {
-                    alert(
-                      "El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia."
-                    );
-                    this.loadFechas();
-                  });
+              // Si el evento no existe, actualizar la fecha
+              if (error.message.includes("El evento no existe")) {
+                // Buscar la fecha que tiene este eventoId
+                const fechaConEventoEliminado = this.fechas.find(
+                  (f) => f.eventoId === this.eventoParaVer.id
+                );
+
+                if (fechaConEventoEliminado) {
+                  // Actualizar la fecha para eliminar la referencia al evento eliminado
+                  fechas
+                    .update(fechaConEventoEliminado.id, {
+                      eventoId: null, // o undefined
+                    })
+                    .then(() => {
+                      alert(
+                        "El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia."
+                      );
+                      this.loadFechas();
+                    });
+                } else {
+                  this.errorMessage = "El evento asociado ya no existe";
+                }
               } else {
-                this.errorMessage = "El evento asociado ya no existe";
+                this.errorMessage = "Error al actualizar el evento";
               }
-            } else {
-              this.errorMessage = "Error al actualizar el evento";
-            }
-          })
-          .finally(() => {
-            this.isLoading = false;
-          });
+            })
+            .finally(() => {
+              this.isLoading = false;
+            });
+        } else {
+          // Si no hubo cambios, simplemente cerrar el modal sin recargar
+          this.closeEventoModal(false);
+        }
       }
     },
-    closeEventoModal() {
+    closeEventoModal(recargarFechas = false) {
       console.log("Cerrando modal de evento");
       this.showEventoModal = false;
       this.eventoParaVer = null;
+
+      // Solo recargar las fechas si es necesario
+      if (recargarFechas) {
+        this.loadFechas();
+      }
+
       console.log("Modal cerrado:", this.showEventoModal, this.eventoParaVer);
     },
     handleConverterError(mensaje) {
@@ -1097,42 +1029,6 @@ export default {
       if (dias <= 7) return "text-red-600 dark:text-red-400 font-semibold";
       if (dias <= 30) return "text-yellow-600 dark:text-yellow-400";
       return "text-green-600 dark:text-green-400";
-    },
-    handleTouchStart(event, id) {
-      // Almacenar la hora de inicio para calcular la velocidad
-      this.touchStartTime = new Date().getTime();
-      this.activeCard = id;
-      this.swipeX = 0;
-      this.swipeStartX = event.touches[0].clientX;
-    },
-    handleTouchMove(event, id) {
-      if (this.activeCard !== id) return;
-      const touch = event.touches[0];
-      const deltaX = touch.clientX - this.swipeStartX;
-      // Reducir la sensibilidad del deslizamiento aplicando un factor de resistencia
-      this.swipeX = Math.max(Math.min(deltaX * 0.7, 100), -100);
-    },
-    handleTouchEnd(id) {
-      if (this.activeCard !== id) return;
-
-      // Calcular la duración del deslizamiento
-      const touchEndTime = new Date().getTime();
-      const swipeDuration = touchEndTime - this.touchStartTime;
-
-      // Solo activar si el deslizamiento fue suficiente y no demasiado rápido
-      if (Math.abs(this.swipeX) > 75 && swipeDuration > 150) {
-        if (this.swipeX > 0) {
-          this.openModal(this.fechas.find((f) => f.id === id));
-        } else {
-          // Añadir confirmación para eliminación
-          this.fechaToDelete = id;
-          if (confirm("¿Estás seguro de que deseas eliminar esta fecha?")) {
-            this.deleteFecha(id);
-          }
-        }
-      }
-      this.activeCard = null;
-      this.swipeX = 0;
     },
     toggleSelectAll() {
       this.selectedFechas = this.isAllSelected
