@@ -975,6 +975,9 @@ export default {
       this.showEventoModal = false;
       this.eventoParaVer = null;
 
+      // Eliminar la clase modal-open del body para restaurar el scroll
+      document.body.classList.remove("modal-open");
+
       // Solo recargar las fechas si es necesario
       if (recargarFechas) {
         this.loadFechas();
