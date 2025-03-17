@@ -172,6 +172,7 @@ const generateImage = async () => {
 watch(
   () => props.isOpen,
   (newValue) => {
+    console.log("EventoModal - isOpen cambiado a:", newValue);
     if (newValue) {
       showModal.value = true;
       document.body.classList.add("modal-open");
@@ -185,6 +186,7 @@ watch(
 watch(
   () => props.event,
   (newEvent) => {
+    console.log("EventoModal - event recibido:", newEvent);
     formData.value = { ...newEvent };
 
     if (newEvent.image) {

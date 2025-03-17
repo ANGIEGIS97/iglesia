@@ -116,7 +116,7 @@ export default {
         try {
           this.generatingStep = "Generando eslogan con IA...";
           // Usar el tipo de evento (infoIconoTexto) o el título para generar un eslogan apropiado
-          const tipoEvento = this.fecha.infoIconoTexto || this.fecha.titulo;
+          const tipoEvento = this.fecha.titulo;
           const promptEslogan = `Como escritor cristiano, genera un eslogan breve y cautivador (máximo 3 palabras) para un evento de iglesia de tipo "${tipoEvento}".
           El eslogan debe:
           - Ser motivador e inspirador
@@ -230,10 +230,18 @@ export default {
         this.isGeneratingAnuncio = true;
 
         // Importar eventos de manera dinámica
-        const { eventos } = await import("../../../lib/api");
+        const { eventos, fechas } = await import("../../../lib/api");
 
         // Crear el anuncio con los datos del modal
-        await eventos.create(anuncioData);
+        const resultado = await eventos.create(anuncioData);
+
+        // Obtener el ID del evento creado
+        const eventoId = resultado.data.id;
+
+        // Actualizar la fecha con el ID del evento
+        await fechas.update(this.fecha.id, {
+          eventoId: eventoId,
+        });
 
         // Cerrar el modal y emitir evento de éxito
         this.closeAnuncioModal();
