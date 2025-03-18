@@ -425,31 +425,38 @@
                     class="p-3 hover:bg-gray-50 dark:hover:bg-gray-600/50 transition duration-150 ease-in-out"
                   >
                     <div class="flex flex-col space-y-2">
-                      <div class="flex justify-between items-start">
-                        <div class="flex flex-col space-y-1">
-                          <div class="flex items-center space-x-2">
+                      <div class="flex flex-col">
+                        <div class="flex items-center mb-1">
+                          <div
+                            class="flex items-center space-x-2 flex-shrink min-w-0 max-w-[65%]"
+                          >
                             <span
-                              class="text-sm font-medium text-gray-500 dark:text-gray-400"
-                              >#{{ index + 1 }}</span
+                              class="text-sm font-medium text-gray-500 dark:text-gray-400 flex-shrink-0"
                             >
+                              #{{ index + 1 }}
+                            </span>
                             <h3
-                              class="text-lg font-semibold text-gray-900 dark:text-white"
+                              class="text-lg font-semibold text-gray-900 dark:text-white truncate"
                             >
                               {{ fecha.titulo }}
                             </h3>
                           </div>
+                          <span
+                            class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap ml-auto pl-2"
+                          >
+                            {{ formatDate(fecha.fecha) }}
+                          </span>
+                        </div>
+                        <div class="flex justify-between items-center">
                           <span
                             :class="getDiasRestantesClass(fecha.fecha)"
                             class="text-sm"
                           >
                             {{ getDiasRestantes(fecha.fecha) }}
                           </span>
-                        </div>
-                        <div class="flex flex-col items-end text-sm">
-                          <span class="text-gray-500 dark:text-gray-400">
-                            {{ formatDate(fecha.fecha) }}
-                          </span>
-                          <span class="text-gray-500 dark:text-gray-400 mt-1">
+                          <span
+                            class="text-sm text-gray-500 dark:text-gray-400"
+                          >
                             {{ fecha.hora }}
                           </span>
                         </div>
