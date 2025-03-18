@@ -13,6 +13,7 @@
         'bg-violet-500': texto === 'Culto de oración',
         'bg-blue-500': texto === 'Reunión de varones',
         'bg-indigo-500': texto === 'Reunión de jovenes',
+        'bg-red-400': texto === 'Noches navideñas',
         'bg-teal-500': ![
           'Cumpleaños',
           'Canasta de amor',
@@ -22,6 +23,7 @@
           'Culto de oración',
           'Reunión de varones',
           'Reunión de jovenes',
+          'Noches navideñas',
         ].includes(texto),
       },
     ]"
@@ -92,6 +94,7 @@ export default {
         "Domingo misionero": "/insignias/domingo-misionero.svg",
         "Reunión de damas": "/insignias/reunion-de-damas.svg",
         "Reunión de varones": "/insignias/reunion-de-varones.svg",
+        "Noches navideñas": "/insignias/noches-navidenas.svg",
       };
 
       return iconMap[this.texto] || "/insignias/default.svg";

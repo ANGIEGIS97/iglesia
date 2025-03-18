@@ -96,6 +96,9 @@
                           evento.infoIconoTexto === 'Reunión de jovenes'
                             ? 'border-t-indigo-500'
                             : '',
+                          evento.infoIconoTexto === 'Noches navideñas'
+                            ? 'border-t-red-400'
+                            : '',
                           evento.infoIconoTexto !== 'Cumpleaños' &&
                           evento.infoIconoTexto !== 'Canasta de amor' &&
                           evento.infoIconoTexto !== 'Cena del Señor' &&
@@ -103,7 +106,8 @@
                           evento.infoIconoTexto !== 'Domingo misionero' &&
                           evento.infoIconoTexto !== 'Culto de oración' &&
                           evento.infoIconoTexto !== 'Reunión de varones' &&
-                          evento.infoIconoTexto !== 'Reunión de jovenes'
+                          evento.infoIconoTexto !== 'Reunión de jovenes' &&
+                          evento.infoIconoTexto !== 'Noches navideñas'
                             ? 'border-t-teal-500'
                             : '',
                           'border-t-4',

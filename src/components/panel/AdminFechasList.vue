@@ -976,6 +976,7 @@ export default {
         { value: "Reunión de jovenes", colorClass: "bg-indigo-500" },
         { value: "Domingo misionero", colorClass: "bg-green-500" },
         { value: "Culto de oración", colorClass: "bg-violet-500" },
+        { value: "Noches navideñas", colorClass: "bg-red-400" },
       ];
       const option = iconOptions.find((opt) => opt.value === value);
       return option ? option.colorClass : "bg-teal-500";
@@ -1060,6 +1061,7 @@ export default {
         { value: "Reunión de jovenes", icon: "reunion-de-jovenes.svg" },
         { value: "Domingo misionero", icon: "domingo-misionero.svg" },
         { value: "Culto de oración", icon: "culto-de-oracion.svg" },
+        { value: "Noches navideñas", icon: "noches-navidenas.svg" },
       ];
       const option = iconOptions.find((opt) => opt.value === value);
       return option ? option.icon : "default.svg";

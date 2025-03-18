@@ -24,6 +24,7 @@
             evento.infoIconoTexto === 'Reunión de jovenes'
               ? 'bg-indigo-500'
               : '',
+            evento.infoIconoTexto === 'Noches navideñas' ? 'bg-red-400' : '',
             ![
               'Cumpleaños',
               'Canasta de amor',
@@ -33,6 +34,7 @@
               'Culto de oración',
               'Reunión de varones',
               'Reunión de jovenes',
+              'Noches navideñas',
             ].includes(evento.infoIconoTexto)
               ? 'bg-teal-500'
               : '',
@@ -148,7 +150,7 @@
 
 <script>
 import "animate.css";
-import confetti from 'canvas-confetti';
+import confetti from "canvas-confetti";
 
 export default {
   props: {
@@ -274,7 +276,7 @@ export default {
       confetti({
         particleCount: 60,
         spread: 40,
-        origin: { y: 0.6 }
+        origin: { y: 0.6 },
       });
 
       // Side bursts
@@ -283,24 +285,28 @@ export default {
           particleCount: 40,
           angle: 60,
           spread: 60,
-          origin: { x: 0, y: 0.6 }
+          origin: { x: 0, y: 0.6 },
         });
         confetti({
           particleCount: 40,
           angle: 120,
           spread: 80,
-          origin: { x: 1, y: 0.6 }
+          origin: { x: 1, y: 0.6 },
         });
       }, 100);
-    }
+    },
   },
   mounted() {
     document.body.classList.add("modal-open");
     this.calcularTiempoRestante();
     this.intervalId = setInterval(this.calcularTiempoRestante, 60000);
-    
+
     // Lanzar confeti solo si es un cumpleaños y tiene icono activo
-    if (this.evento && this.evento.infoAdiccional && this.evento.infoIconoTexto === 'Cumpleaños') {
+    if (
+      this.evento &&
+      this.evento.infoAdiccional &&
+      this.evento.infoIconoTexto === "Cumpleaños"
+    ) {
       setTimeout(() => {
         this.lanzarConfeti();
       }, 500);

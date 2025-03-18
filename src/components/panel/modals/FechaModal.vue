@@ -137,10 +137,14 @@
                 <button
                   type="button"
                   @click="generateDescription"
-                  :disabled="isGeneratingDescription || !fechaForm.titulo || !fechaForm.hora"
+                  :disabled="
+                    isGeneratingDescription ||
+                    !fechaForm.titulo ||
+                    !fechaForm.hora
+                  "
                   class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
                 >
-                  {{ isGeneratingDescription ? 'Generando...' : 'IA' }}
+                  {{ isGeneratingDescription ? "Generando..." : "IA" }}
                 </button>
               </div>
 
@@ -396,6 +400,13 @@ export default {
           icon: "culto-de-oracion.svg",
           colorName: "Violeta",
         },
+        {
+          value: "Noches navideñas",
+          label: "Noches navideñas",
+          colorClass: "bg-red-400",
+          icon: "noches-navidenas.svg",
+          colorName: "Rojo Navidad",
+        },
       ],
       fechaForm: {
         fecha: "",
@@ -487,7 +498,7 @@ export default {
         this.isGeneratingDescription = true;
         const hora = parseInt(this.fechaForm.hora.split(":")[0]);
         let momentoDelDia = "";
-        
+
         if (hora >= 5 && hora < 12) {
           momentoDelDia = "mañana";
         } else if (hora >= 12 && hora < 18) {
@@ -503,12 +514,14 @@ export default {
         - Motivar la participación de la congregación
         - Mantener un tono espiritual y edificante
         - Considerar que es un evento de ${momentoDelDia}`;
-        
+
         const description = await geminiService.generateContent(prompt);
         this.fechaForm.descripcion = description;
       } catch (error) {
         console.error("Error al generar la descripción:", error);
-        alert("No se pudo generar la descripción. Por favor, intenta nuevamente.");
+        alert(
+          "No se pudo generar la descripción. Por favor, intenta nuevamente."
+        );
       } finally {
         this.isGeneratingDescription = false;
       }
