@@ -118,9 +118,14 @@
                   <a
                     :href="evento.lugar"
                     target="_blank"
-                    class="text-blue-500 dark:text-teal-300 hover:text-blue-700 dark:hover:text-teal-200 underline"
+                    class="text-blue-500 dark:text-white hover:text-blue-700 dark:hover:text-teal-200 underline"
                   >
-                    {{ evento.lugar }}
+                    <template v-if="evento.lugar.includes('tinyurl.com')">
+                      Ubicación Google Maps
+                    </template>
+                    <template v-else>
+                      {{ evento.lugar }}
+                    </template>
                   </a>
                 </template>
                 <template v-else>

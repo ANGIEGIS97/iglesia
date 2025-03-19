@@ -178,9 +178,28 @@
                         }"
                         class="mr-2 mt-1 flex-shrink-0"
                       ></i>
-                      <span class="mr-[2px] sm:mr-[6px] break-all">{{
-                        evento.lugar
-                      }}</span>
+                      <template v-if="isUrl(evento.lugar)">
+                        <a
+                          :href="
+                            evento.lugar.startsWith('www.')
+                              ? 'https://' + evento.lugar
+                              : evento.lugar
+                          "
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="mr-[2px] sm:mr-[6px] break-all text-blue-500 dark:text-white hover:underline"
+                        >
+                          <template v-if="evento.lugar.includes('tinyurl.com')">
+                            Ubicación Google Maps
+                          </template>
+                          <template v-else>
+                            {{ evento.lugar }}
+                          </template>
+                        </a>
+                      </template>
+                      <span v-else class="mr-[2px] sm:mr-[6px] break-all">
+                        {{ evento.lugar }}
+                      </span>
                     </p>
                     <p
                       class="text-sm font-semibold text-gray-600 mb-2 dark:text-white"

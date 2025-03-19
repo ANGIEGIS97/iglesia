@@ -117,6 +117,14 @@
                 >
                   Lugar/Link
                 </label>
+                <button
+                  type="button"
+                  @click="convertirAGoogleMaps"
+                  :disabled="!fechaForm.lugar"
+                  class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  Maps
+                </button>
               </div>
 
               <div class="relative">
@@ -540,6 +548,62 @@ export default {
       }
       this.$emit("save", this.fechaForm);
       this.resetForm();
+    },
+    async convertirAGoogleMaps() {
+      if (!this.fechaForm.lugar) return;
+
+      try {
+        // Verificar si ya es una URL de Google Maps
+        if (
+          this.fechaForm.lugar.includes("maps.app.goo.gl") ||
+          this.fechaForm.lugar.includes("google.com/maps")
+        ) {
+          return; // Ya es un enlace de Google Maps
+        }
+
+        // Formatear la dirección para la URL
+        let direccion = this.fechaForm.lugar;
+
+        // Añadir "Bogotá, Colombia" si no se especifica
+        if (
+          !direccion.toLowerCase().includes("bogotá") &&
+          !direccion.toLowerCase().includes("bogota")
+        ) {
+          direccion += ", Bogotá, Colombia";
+        }
+
+        // Codificar la dirección para URL
+        const direccionCodificada = encodeURIComponent(direccion);
+
+        // Crear enlace completo de Google Maps
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${direccionCodificada}`;
+
+        try {
+          // Intentar acortar la URL usando TinyURL API
+          const response = await fetch(
+            `https://tinyurl.com/api-create.php?url=${encodeURIComponent(
+              mapsUrl
+            )}`
+          );
+
+          if (response.ok) {
+            const urlAcortada = await response.text();
+            this.fechaForm.lugar = urlAcortada;
+          } else {
+            // Si falla, usar la URL completa
+            this.fechaForm.lugar = mapsUrl;
+          }
+        } catch (shortenerError) {
+          // Si hay un error con el acortador, usar URL completa
+          console.error("Error al acortar URL:", shortenerError);
+          this.fechaForm.lugar = mapsUrl;
+        }
+      } catch (error) {
+        console.error("Error al convertir dirección a Google Maps:", error);
+        alert(
+          "No se pudo convertir la dirección a Google Maps. Por favor, verifica la dirección e intenta nuevamente."
+        );
+      }
     },
   },
 };
