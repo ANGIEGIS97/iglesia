@@ -265,7 +265,28 @@
                 <td
                   class="hidden lg:table-cell px-2 md:px-3 lg:px-6 py-4 max-w-[200px] truncate"
                 >
-                  {{ fecha.lugar }}
+                  <template v-if="isUrl(fecha.lugar)">
+                    <a
+                      :href="
+                        fecha.lugar.startsWith('www.')
+                          ? 'https://' + fecha.lugar
+                          : fecha.lugar
+                      "
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-blue-500 hover:underline"
+                    >
+                      <template v-if="fecha.lugar.includes('tinyurl.com')">
+                        Google Maps
+                      </template>
+                      <template v-else>
+                        {{ fecha.lugar }}
+                      </template>
+                    </a>
+                  </template>
+                  <template v-else>
+                    {{ fecha.lugar }}
+                  </template>
                 </td>
                 <td class="px-2 md:px-3 lg:px-6 py-4">
                   <div class="flex items-center space-x-2">
@@ -509,7 +530,30 @@
                               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                             />
                           </svg>
-                          {{ fecha.lugar }}
+                          <template v-if="isUrl(fecha.lugar)">
+                            <a
+                              :href="
+                                fecha.lugar.startsWith('www.')
+                                  ? 'https://' + fecha.lugar
+                                  : fecha.lugar
+                              "
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="text-blue-500 hover:underline"
+                            >
+                              <template
+                                v-if="fecha.lugar.includes('tinyurl.com')"
+                              >
+                                Google Maps
+                              </template>
+                              <template v-else>
+                                {{ fecha.lugar }}
+                              </template>
+                            </a>
+                          </template>
+                          <template v-else>
+                            {{ fecha.lugar }}
+                          </template>
                         </div>
                       </div>
                       <div
@@ -1144,6 +1188,19 @@ export default {
       // Abrir el modal con la fecha duplicada para que el usuario pueda editarla
       this.editingFecha = fechaDuplicada;
       this.showModal = true;
+    },
+    isUrl(str) {
+      if (!str) return false;
+      // Agregar soporte para URLs que empiezan con www.
+      if (str.startsWith("www.")) {
+        str = "http://" + str;
+      }
+      try {
+        new URL(str);
+        return true;
+      } catch {
+        return false;
+      }
     },
   },
 };
