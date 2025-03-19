@@ -114,29 +114,35 @@ export default {
         // Generar un eslogan atractivo basado en el tipo de evento
         let eslogan = "Ver más";
         try {
-          this.generatingStep = "Generando eslogan con IA...";
-          // Usar el tipo de evento (infoIconoTexto) o el título para generar un eslogan apropiado
-          const tipoEvento = this.fecha.titulo;
-          const promptEslogan = `Como escritor cristiano, genera un eslogan breve y cautivador (máximo 3 palabras) para un evento de iglesia de tipo "${tipoEvento}".
-          El eslogan debe:
-          - Ser motivador e inspirador
-          - Reflejar valores cristianos
-          - Ser conciso y memorable
-          - Invitar a la acción
-          
-          Devuelve solo el eslogan sin explicaciones adicionales.`;
+          // Verificar si fecha.lugar contiene tinyurl.com
+          if (this.fecha.lugar && this.fecha.lugar.includes("tinyurl.com")) {
+            eslogan = "Ubicación";
+            esloganGenerado = true;
+          } else {
+            this.generatingStep = "Generando eslogan con IA...";
+            // Usar el tipo de evento (infoIconoTexto) o el título para generar un eslogan apropiado
+            const tipoEvento = this.fecha.titulo;
+            const promptEslogan = `Como escritor cristiano, genera un eslogan breve y cautivador (máximo 3 palabras) para un evento de iglesia de tipo "${tipoEvento}".
+            El eslogan debe:
+            - Ser motivador e inspirador
+            - Reflejar valores cristianos
+            - Ser conciso y memorable
+            - Invitar a la acción
+            
+            Devuelve solo el eslogan sin explicaciones adicionales.`;
 
-          const generatedEslogan = await geminiService.generateContent(
-            promptEslogan
-          );
-          if (
-            generatedEslogan &&
-            generatedEslogan.trim() &&
-            generatedEslogan.length < 30
-          ) {
-            eslogan = generatedEslogan.trim();
+            const generatedEslogan = await geminiService.generateContent(
+              promptEslogan
+            );
+            if (
+              generatedEslogan &&
+              generatedEslogan.trim() &&
+              generatedEslogan.length < 30
+            ) {
+              eslogan = generatedEslogan.trim();
+            }
+            esloganGenerado = true;
           }
-          esloganGenerado = true;
         } catch (error) {
           console.error("Error al generar eslogan con IA:", error);
           // Si falla la generación, usamos el eslogan predeterminado
