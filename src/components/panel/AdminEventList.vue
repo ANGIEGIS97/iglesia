@@ -288,7 +288,10 @@ onMounted(() => {
               <h3 class="sm:text-xl text-[16px] font-bold mb-1">
                 {{ evento.titulo }}
               </h3>
-              <p class="text-sm mb-2">{{ evento.descripcion }}</p>
+              <p
+                class="text-sm mb-2 admin-event-description"
+                v-html="evento.descripcion"
+              ></p>
               <div v-if="evento.eslogan || evento.linkBoton" class="text-sm">
                 <a
                   v-if="evento.linkBoton"
@@ -313,9 +316,10 @@ onMounted(() => {
             <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               {{ evento.titulo }}
             </h3>
-            <p class="text-gray-600 dark:text-gray-400 mb-3">
-              {{ evento.descripcion }}
-            </p>
+            <p
+              class="text-gray-600 dark:text-gray-400 mb-3 admin-event-description"
+              v-html="evento.descripcion"
+            ></p>
 
             <div
               v-if="evento.eslogan || evento.linkBoton"
@@ -390,5 +394,15 @@ onMounted(() => {
 
 .font-vivaldi {
   font-family: "Vivaldi", cursive !important;
+}
+
+/* Estilos para las etiquetas strong en las descripciones de eventos */
+.admin-event-description :deep(strong) {
+  @apply font-bold text-teal-600 dark:text-teal-400;
+}
+
+/* Para descripciones sobre imagen (fondo oscuro) */
+.bg-black .admin-event-description :deep(strong) {
+  @apply text-yellow-300 font-extrabold;
 }
 </style>

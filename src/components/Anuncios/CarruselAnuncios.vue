@@ -72,11 +72,10 @@
                 </h3>
                 <p
                   v-if="slide.descripcion"
-                  class="text-md sm:text-2xl mb-2 sm:mb-6 px-4 sm:px-24 text-center text-white sm:leading-relaxed animate-fade-in-up delay-100"
+                  class="estilo-clasico text-md sm:text-2xl mb-2 sm:mb-6 px-4 sm:px-24 text-center text-white sm:leading-relaxed animate-fade-in-up delay-100"
                   style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5)"
-                >
-                  {{ slide.descripcion }}
-                </p>
+                  v-html="slide.descripcion"
+                ></p>
                 <a
                   v-if="slide.eslogan"
                   :class="[
@@ -121,10 +120,9 @@
                 </p>
                 <h3
                   v-if="slide.descripcion"
-                  class="text-white font-asap text-base sm:text-3xl md:text-3xl lg:text-5xl mb-2 sm:mb-6 animate-fade-in-up px-2 font-semibold line-clamp-7 sm:line-clamp-none"
-                >
-                  {{ slide.descripcion }}
-                </h3>
+                  class="estilo-enmarcado text-white font-asap text-base sm:text-3xl md:text-3xl lg:text-5xl mb-2 sm:mb-6 animate-fade-in-up px-2 font-normal line-clamp-7 sm:line-clamp-none"
+                  v-html="slide.descripcion"
+                ></h3>
                 <p
                   v-if="slide.eslogan"
                   class="text-white text-sm sm:text-xl md:text-xl lg:text-2xl uppercase tracking-widest animate-fade-in-up delay-100 px-2"
@@ -162,10 +160,9 @@
                 </p>
                 <p
                   v-if="slide.descripcion"
-                  class="text-white text-sm sm:text-3xl mb-2 sm:mb-4"
-                >
-                  {{ slide.descripcion }}
-                </p>
+                  class="estilo-natural text-white text-sm sm:text-3xl mb-2 sm:mb-4"
+                  v-html="slide.descripcion"
+                ></p>
                 <p
                   v-if="slide.eslogan"
                   class="text-white font-dancingScript text-xl sm:text-5xl italic mb-3 sm:mb-6 animate-fade-in-up"
@@ -203,10 +200,9 @@
                 </p>
                 <p
                   v-if="slide.descripcion"
-                  class="text-white text-sm sm:text-2xl mb-2 sm:mb-4"
-                >
-                  {{ slide.descripcion }}
-                </p>
+                  class="estilo-luminoso text-white text-sm sm:text-2xl mb-2 sm:mb-4"
+                  v-html="slide.descripcion"
+                ></p>
                 <p
                   v-if="slide.eslogan"
                   class="text-white text-2xl sm:text-6xl font-bold mb-4 sm:mb-8 animate-pulse-soft"
@@ -246,9 +242,11 @@
                     <div
                       class="bg-black bg-opacity-50 text-white p-2 sm:p-4 text-center mx-4 sm:mx-8 mb-4 rounded-lg border border-white"
                     >
-                      <p v-if="slide.descripcion" class="text-sm sm:text-xl">
-                        {{ slide.descripcion }}
-                      </p>
+                      <p
+                        v-if="slide.descripcion"
+                        class="estilo-espiritu text-sm sm:text-xl"
+                        v-html="slide.descripcion"
+                      ></p>
                     </div>
                   </div>
                 </div>
@@ -298,6 +296,30 @@ import "swiper/css/autoplay";
 import "swiper/css/effect-fade";
 import { eventos } from "../../lib/api";
 import anunciosData from "./anuncios.json"; // Importamos el JSON
+
+// Función mejorada para sanitizar HTML
+const sanitizeHtml = (html) => {
+  if (!html) return "";
+
+  // Paso 1: Reemplazar todas las etiquetas HTML por espacio vacío excepto <strong>
+  let sanitized = html.replace(/<(?!\/?(strong)\b)[^>]*>/gi, "");
+
+  // Paso 2: Asegurarnos de que todas las etiquetas <strong> estén correctamente cerradas
+  let openTags = (sanitized.match(/<strong>/g) || []).length;
+  let closeTags = (sanitized.match(/<\/strong>/g) || []).length;
+
+  // Añadir etiquetas de cierre faltantes
+  if (openTags > closeTags) {
+    for (let i = 0; i < openTags - closeTags; i++) {
+      sanitized += "</strong>";
+    }
+  }
+
+  // Paso 3: Reemplazar múltiples etiquetas <strong> seguidas
+  sanitized = sanitized.replace(/<\/strong>\s*<strong>/g, " ");
+
+  return sanitized;
+};
 
 export default {
   components: {
@@ -355,14 +377,10 @@ export default {
           return {
             image: anuncio.image,
             titulo: anuncio.titulo,
-            descripcion: anuncio.descripcion,
+            descripcion: sanitizeHtml(anuncio.descripcion), // Sanitizar HTML
             eslogan: anuncio.textoBoton || anuncio.eslogan,
             linkBoton: anuncio.linkBoton || "#",
             referencia: anuncio.referencia || "",
-            // Si es solo imagen, no aplicamos estilo
-            // Si tiene link, forzamos el estilo clásico
-            // Si tiene un estilo definido y no es solo imagen ni tiene link, lo respetamos
-            // Si no tiene estilo definido, asignamos uno aleatorio
             estilo: determinarEstilo(
               isOnlyImage,
               hasLink,
@@ -399,14 +417,10 @@ export default {
             return {
               image: evento.image,
               titulo: evento.titulo,
-              descripcion: evento.descripcion,
+              descripcion: sanitizeHtml(evento.descripcion), // Sanitizar HTML
               eslogan: evento.textoBoton || evento.eslogan,
               linkBoton: evento.linkBoton || "#",
               referencia: evento.referencia || "",
-              // Si es solo imagen, no aplicamos estilo
-              // Si tiene link, forzamos el estilo clásico
-              // Si tiene un estilo definido y no es solo imagen ni tiene link, lo respetamos
-              // Si no tiene estilo definido, asignamos uno aleatorio
               estilo: determinarEstilo(
                 isOnlyImage,
                 hasLink,
@@ -576,5 +590,30 @@ export default {
     width: 12px;
     height: 12px;
   }
+}
+
+/* Estilos para las etiquetas strong en las descripciones */
+:deep(strong) {
+  @apply font-bold text-teal-300 underline decoration-teal-400 decoration-2 underline-offset-2;
+}
+
+/* Para el estilo "espiritu" queremos un color diferente de resaltado */
+.estilo-espiritu :deep(strong) {
+  @apply text-yellow-300 font-extrabold decoration-yellow-400;
+}
+
+/* Para el estilo "enmarcado" */
+.estilo-enmarcado :deep(strong) {
+  @apply text-white font-black bg-teal-600/50 px-1 py-0.5 rounded no-underline;
+}
+
+/* Para el estilo "natural" */
+.estilo-natural :deep(strong) {
+  @apply text-yellow-100 font-semibold italic no-underline;
+}
+
+/* Para el estilo "luminoso" */
+.estilo-luminoso :deep(strong) {
+  @apply text-teal-200 font-extrabold animate-pulse-soft no-underline;
 }
 </style>

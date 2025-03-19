@@ -1,8 +1,34 @@
 <script setup lang="ts">
-import { ref, defineEmits, defineProps, watch } from "vue";
+import {
+  ref,
+  defineEmits,
+  defineProps,
+  watch,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
 import "animate.css";
 import { geminiService } from "../../../lib/gemini";
 import { unsplashService } from "../../../lib/unsplash";
+
+// Importaciones de ProseMirror
+import { EditorState } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
+import { Schema, DOMParser, DOMSerializer } from "prosemirror-model";
+import { schema } from "prosemirror-schema-basic";
+import { addListNodes } from "prosemirror-schema-list";
+import { keymap } from "prosemirror-keymap";
+import { baseKeymap } from "prosemirror-commands";
+import { history } from "prosemirror-history";
+
+// Crear un esquema extendido con soporte para listas
+const mySchema = new Schema({
+  nodes: addListNodes(schema.spec.nodes, "paragraph block*", "block"),
+  marks: schema.spec.marks,
+});
+
+// Serializer para convertir el contenido de ProseMirror a HTML
+const domSerializer = DOMSerializer.fromSchema(mySchema);
 
 const props = defineProps({
   event: {
@@ -32,6 +58,10 @@ const selectedImageOption = ref("");
 const customImageUrl = ref("");
 const defaultImageUrl =
   "https://i.ibb.co/bM0Y4b9K/Captura-de-pantalla-2025-02-12-125243.png";
+
+// Referencias para ProseMirror
+const editorElement = ref(null);
+let editorView = null;
 
 // Sugerencias para textos de botones
 const buttonSuggestions = ref<string[]>([]);
@@ -75,6 +105,117 @@ const showModal = ref(false);
 const isGeneratingDescription = ref(false);
 const isGeneratingImage = ref(false);
 
+// Función para inicializar el editor ProseMirror
+const initEditor = () => {
+  if (!editorElement.value) return;
+
+  // Crear un contenedor temporal para convertir HTML a nodos ProseMirror
+  const tempEl = document.createElement("div");
+  tempEl.innerHTML = formData.value.descripcion || "";
+
+  // Crear el estado del editor con plugins básicos
+  const state = EditorState.create({
+    doc: DOMParser.fromSchema(mySchema).parse(tempEl),
+    plugins: [history(), keymap(baseKeymap)],
+  });
+
+  // Crear la vista del editor
+  editorView = new EditorView(editorElement.value, {
+    state,
+    dispatchTransaction(transaction) {
+      const newState = editorView.state.apply(transaction);
+      editorView.updateState(newState);
+
+      // Actualizar formData.descripcion con el contenido del editor
+      const contentEl = document.createElement("div");
+      const fragment = domSerializer.serializeFragment(newState.doc.content);
+      contentEl.appendChild(fragment);
+      formData.value.descripcion = contentEl.innerHTML;
+    },
+  });
+
+  // Crear una barra de herramientas simple
+  createToolbar();
+};
+
+// Función para crear la barra de herramientas
+const createToolbar = () => {
+  if (!editorElement.value) return;
+
+  // En lugar de crear una barra separada, añadiremos el botón directamente en el editor
+  // Crear botón de negrita flotante
+  const boldButton = createFormatButton(
+    "bold",
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/></svg>',
+    "Negrita",
+    (e) => {
+      e.preventDefault();
+      const { from, to } = editorView.state.selection;
+      const tr = editorView.state.tr;
+
+      if (from === to) {
+        // Si no hay selección, no hacer nada
+        return;
+      }
+
+      // Verificar si la selección ya tiene la marca "strong"
+      let hasStrong = false;
+      editorView.state.doc.nodesBetween(from, to, (node) => {
+        if (node.marks.some((mark) => mark.type.name === "strong")) {
+          hasStrong = true;
+        }
+      });
+
+      // Aplicar o quitar la marca "strong" según el estado actual
+      if (hasStrong) {
+        tr.removeMark(from, to, mySchema.marks.strong);
+      } else {
+        tr.addMark(from, to, mySchema.marks.strong.create());
+      }
+
+      editorView.dispatch(tr);
+    }
+  );
+
+  // Añadir clase para posicionamiento
+  boldButton.className = "pm-format-btn pm-floating-btn";
+
+  // Añadir directamente al editor container
+  editorElement.value.appendChild(boldButton);
+};
+
+// Limpiar el editor al desmontar el componente
+onBeforeUnmount(() => {
+  if (editorView) {
+    editorView.destroy();
+    editorView = null;
+  }
+});
+
+// Inicializar el editor cuando cambia isOpen
+watch(
+  () => props.isOpen,
+  (newValue) => {
+    console.log("EventoModal - isOpen cambiado a:", newValue);
+    if (newValue) {
+      showModal.value = true;
+      document.body.classList.add("modal-open");
+      // Inicializar el editor después de que el DOM se actualice
+      setTimeout(() => {
+        initEditor();
+      }, 0);
+    } else {
+      showModal.value = false;
+      document.body.classList.remove("modal-open");
+      // Destruir el editor cuando se cierra el modal
+      if (editorView) {
+        editorView.destroy();
+        editorView = null;
+      }
+    }
+  }
+);
+
 const generateDescription = async () => {
   if (!formData.value.titulo) {
     alert("Por favor, ingresa un título primero");
@@ -88,10 +229,27 @@ const generateDescription = async () => {
     - Reflejar valores y principios cristianos
     - Incluir referencias bíblicas sutiles si es apropiado
     - Motivar la participación de la congregación
-    - Mantener un tono espiritual y edificante`;
+    - Mantener un tono espiritual y edificante
+    - Destacar 2-3 palabras clave importantes colocándolas entre asteriscos dobles **palabra** para indicar formato en negrita
+    `;
 
     const description = await geminiService.generateContent(prompt);
-    formData.value.descripcion = description;
+
+    // Actualizar la descripción y reinicializar el editor con el nuevo contenido
+    formData.value.descripcion = description.replace(
+      /\*\*(.*?)\*\*/g,
+      "<strong>$1</strong>"
+    );
+
+    if (editorView) {
+      editorView.destroy();
+      editorView = null;
+    }
+
+    // Reinicializar después de actualizar el contenido
+    setTimeout(() => {
+      initEditor();
+    }, 0);
   } catch (error) {
     console.error("Error al generar la descripción:", error);
     alert("No se pudo generar la descripción. Por favor, intenta nuevamente.");
@@ -170,20 +328,6 @@ const generateImage = async () => {
 };
 
 watch(
-  () => props.isOpen,
-  (newValue) => {
-    console.log("EventoModal - isOpen cambiado a:", newValue);
-    if (newValue) {
-      showModal.value = true;
-      document.body.classList.add("modal-open");
-    } else {
-      showModal.value = false;
-      document.body.classList.remove("modal-open");
-    }
-  }
-);
-
-watch(
   () => props.event,
   (newEvent) => {
     console.log("EventoModal - event recibido:", newEvent);
@@ -203,6 +347,15 @@ watch(
       selectedImageOption.value = "default";
       formData.value.image = defaultImageUrl;
       customImageUrl.value = "";
+    }
+
+    // Reinicializar el editor si está montado
+    if (editorView) {
+      editorView.destroy();
+      editorView = null;
+      setTimeout(() => {
+        initEditor();
+      }, 0);
     }
   },
   { immediate: true, deep: true }
@@ -257,6 +410,21 @@ const handleSubmit = async () => {
     console.error("Error al procesar el formulario:", error);
     alert(error.message || "Error al procesar el formulario");
   }
+};
+
+// Función para crear un botón de formato
+const createFormatButton = (name, icon, title, onClick) => {
+  const button = document.createElement("button");
+  button.className = "pm-format-btn";
+  button.innerHTML = icon;
+  button.title = title;
+  button.addEventListener("click", onClick);
+  // Prevenir que el click en el botón cierre el modal
+  button.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
+  return button;
 };
 </script>
 
@@ -319,27 +487,33 @@ const handleSubmit = async () => {
 
             <div>
               <div class="relative">
-                <textarea
-                  v-model="formData.descripcion"
-                  id="descripcion"
-                  rows="4"
-                  class="block px-2.5 pb-2.5 pt-4 w-full text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500 peer pr-9"
-                  placeholder=" "
-                ></textarea>
-                <label
-                  for="descripcion"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
-                >
-                  Descripción (Opcional)
-                </label>
-                <button
-                  type="button"
-                  @click="generateDescription"
-                  :disabled="isGeneratingDescription || !formData.titulo"
-                  class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
-                >
-                  {{ isGeneratingDescription ? "Generando..." : "IA" }}
-                </button>
+                <!-- Editor ProseMirror -->
+                <div class="editor-container">
+                  <div
+                    ref="editorElement"
+                    class="prosemirror-editor block px-2.5 pb-2.5 pt-4 w-full min-h-[100px] text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500"
+                  ></div>
+                  <label
+                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 left-1"
+                  >
+                    Descripción (Opcional)
+                  </label>
+                  <button
+                    type="button"
+                    @click="generateDescription"
+                    :disabled="isGeneratingDescription || !formData.titulo"
+                    class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
+                  >
+                    <i
+                      :class="
+                        isGeneratingDescription
+                          ? 'fas fa-spinner fa-spin'
+                          : 'fas fa-wand-magic-sparkles'
+                      "
+                    ></i>
+                    {{ isGeneratingDescription ? "Generando..." : "IA" }}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -522,5 +696,81 @@ body.modal-open {
   .min-h-screen {
     min-height: -webkit-fill-available;
   }
+}
+
+/* Estilos para el editor ProseMirror */
+.prosemirror-editor {
+  position: relative;
+  overflow-y: auto;
+  padding: 0.75rem;
+  min-height: 100px;
+}
+
+.prosemirror-editor:focus {
+  outline: none;
+  border-color: #14b8a6;
+}
+
+.ProseMirror {
+  min-height: 100px;
+  outline: none;
+  padding-top: 8px;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror strong {
+  @apply font-bold text-teal-600 dark:text-teal-400 underline decoration-2 underline-offset-2 decoration-teal-500/60;
+}
+
+/* Estilos para la barra de herramientas */
+.pm-toolbar {
+  display: none; /* Ya no necesitamos esta barra */
+}
+
+/* Estilos para botones flotantes */
+.pm-floating-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px; /* Posicionado en la esquina inferior derecha */
+  z-index: 10;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.dark .pm-floating-btn {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+/* Botones de formato */
+.pm-format-btn {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  color: #4b5563;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.pm-format-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pm-format-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.dark .pm-format-btn:hover {
+  background-color: #4b5563;
 }
 </style>

@@ -79,6 +79,9 @@ export default {
         // Formatear la hora en formato 12h
         const horaFormateada = this.formatHora(this.fecha.hora);
 
+        // Formatear la fecha
+        const fechaFormateada = this.formatDate(this.fecha.fecha);
+
         // Generar una descripción más atractiva con Gemini
         let descripcion = `${this.fecha.titulo} - ${horaFormateada}${
           lugarParaDescripcion ? ` - ${lugarParaDescripcion}` : ""
@@ -88,27 +91,39 @@ export default {
           this.generatingStep = "Generando descripción con IA...";
           const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 35 palabras) para un evento de iglesia titulado: "${
             this.fecha.titulo
-          }" que se realizará el ${this.formatDate(
-            this.fecha.fecha
-          )} a las ${horaFormateada}${
+          }" que se realizará el ${fechaFormateada} a las ${horaFormateada}${
             lugarParaDescripcion ? ` en ${lugarParaDescripcion}` : ""
           }.
           La descripción debe:
           - Reflejar valores y principios cristianos
           - Incluir referencias bíblicas sutiles si es apropiado
           - Motivar la participación de la congregación
-          - Mantener un tono espiritual y edificante`;
+          - Mantener un tono espiritual y edificante
+          - Destacar con negritas (**palabra**) importantes elementos como la fecha, hora y lugar
+          - El formato será: Destacar la fecha y hora con negrita usando formato **palabra**`;
 
           const generatedDescription = await geminiService.generateContent(
             prompt
           );
           if (generatedDescription && generatedDescription.trim()) {
-            descripcion = generatedDescription;
+            // Convertir formato markdown de negrita a HTML
+            const descripcionConHTML = generatedDescription.replace(
+              /\*\*(.*?)\*\*/g,
+              "<strong>$1</strong>"
+            );
+            descripcion = descripcionConHTML;
           }
           descripcionGenerada = true;
         } catch (error) {
           console.error("Error al generar descripción con IA:", error);
-          // Si falla la generación, usamos la descripción predeterminada
+          // Si falla la generación, usamos la descripción predeterminada con énfasis manual
+          descripcion = `${
+            this.fecha.titulo
+          } - <strong>${horaFormateada}</strong>${
+            lugarParaDescripcion
+              ? ` - <strong>${lugarParaDescripcion}</strong>`
+              : ""
+          }`;
         }
 
         // Generar un eslogan atractivo basado en el tipo de evento
@@ -195,6 +210,22 @@ export default {
         this.$emit("error", "Error al preparar los datos para el anuncio");
         this.isGeneratingAnuncio = false;
       }
+    },
+
+    // Método auxiliar para aplicar énfasis a texto
+    applyEmphasis(text, terms) {
+      if (!text || !terms || !terms.length) return text;
+
+      let result = text;
+      terms.forEach((term) => {
+        if (term && typeof term === "string") {
+          // Crear un regex que sea insensible a mayúsculas/minúsculas
+          const regex = new RegExp(`(${term})`, "gi");
+          result = result.replace(regex, "<strong>$1</strong>");
+        }
+      });
+
+      return result;
     },
 
     isValidUrl(string) {
