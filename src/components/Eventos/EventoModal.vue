@@ -25,6 +25,9 @@
               ? 'bg-indigo-500'
               : '',
             evento.infoIconoTexto === 'Noches navideñas' ? 'bg-red-400' : '',
+            evento.infoIconoTexto === 'Reuniones caseras'
+              ? 'bg-orange-500'
+              : '',
             ![
               'Cumpleaños',
               'Canasta de amor',
@@ -35,6 +38,7 @@
               'Reunión de varones',
               'Reunión de jovenes',
               'Noches navideñas',
+              'Reuniones caseras',
             ].includes(evento.infoIconoTexto)
               ? 'bg-teal-500'
               : '',

@@ -163,7 +163,7 @@
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th
-                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-8"
+                  class="pl-3 pr-1 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-8"
                 >
                   <input
                     type="checkbox"
@@ -173,17 +173,17 @@
                   />
                 </th>
                 <th
-                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  class="px-1 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-6"
                 >
                   #
                 </th>
                 <th
-                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[90px]"
                 >
                   Fecha
                 </th>
                 <th
-                  class="px-2 md:px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  class="px-2 py-4 max-w-[200px] md:max-w-[250px] lg:max-w-[300px] truncate"
                 >
                   Título
                 </th>
@@ -237,7 +237,7 @@
                 :key="fecha.id"
                 class="hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
               >
-                <td class="px-2 md:px-3 lg:px-6 py-4 whitespace-nowrap">
+                <td class="pl-3 pr-1 py-4 whitespace-nowrap">
                   <input
                     type="checkbox"
                     v-model="selectedFechas"
@@ -245,16 +245,14 @@
                     class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50"
                   />
                 </td>
-                <td
-                  class="px-2 md:px-3 lg:px-6 py-4 whitespace-nowrap font-medium"
-                >
+                <td class="px-1 py-4 whitespace-nowrap font-medium">
                   {{ index + 1 }}
                 </td>
-                <td class="px-2 md:px-3 lg:px-6 py-4 whitespace-nowrap">
+                <td class="px-2 py-4 whitespace-nowrap">
                   {{ formatDate(fecha.fecha) }}
                 </td>
                 <td
-                  class="px-2 md:px-3 lg:px-6 py-4 max-w-[150px] md:max-w-[180px] lg:max-w-[200px] truncate"
+                  class="px-2 py-4 max-w-[200px] md:max-w-[250px] lg:max-w-[300px] truncate"
                 >
                   {{ fecha.titulo }}
                   <div class="lg:hidden text-sm text-gray-500">
@@ -324,10 +322,10 @@
                   <button
                     @click="convertirAAnuncio(fecha)"
                     class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
-                    :title="fecha.eventoId ? 'Ver anuncio' : 'Crear anuncio'"
+                    :title="fecha.eventoId ? 'Ver ' : 'Crear'"
                   >
                     <span class="hidden lg:inline">{{
-                      fecha.eventoId ? "Ver anuncio" : "Crear anuncio"
+                      fecha.eventoId ? "Ver " : "Crear"
                     }}</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -383,6 +381,26 @@
                       </svg>
                     </button>
                     <button
+                      @click="duplicarFecha(fecha)"
+                      class="text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+                    >
+                      <span class="hidden lg:inline">Duplicar</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 lg:hidden"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </button>
+                    <button
                       @click="deleteFecha(fecha.id)"
                       class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                     >
@@ -428,7 +446,7 @@
                       <div class="flex flex-col">
                         <div class="flex items-center mb-1">
                           <div
-                            class="flex items-center space-x-2 flex-shrink min-w-0 max-w-[65%]"
+                            class="flex items-center space-x-2 flex-shrink min-w-0 max-w-[80%]"
                           >
                             <span
                               class="text-sm font-medium text-gray-500 dark:text-gray-400 flex-shrink-0"
@@ -561,6 +579,26 @@
                                 stroke-linejoin="round"
                                 stroke-width="2"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            @click="duplicarFecha(fecha)"
+                            class="p-2 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 hover:bg-teal-200 dark:hover:bg-teal-900/50 transition-colors duration-200"
+                            aria-label="Duplicar fecha"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                               />
                             </svg>
                           </button>
@@ -776,10 +814,24 @@ export default {
     },
     async saveFecha(fechaData) {
       try {
-        if (this.editingFecha) {
+        // Verificamos si estamos editando o duplicando
+        if (this.editingFecha && this.editingFecha.id) {
+          // Estamos editando una fecha existente
           await fechas.update(this.editingFecha.id, fechaData);
         } else {
+          // Estamos creando una nueva fecha (ya sea desde cero o duplicando)
           await fechas.create(fechaData);
+
+          // Mostrar mensaje específico si es una duplicación
+          if (fechaData.titulo && fechaData.titulo.includes("(Copia)")) {
+            this.errorMessage = "Fecha duplicada con éxito";
+            // Limpiar el mensaje después de 3 segundos
+            setTimeout(() => {
+              if (this.errorMessage === "Fecha duplicada con éxito") {
+                this.errorMessage = "";
+              }
+            }, 3000);
+          }
         }
         await this.loadFechas();
         this.closeModal();
@@ -962,7 +1014,7 @@ export default {
         timeZone: "America/Bogota",
         day: "2-digit",
         month: "2-digit",
-        year: "numeric",
+        year: "2-digit",
       });
     },
     getColorClass(value) {
@@ -977,6 +1029,7 @@ export default {
         { value: "Domingo misionero", colorClass: "bg-green-500" },
         { value: "Culto de oración", colorClass: "bg-violet-500" },
         { value: "Noches navideñas", colorClass: "bg-red-400" },
+        { value: "Reuniones caseras", colorClass: "bg-orange-500" },
       ];
       const option = iconOptions.find((opt) => opt.value === value);
       return option ? option.colorClass : "bg-teal-500";
@@ -1062,9 +1115,35 @@ export default {
         { value: "Domingo misionero", icon: "domingo-misionero.svg" },
         { value: "Culto de oración", icon: "culto-de-oracion.svg" },
         { value: "Noches navideñas", icon: "noches-navidenas.svg" },
+        { value: "Reuniones caseras", icon: "reuniones-caseras.svg" },
       ];
       const option = iconOptions.find((opt) => opt.value === value);
       return option ? option.icon : "default.svg";
+    },
+    duplicarFecha(fecha) {
+      // Crear una copia profunda del objeto sin usar la referencia original
+      const fechaDuplicada = JSON.parse(
+        JSON.stringify({
+          // No incluir el ID para asegurar que sea una nueva fecha
+          titulo: `${fecha.titulo} (Copia)`,
+          fecha: fecha.fecha,
+          hora: fecha.hora,
+          lugar: fecha.lugar,
+          createdBy: fecha.createdBy,
+          updatedBy: null,
+          eventoId: null, // No copiar el eventoId para evitar conflictos
+          banner: fecha.banner,
+          infoAdiccional: fecha.infoAdiccional,
+          infoIconoTexto: fecha.infoIconoTexto,
+        })
+      );
+
+      // Asegurarnos de que no haya ID en el objeto
+      delete fechaDuplicada.id;
+
+      // Abrir el modal con la fecha duplicada para que el usuario pueda editarla
+      this.editingFecha = fechaDuplicada;
+      this.showModal = true;
     },
   },
 };

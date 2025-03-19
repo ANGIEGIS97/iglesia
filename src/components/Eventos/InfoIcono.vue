@@ -14,6 +14,7 @@
         'bg-blue-500': texto === 'Reunión de varones',
         'bg-indigo-500': texto === 'Reunión de jovenes',
         'bg-red-400': texto === 'Noches navideñas',
+        'bg-orange-500': texto === 'Reuniones caseras',
         'bg-teal-500': ![
           'Cumpleaños',
           'Canasta de amor',
@@ -24,6 +25,7 @@
           'Reunión de varones',
           'Reunión de jovenes',
           'Noches navideñas',
+          'Reuniones caseras',
         ].includes(texto),
       },
     ]"
@@ -95,6 +97,7 @@ export default {
         "Reunión de damas": "/insignias/reunion-de-damas.svg",
         "Reunión de varones": "/insignias/reunion-de-varones.svg",
         "Noches navideñas": "/insignias/noches-navidenas.svg",
+        "Reuniones caseras": "/insignias/reuniones-caseras.svg",
       };
 
       return iconMap[this.texto] || "/insignias/default.svg";

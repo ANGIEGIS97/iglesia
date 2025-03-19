@@ -407,6 +407,13 @@ export default {
           icon: "noches-navidenas.svg",
           colorName: "Rojo Navidad",
         },
+        {
+          value: "Reuniones caseras",
+          label: "Reuniones caseras",
+          colorClass: "bg-orange-500",
+          icon: "reuniones-caseras.svg",
+          colorName: "Naranja",
+        },
       ],
       fechaForm: {
         fecha: "",
