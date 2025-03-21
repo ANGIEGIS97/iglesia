@@ -26,7 +26,15 @@
               <h3
                 class="text-lg font-semibold text-gray-900 dark:text-gray-100"
               >
-                {{ editingFecha ? "Editar Fecha" : "Agregar Nueva Fecha" }}
+                {{
+                  editingFecha &&
+                  editingFecha.titulo &&
+                  editingFecha.titulo.includes("(Copia)")
+                    ? "Duplicar Fecha"
+                    : editingFecha
+                    ? "Editar Fecha"
+                    : "Agregar Nueva Fecha"
+                }}
               </h3>
               <button
                 @click="closeModal"
@@ -311,7 +319,15 @@
                   type="submit"
                   class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-300"
                 >
-                  {{ editingFecha ? "Actualizar" : "Crear" }}
+                  {{
+                    editingFecha &&
+                    editingFecha.titulo &&
+                    editingFecha.titulo.includes("(Copia)")
+                      ? "Guardar"
+                      : editingFecha
+                      ? "Actualizar"
+                      : "Crear"
+                  }}
                 </button>
               </div>
             </form>
