@@ -51,7 +51,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["submit", "cancel"]);
+const emit = defineEmits(["submit", "cancel", "delete"]);
 
 const formData = ref({ ...props.event });
 const selectedImageOption = ref("");
@@ -378,6 +378,12 @@ watch([() => formData.value.titulo, () => formData.value.descripcion], () => {
   buttonSuggestions.value = [];
 });
 
+// Función para manejar la eliminación con confirmación
+const handleDelete = () => {
+  emit("delete");
+  emit("cancel");
+};
+
 const handleSubmit = async () => {
   try {
     // Asegurarse de que la imagen tenga un valor válido
@@ -645,6 +651,14 @@ const createFormatButton = (name, icon, title, onClick) => {
             </div>
 
             <div class="flex justify-end space-x-3">
+              <button
+                v-if="isEdit"
+                type="button"
+                @click="handleDelete"
+                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-300"
+              >
+                Eliminar
+              </button>
               <button
                 type="submit"
                 class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-300"

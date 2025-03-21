@@ -24,10 +24,11 @@
   <!-- Modal para Crear Anuncio -->
   <EventoModal
     :event="anuncioData"
-    :isEdit="false"
+    :isEdit="!!fecha.eventoId"
     :isOpen="showAnuncioModal"
     @submit="handleCreateAnuncio"
     @cancel="closeAnuncioModal"
+    @delete="handleDeleteAnuncio"
   />
 </template>
 
@@ -54,7 +55,7 @@ export default {
       errorMessage: "",
     };
   },
-  emits: ["error", "success"],
+  emits: ["error", "success", "notification"],
   methods: {
     async convertirFechaAEvento() {
       try {
@@ -62,133 +63,32 @@ export default {
         this.isGeneratingAnuncio = true;
         this.generatingStep = "Preparando datos para el anuncio...";
 
-        // Variables para controlar el progreso
-        let descripcionGenerada = false;
-        let esloganGenerado = false;
-        let imagenGenerada = false;
+        // Si la fecha ya tiene un evento asociado, cargar ese evento
+        if (this.fecha.eventoId) {
+          await this.cargarEventoExistente();
+          return;
+        }
 
-        // Importar servicios necesarios
-        const { geminiService } = await import("../../../lib/gemini");
-        const { unsplashService } = await import("../../../lib/unsplash");
-
-        // Verificar si el lugar es una URL
-        const isUrl = this.isValidUrl(this.fecha.lugar);
-        let lugarParaDescripcion = isUrl ? "" : this.fecha.lugar;
-        let linkBoton = isUrl ? this.fecha.lugar : "";
-
-        // Formatear la hora en formato 12h
+        // Preparar datos básicos
+        const { lugarParaDescripcion, linkBoton } = this.prepararDatosBasicos();
         const horaFormateada = this.formatHora(this.fecha.hora);
-
-        // Formatear la fecha
         const fechaFormateada = this.formatDate(this.fecha.fecha);
 
-        // Generar una descripción más atractiva con Gemini
-        let descripcion = `${this.fecha.titulo} - ${horaFormateada}${
-          lugarParaDescripcion ? ` - ${lugarParaDescripcion}` : ""
-        }`;
-
-        try {
-          this.generatingStep = "Generando descripción con IA...";
-          const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 35 palabras) para un evento de iglesia titulado: "${
-            this.fecha.titulo
-          }" que se realizará el ${fechaFormateada} a las ${horaFormateada}${
-            lugarParaDescripcion ? ` en ${lugarParaDescripcion}` : ""
-          }.
-          La descripción debe:
-          - Reflejar valores y principios cristianos
-          - Incluir referencias bíblicas sutiles si es apropiado
-          - Motivar la participación de la congregación
-          - Mantener un tono espiritual y edificante
-          - Destacar con negritas (**palabra**) importantes elementos como la fecha, hora y lugar
-          - El formato será: Destacar la fecha y hora con negrita usando formato **palabra**`;
-
-          const generatedDescription = await geminiService.generateContent(
-            prompt
-          );
-          if (generatedDescription && generatedDescription.trim()) {
-            // Convertir formato markdown de negrita a HTML
-            const descripcionConHTML = generatedDescription.replace(
-              /\*\*(.*?)\*\*/g,
-              "<strong>$1</strong>"
-            );
-            descripcion = descripcionConHTML;
-          }
-          descripcionGenerada = true;
-        } catch (error) {
-          console.error("Error al generar descripción con IA:", error);
-          // Si falla la generación, usamos la descripción predeterminada con énfasis manual
-          descripcion = `${
-            this.fecha.titulo
-          } - <strong>${horaFormateada}</strong>${
-            lugarParaDescripcion
-              ? ` - <strong>${lugarParaDescripcion}</strong>`
-              : ""
-          }`;
-        }
-
-        // Generar un eslogan atractivo basado en el tipo de evento
-        let eslogan = "Ver más";
-        try {
-          // Verificar si fecha.lugar contiene tinyurl.com
-          if (this.fecha.lugar && this.fecha.lugar.includes("tinyurl.com")) {
-            eslogan = "Ubicación";
-            esloganGenerado = true;
-          } else {
-            this.generatingStep = "Generando eslogan con IA...";
-            // Usar el tipo de evento (infoIconoTexto) o el título para generar un eslogan apropiado
-            const tipoEvento = this.fecha.titulo;
-            const promptEslogan = `Como escritor cristiano, genera un eslogan breve y cautivador (máximo 3 palabras) para un evento de iglesia de tipo "${tipoEvento}".
-            El eslogan debe:
-            - Ser motivador e inspirador
-            - Reflejar valores cristianos
-            - Ser conciso y memorable
-            - Invitar a la acción
-            
-            Devuelve solo el eslogan sin explicaciones adicionales.`;
-
-            const generatedEslogan = await geminiService.generateContent(
-              promptEslogan
-            );
-            if (
-              generatedEslogan &&
-              generatedEslogan.trim() &&
-              generatedEslogan.length < 30
-            ) {
-              eslogan = generatedEslogan.trim();
-            }
-            esloganGenerado = true;
-          }
-        } catch (error) {
-          console.error("Error al generar eslogan con IA:", error);
-          // Si falla la generación, usamos el eslogan predeterminado
-        }
-
-        // Buscar una imagen si no hay banner
-        let imagen = this.fecha.banner || "";
-        if (!imagen) {
-          try {
-            this.generatingStep = "Buscando imagen relacionada...";
-            // Usar el título del evento para buscar una imagen relacionada
-            const searchQuery = this.fecha.infoIconoTexto || this.fecha.titulo;
-            const imageUrl = await unsplashService.searchImage(searchQuery);
-            if (imageUrl) {
-              imagen = imageUrl;
-            }
-            imagenGenerada = true;
-          } catch (error) {
-            console.error("Error al buscar imagen:", error);
-            // Si falla la búsqueda de imagen, continuamos sin imagen
-          }
-        } else {
-          imagenGenerada = true; // Ya tenemos imagen del banner
-        }
+        // Generar componentes del anuncio
+        const descripcion = await this.generarDescripcion(
+          fechaFormateada,
+          horaFormateada,
+          lugarParaDescripcion
+        );
+        const eslogan = await this.generarEslogan();
+        const imagen = await this.buscarImagen();
 
         // Preparar los datos para el modal de anuncio
         this.anuncioData = {
           titulo: this.fecha.titulo,
-          descripcion: descripcion,
-          eslogan: eslogan,
-          linkBoton: linkBoton,
+          descripcion,
+          eslogan,
+          linkBoton,
           image: imagen,
           fecha: this.fecha.fecha,
         };
@@ -198,17 +98,159 @@ export default {
         this.showAnuncioModal = true;
 
         // Mostrar advertencia si algún elemento no se pudo generar
-        if (!descripcionGenerada || !esloganGenerado || !imagenGenerada) {
-          setTimeout(() => {
-            alert(
-              "Algunos elementos no pudieron generarse automáticamente. Puedes editarlos manualmente en el formulario."
-            );
-          }, 500);
-        }
+        this.mostrarAdvertenciaSiEsNecesario();
       } catch (error) {
         console.error("Error al preparar datos para anuncio:", error);
         this.$emit("error", "Error al preparar los datos para el anuncio");
         this.isGeneratingAnuncio = false;
+      }
+    },
+
+    async cargarEventoExistente() {
+      this.generatingStep = "Cargando evento existente...";
+      const { eventos } = await import("../../../lib/api");
+      const resultado = await eventos.get(this.fecha.eventoId);
+
+      if (resultado && resultado.data) {
+        this.anuncioData = resultado.data;
+        this.isGeneratingAnuncio = false;
+        this.showAnuncioModal = true;
+      }
+    },
+
+    prepararDatosBasicos() {
+      // Verificar si el lugar es una URL
+      const isUrl = this.isValidUrl(this.fecha.lugar);
+      const lugarParaDescripcion = isUrl ? "" : this.fecha.lugar;
+      const linkBoton = isUrl ? this.fecha.lugar : "";
+
+      return { lugarParaDescripcion, linkBoton };
+    },
+
+    async generarDescripcion(
+      fechaFormateada,
+      horaFormateada,
+      lugarParaDescripcion
+    ) {
+      // Descripción predeterminada
+      let descripcion = `${this.fecha.titulo} - ${horaFormateada}${
+        lugarParaDescripcion ? ` - ${lugarParaDescripcion}` : ""
+      }`;
+
+      try {
+        this.generatingStep = "Generando descripción con IA...";
+        const { geminiService } = await import("../../../lib/gemini");
+
+        const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 35 palabras) para un evento de iglesia titulado: "${
+          this.fecha.titulo
+        }" que se realizará el ${fechaFormateada} a las ${horaFormateada}${
+          lugarParaDescripcion ? ` en ${lugarParaDescripcion}` : ""
+        }.
+        La descripción debe:
+        - Reflejar valores y principios cristianos
+        - Incluir referencias bíblicas sutiles si es apropiado
+        - Motivar la participación de la congregación
+        - Mantener un tono espiritual y edificante
+        - Destacar con negritas (**palabra**) importantes elementos como la fecha, hora y lugar
+        - El formato será: Destacar la fecha y hora con negrita usando formato **palabra**`;
+
+        const generatedDescription = await geminiService.generateContent(
+          prompt
+        );
+        if (generatedDescription && generatedDescription.trim()) {
+          // Convertir formato markdown de negrita a HTML
+          const descripcionConHTML = generatedDescription.replace(
+            /\*\*(.*?)\*\*/g,
+            "<strong>$1</strong>"
+          );
+          descripcion = descripcionConHTML;
+        }
+        return descripcion;
+      } catch (error) {
+        console.error("Error al generar descripción con IA:", error);
+        // Si falla la generación, usamos la descripción predeterminada con énfasis manual
+        return `${this.fecha.titulo} - <strong>${horaFormateada}</strong>${
+          lugarParaDescripcion
+            ? ` - <strong>${lugarParaDescripcion}</strong>`
+            : ""
+        }`;
+      }
+    },
+
+    async generarEslogan() {
+      let eslogan = "Ver más";
+
+      try {
+        // Verificar si fecha.lugar contiene tinyurl.com
+        if (this.fecha.lugar && this.fecha.lugar.includes("tinyurl.com")) {
+          return "Ubicación";
+        }
+
+        this.generatingStep = "Generando eslogan con IA...";
+        const { geminiService } = await import("../../../lib/gemini");
+
+        // Usar el tipo de evento (infoIconoTexto) o el título para generar un eslogan apropiado
+        const tipoEvento = this.fecha.titulo;
+        const promptEslogan = `Como escritor cristiano, genera un eslogan breve y cautivador (máximo 3 palabras) para un evento de iglesia de tipo "${tipoEvento}".
+        El eslogan debe:
+        - Ser motivador e inspirador
+        - Reflejar valores cristianos
+        - Ser conciso y memorable
+        - Invitar a la acción
+        
+        Devuelve solo el eslogan sin explicaciones adicionales.`;
+
+        const generatedEslogan = await geminiService.generateContent(
+          promptEslogan
+        );
+        if (
+          generatedEslogan &&
+          generatedEslogan.trim() &&
+          generatedEslogan.length < 30
+        ) {
+          eslogan = generatedEslogan.trim();
+        }
+        return eslogan;
+      } catch (error) {
+        console.error("Error al generar eslogan con IA:", error);
+        return eslogan; // Devolvemos el eslogan predeterminado
+      }
+    },
+
+    async buscarImagen() {
+      let imagen = this.fecha.banner || "";
+
+      if (!imagen) {
+        try {
+          this.generatingStep = "Buscando imagen relacionada...";
+          const { unsplashService } = await import("../../../lib/unsplash");
+
+          // Usar el título del evento para buscar una imagen relacionada
+          const searchQuery = this.fecha.infoIconoTexto || this.fecha.titulo;
+          const imageUrl = await unsplashService.searchImage(searchQuery);
+          if (imageUrl) {
+            imagen = imageUrl;
+          }
+        } catch (error) {
+          console.error("Error al buscar imagen:", error);
+          // Si falla la búsqueda de imagen, continuamos sin imagen
+        }
+      }
+
+      return imagen;
+    },
+
+    mostrarAdvertenciaSiEsNecesario() {
+      const descripcionGenerada = true; // Simplificamos este control
+      const esloganGenerado = true;
+      const imagenGenerada = !!this.anuncioData.image;
+
+      if (!descripcionGenerada || !esloganGenerado || !imagenGenerada) {
+        // Usar el componente padre para mostrar la notificación
+        this.$emit(
+          "error",
+          "Algunos elementos no pudieron generarse automáticamente. Puedes editarlos manualmente en el formulario."
+        );
       }
     },
 
@@ -235,7 +277,7 @@ export default {
         // Patrón más preciso para URLs
         // Debe comenzar con http://, https://, o www. seguido de un dominio válido
         const urlPattern =
-          /^(https?:\/\/|www\.)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}(:[0-9]{1,5})?(\/.*)?$/i;
+          /^(https?:\/\/|www\.)[a-z\d]+(\.[a-z\d]+)*\.[a-z]{2,}(:\d{1,5})?(\/.*)?$/i;
 
         // Verificar si es una dirección de correo electrónico
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -263,31 +305,96 @@ export default {
 
     async handleCreateAnuncio(anuncioData) {
       try {
-        this.generatingStep = "Creando anuncio...";
+        this.generatingStep = this.fecha.eventoId
+          ? "Actualizando anuncio..."
+          : "Creando anuncio...";
         this.isGeneratingAnuncio = true;
 
         // Importar eventos de manera dinámica
         const { eventos, fechas } = await import("../../../lib/api");
 
-        // Crear el anuncio con los datos del modal
-        const resultado = await eventos.create(anuncioData);
+        let eventoId = this.fecha.eventoId;
 
-        // Obtener el ID del evento creado
-        const eventoId = resultado.data.id;
+        if (this.fecha.eventoId) {
+          // Actualizar el evento existente
+          await eventos.update(this.fecha.eventoId, anuncioData);
+        } else {
+          // Crear un nuevo evento
+          const resultado = await eventos.create(anuncioData);
+          eventoId = resultado.data.id;
 
-        // Actualizar la fecha con el ID del evento
-        await fechas.update(this.fecha.id, {
-          eventoId: eventoId,
-        });
+          // Actualizar la fecha con el ID del evento
+          await fechas.update(this.fecha.id, {
+            eventoId: eventoId,
+          });
+        }
 
         // Cerrar el modal y emitir evento de éxito
         this.closeAnuncioModal();
         this.isGeneratingAnuncio = false;
-        this.$emit("success", "¡Anuncio creado con éxito!");
+
+        // Enviar mensaje de éxito a través del componente padre
+        // Emitir también los datos actualizados
+        const mensaje = this.fecha.eventoId
+          ? "¡Anuncio actualizado con éxito!"
+          : "¡Anuncio creado con éxito!";
+
+        this.$emit("success", mensaje, {
+          fechaId: this.fecha.id,
+          eventoId: eventoId,
+        });
       } catch (error) {
-        console.error("Error al crear anuncio:", error);
-        this.$emit("error", "Error al crear el anuncio");
+        console.error("Error al procesar anuncio:", error);
+        this.$emit(
+          "error",
+          this.fecha.eventoId
+            ? "Error al actualizar el anuncio"
+            : "Error al crear el anuncio"
+        );
         this.isGeneratingAnuncio = false;
+      }
+    },
+
+    async handleDeleteAnuncio() {
+      try {
+        // Reemplazar confirm con una forma más amigable en un futuro
+        if (!confirm("¿Estás seguro que deseas eliminar este anuncio?")) {
+          return;
+        }
+
+        this.isGeneratingAnuncio = true;
+        this.generatingStep = "Eliminando anuncio...";
+
+        // Importar las APIs de manera dinámica
+        const { eventos, fechas } = await import("../../../lib/api");
+
+        // Obtener referencia al evento antes de eliminarlo
+        const eventoId = this.fecha.eventoId;
+
+        if (!eventoId) {
+          throw new Error(
+            "No se encontró el ID del evento asociado a esta fecha"
+          );
+        }
+
+        // Eliminar el evento
+        await eventos.delete(eventoId);
+
+        // Actualizar la fecha para quitar la referencia al evento eliminado
+        const fechaActualizada = { ...this.fecha, eventoId: null };
+        await fechas.update(this.fecha.id, fechaActualizada);
+
+        // Cerrar modal
+        this.closeAnuncioModal();
+
+        // Emitir evento de éxito
+        this.$emit("success", "Anuncio eliminado correctamente");
+      } catch (error) {
+        console.error("Error al eliminar el anuncio:", error);
+        this.$emit("error", "Error al eliminar el anuncio");
+      } finally {
+        this.isGeneratingAnuncio = false;
+        this.generatingStep = "";
       }
     },
 

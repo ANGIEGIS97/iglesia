@@ -235,6 +235,7 @@ onMounted(() => {
         formMode === 'edit' ? handleUpdate($event) : handleCreate($event)
       "
       @cancel="closeForm"
+      @delete="() => handleDelete(editingEvent?.id)"
     />
 
     <div v-if="isLoading" class="text-center py-4 dark:text-white">
