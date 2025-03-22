@@ -15,7 +15,7 @@
           class="relative mt-14 md:mt-0 px-5 flex flex-col justify-center items-center text-gray-200 md:w-1/2 lg:w-auto"
         >
           <img
-            src="/logoiglesia2.png"
+            src="/logoiglesia2.webp"
             alt="Iglesia Bautista su Gracia es Mayor"
             class="h-24 object-contain mt-auto"
           />

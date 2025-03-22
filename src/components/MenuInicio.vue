@@ -14,7 +14,7 @@
         class="flex items-center space-x-3 rtl:space-x-reverse relative overflow-hidden rounded-lg"
       >
         <div class="relative">
-          <img src="/logoiglesia2.png" class="h-14" alt="Logo iglesia" />
+          <img src="/logoiglesia2.webp" class="h-14" alt="Logo iglesia" />
         </div>
       </a>
 
