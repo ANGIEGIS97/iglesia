@@ -108,12 +108,12 @@ export default {
     return {
       modules: [Pagination, Navigation],
       images: [
-        { src: "https://i.ibb.co/z4bPJTy/servicio.jpg", alt: "Servicio 1" },
-        { src: "https://i.ibb.co/12HCWmc/servicio1.jpg", alt: "Servicio 2" },
-        { src: "https://i.ibb.co/qjtDbck/servicio2.jpg", alt: "Servicio 3" },
-        { src: "https://i.ibb.co/k29KtQn/servicio3.jpg", alt: "Servicio 4" },
-        { src: "https://i.ibb.co/2jH8Tsq/servicio4.jpg", alt: "Servicio 5" },
-        { src: "https://i.ibb.co/bJ1QPqL/servicio5.jpg", alt: "Servicio 6" },
+        { src: "/servicios/servicio.webp", alt: "Servicio 0" },
+        { src: "/servicios/servicio1.webp", alt: "Servicio 1" },
+        { src: "/servicios/servicio2.webp", alt: "Servicio 2" },
+        { src: "/servicios/servicio3.webp", alt: "Servicio 3" },
+        { src: "/servicios/servicio4.webp", alt: "Servicio 4" },
+        { src: "/servicios/servicio5.webp", alt: "Servicio 5" },
       ],
     };
   },

@@ -81,7 +81,7 @@ import { usuarios, auth_api } from "../lib/api";
 export default {
   data() {
     return {
-      heroImage: "https://i.ibb.co/vCWvVYb/principal.jpg",
+      heroImage: "/bienvenida2.webp",
       displayName: "",
       unsubscribe: null,
       authUnsubscribe: null,
