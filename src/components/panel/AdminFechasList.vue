@@ -973,8 +973,13 @@ export default {
                 "El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia.",
                 true
               );
-              // Recargar las fechas para reflejar el cambio
-              await this.loadFechas();
+              // Actualizar localmente la fecha afectada en lugar de recargar todas
+              const index = this.fechas.findIndex(
+                (fecha) => fecha.id === fechaConEventoEliminado.id
+              );
+              if (index !== -1) {
+                this.fechas[index].eventoId = null;
+              }
             } else {
               this.showNotification("El evento asociado ya no existe", true);
             }
@@ -1001,49 +1006,55 @@ export default {
           JSON.stringify(eventoData) !== JSON.stringify(this.eventoParaVer);
 
         if (eventoModificado) {
-          this.isLoading = true;
-          eventos
-            .update(this.eventoParaVer.id, eventoData)
-            .then(() => {
-              this.closeEventoModal(true); // Pasar true para indicar que hubo cambios
-              this.showNotification("Evento actualizado con éxito", false);
-            })
-            .catch((error) => {
-              console.error("Error al actualizar el evento:", error);
+          try {
+            // Actualizar sin mostrar estado de carga
+            await eventos.update(this.eventoParaVer.id, eventoData);
 
-              // Si el evento no existe, actualizar la fecha
-              if (error.message.includes("El evento no existe")) {
-                // Buscar la fecha que tiene este eventoId
-                const fechaConEventoEliminado = this.fechas.find(
-                  (f) => f.eventoId === this.eventoParaVer.id
-                );
+            // Cerrar el modal sin parámetro para evitar recargas
+            this.closeEventoModal(false);
 
-                if (fechaConEventoEliminado) {
-                  // Actualizar la fecha para eliminar la referencia al evento eliminado
-                  fechas
-                    .update(fechaConEventoEliminado.id, {
-                      eventoId: null, // o undefined
-                    })
-                    .then(() => {
-                      this.showNotification(
-                        "El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia.",
-                        true
-                      );
-                      this.loadFechas();
-                    });
-                } else {
+            // Mostrar notificación de éxito
+            this.showNotification("Evento actualizado con éxito", false);
+          } catch (error) {
+            console.error("Error al actualizar el evento:", error);
+
+            // Si el evento no existe, actualizar la fecha
+            if (error.message.includes("El evento no existe")) {
+              // Buscar la fecha que tiene este eventoId
+              const fechaConEventoEliminado = this.fechas.find(
+                (f) => f.eventoId === this.eventoParaVer.id
+              );
+
+              if (fechaConEventoEliminado) {
+                // Actualizar la fecha para eliminar la referencia al evento eliminado
+                try {
+                  await fechas.update(fechaConEventoEliminado.id, {
+                    eventoId: null, // o undefined
+                  });
+
                   this.showNotification(
-                    "El evento asociado ya no existe",
+                    "El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia.",
                     true
                   );
+
+                  // Actualizar localmente la fecha afectada en lugar de recargar todas
+                  const index = this.fechas.findIndex(
+                    (fecha) => fecha.id === fechaConEventoEliminado.id
+                  );
+                  if (index !== -1) {
+                    this.fechas[index].eventoId = null;
+                  }
+                } catch (updateError) {
+                  console.error("Error al actualizar la fecha:", updateError);
+                  this.showNotification("Error al actualizar la fecha", true);
                 }
               } else {
-                this.showNotification("Error al actualizar el evento", true);
+                this.showNotification("El evento asociado ya no existe", true);
               }
-            })
-            .finally(() => {
-              this.isLoading = false;
-            });
+            } else {
+              this.showNotification("Error al actualizar el evento", true);
+            }
+          }
         } else {
           // Si no hubo cambios, simplemente cerrar el modal sin recargar
           this.closeEventoModal(false);
@@ -1058,10 +1069,10 @@ export default {
       // Eliminar la clase modal-open del body para restaurar el scroll
       document.body.classList.remove("modal-open");
 
-      // Solo recargar las fechas si es necesario
-      if (recargarFechas) {
-        this.loadFechas();
-      }
+      // Nunca recargar las fechas al cerrar - se maneja de otra forma
+      // if (recargarFechas) {
+      //   this.loadFechas();
+      // }
 
       console.log("Modal cerrado:", this.showEventoModal, this.eventoParaVer);
     },
@@ -1276,15 +1287,17 @@ export default {
       try {
         // La confirmación ya se realizó en EventoModal, no es necesario repetirla aquí
 
-        this.isLoading = true;
+        // Guardar el ID del evento y buscar fechas afectadas antes de cualquier operación
         const eventoId = this.eventoParaVer.id;
-
-        // Buscar las fechas que tienen este eventoId
         const fechasConEvento = this.fechas.filter(
           (f) => f.eventoId === eventoId
         );
 
-        // Eliminar el evento
+        // Cerrar el modal sin recargar fechas
+        this.closeEventoModal(false);
+
+        // Eliminar el evento sin activar el estado de carga
+        // No establecemos isLoading = true para evitar mostrar "Cargando fechas..."
         await eventos.delete(eventoId);
 
         // Actualizar las fechas para quitar la referencia al evento eliminado
@@ -1295,19 +1308,19 @@ export default {
           await Promise.all(actualizaciones);
         }
 
-        // Cerrar el modal
-        this.closeEventoModal();
-
         // Mostrar mensaje de éxito
         this.showNotification("Anuncio eliminado con éxito", false);
 
-        // Recargar las fechas para actualizar la UI
-        await this.loadFechas();
+        // Actualizar localmente las fechas afectadas
+        fechasConEvento.forEach((f) => {
+          const index = this.fechas.findIndex((fecha) => fecha.id === f.id);
+          if (index !== -1) {
+            this.fechas[index].eventoId = null;
+          }
+        });
       } catch (error) {
         console.error("Error al eliminar el evento:", error);
         this.showNotification("Error al eliminar el anuncio", true);
-      } finally {
-        this.isLoading = false;
       }
     },
   },
