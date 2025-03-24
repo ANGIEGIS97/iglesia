@@ -2,7 +2,16 @@
   <!-- Indicador de carga para generación de anuncio -->
   <div
     v-if="isGeneratingAnuncio"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    class="bg-black bg-opacity-50 flex items-center justify-center z-50"
+    style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+    "
   >
     <div
       class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full"
