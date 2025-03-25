@@ -22,7 +22,7 @@
         >
           Nos congregamos cada domingo para adorar a Dios, recibir Su Palabra y
           fortalecer nuestra fe, edificándonos unos a otros como cuerpo de
-          Cristo en amor y unidad
+          Cristo en amor y unidad.
         </p>
       </div>
 
