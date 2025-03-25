@@ -7,15 +7,26 @@
       class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out"
     >
       <div
-        class="flex flex-wrap w-full mb-20 flex-col items-center text-center"
+        class="flex flex-wrap w-full mb-12 flex-col items-center text-center"
       >
         <h1
-          class="sm:text-3xl text-2xl font-medium mb-2 text-gray-800 dark:text-white"
+          class="sm:text-4xl text-3xl font-bold mb-4 text-gray-800 dark:text-white relative inline-block"
         >
           Ubicación
+          <span
+            class="absolute bottom-0 left-1/4 right-1/4 h-1 bg-teal-500 rounded-full"
+          ></span>
         </h1>
+        <p
+          class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
+        >
+          Nos reunimos en un espacio acogedor donde cada persona es bienvenida.
+          Nuestra ubicación es de fácil acceso para toda la comunidad,
+          permitiendo que todos puedan congregarse para adorar juntos y
+          fortalecer su camino espiritual.
+        </p>
       </div>
-      <div class="h-80 border-2 p-2 rounded-lg">
+      <div class="h-80 border-2 border-teal-500 p-2 rounded-lg">
         <iframe
           title="Ubicación del Salón Comunal de Asovivir"
           aria-label="Mapa mostrando la ubicación del Salón Comunal de Asovivir"

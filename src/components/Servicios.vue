@@ -6,13 +6,29 @@
     <div
       class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out"
     >
-      <article>
+      <div
+        class="flex flex-wrap w-full mb-12 flex-col items-center text-center"
+      >
         <h1
-          class="text-gray-800 text-center text-2xl sm:text-3xl font-medium dark:text-white flex items-center justify-center mb-6 sm:mb-1"
+          class="sm:text-4xl text-3xl font-bold mb-4 text-gray-800 dark:text-white relative inline-block"
         >
-          <i class="fas fa-church mr-2"></i> Servicio
+          Servicios
+          <span
+            class="absolute bottom-0 left-1/4 right-1/4 h-1 bg-teal-500 rounded-full"
+          ></span>
         </h1>
+        <p
+          class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
+        >
+          Nuestros servicios dominicales son momentos especiales donde
+          experimentamos la presencia de Dios a través de la adoración, la
+          enseñanza bíblica y la comunión. Cada domingo nos reunimos para crecer
+          juntos en fe y conocimiento, fortaleciéndonos mutuamente como familia
+          en Cristo.
+        </p>
+      </div>
 
+      <article>
         <!-- Carrusel para pantallas pequeñas -->
         <div class="md:hidden mb-4">
           <swiper

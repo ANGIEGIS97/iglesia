@@ -7,15 +7,18 @@
       class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out"
     >
       <div
-        class="flex flex-wrap w-full mb-20 flex-col items-center text-center"
+        class="flex flex-wrap w-full mb-12 flex-col items-center text-center"
       >
         <h1
-          class="sm:text-3xl text-2xl font-medium mb-2 text-gray-800 dark:text-white"
+          class="sm:text-4xl text-3xl font-bold mb-4 text-gray-800 dark:text-white relative inline-block"
         >
-          Ministerios y servicios
+          Ministerios
+          <span
+            class="absolute bottom-0 left-1/4 right-1/4 h-1 bg-teal-500 rounded-full"
+          ></span>
         </h1>
         <p
-          class="lg:w-1/2 w-full leading-relaxed text-justify text-lg dark:text-gray-400"
+          class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
         >
           Los Ministerios y Servicios son fundamentales para fomentar la
           adoración y el crecimiento espiritual de los miembros de la iglesia. A
