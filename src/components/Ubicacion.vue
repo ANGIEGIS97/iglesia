@@ -22,7 +22,7 @@
         >
           Nos congregamos en un lugar de comunión fraternal, donde todos son
           bienvenidos para adorar a Dios y crecer en Su gracia, edificándonos en
-          amor y unida
+          amor y unidad.
         </p>
       </div>
       <div class="h-80 border-2 border-teal-500 p-2 rounded-lg">
