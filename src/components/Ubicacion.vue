@@ -20,9 +20,9 @@
         <p
           class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
         >
-          Nos reunimos en un espacio acogedor donde cada persona es bienvenida.
-          Todos pueden congregarse para adorar juntos y fortalecer su camino
-          espiritual.
+          Nos congregamos en un lugar de comunión fraternal, donde todos son
+          bienvenidos para adorar a Dios y crecer en Su gracia, edificándonos en
+          amor y unida
         </p>
       </div>
       <div class="h-80 border-2 border-teal-500 p-2 rounded-lg">

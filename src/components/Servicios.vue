@@ -20,10 +20,9 @@
         <p
           class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
         >
-          Nuestros servicios dominicales son momentos especiales de encuentro
-          con Dios. Experimentamos su presencia a través de la adoración y
-          enseñanza bíblica. Cada domingo nos reunimos para crecer juntos en fe.
-          Nos fortalecemos mutuamente como familia en Cristo.
+          Nos congregamos cada domingo para adorar a Dios, recibir Su Palabra y
+          fortalecer nuestra fe, edificándonos unos a otros como cuerpo de
+          Cristo en amor y unidad
         </p>
       </div>
 
