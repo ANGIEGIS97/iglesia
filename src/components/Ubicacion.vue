@@ -1,6 +1,6 @@
 <template>
   <section
-    class="bg-white dark:bg-slate-700 py-10 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
+    class="bg-white dark:bg-slate-700 pb-10 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
     id="ubicacion"
   >
     <div
