@@ -21,9 +21,8 @@
           class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
         >
           Nos reunimos en un espacio acogedor donde cada persona es bienvenida.
-          Nuestra ubicación es de fácil acceso para toda la comunidad,
-          permitiendo que todos puedan congregarse para adorar juntos y
-          fortalecer su camino espiritual.
+          Todos pueden congregarse para adorar juntos y fortalecer su camino
+          espiritual.
         </p>
       </div>
       <div class="h-80 border-2 border-teal-500 p-2 rounded-lg">

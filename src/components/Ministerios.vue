@@ -20,11 +20,9 @@
         <p
           class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
         >
-          Los Ministerios y Servicios son fundamentales para fomentar la
-          adoración y el crecimiento espiritual de los miembros de la iglesia. A
-          través de diversos ministerios como la enseñanza bíblica, la
-          adoración, la evangelización y el servicio comunitario, se busca
-          impactar vidas y fortalecer la fe en Cristo.
+          Los Ministerios fomentan la adoración y el crecimiento espiritual.
+          Trabajamos mediante enseñanza bíblica, adoración y evangelización.
+          Buscamos impactar vidas y fortalecer la fe en Cristo.
         </p>
       </div>
       <div class="flex flex-wrap mx-auto">
