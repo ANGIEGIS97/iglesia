@@ -1,47 +1,116 @@
-# Astro Starter Kit: Minimal
+# Su Gracia Es Mayor - Diseño Web Iglesia
 
-```sh
-npm create astro@latest -- --template minimal
+## 🛠️ Tecnologías
+
+### Frontend
+- Vue.js 3 - Framework JavaScript progresivo
+- Tailwind CSS - Framework CSS utilitario
+- Astro - Generador de sitios estáticos
+- Swiper - Componente de carrusel moderno
+- ProseMirror - Editor de texto enriquecido
+- FontAwesome - Librería de iconos
+
+### Backend y Servicios
+- Firebase
+  - Autenticación de usuarios
+  - Base de datos Firestore
+  - Cloud Functions
+- Google AI (Gemini) - Generación de contenido con IA
+- API de Unsplash - Búsqueda de imágenes
+
+## ✨ Características
+
+### Gestión de Usuarios
+- Autenticación de usuarios
+- Control de acceso basado en roles
+- Perfiles de usuario
+- Gestión de contraseñas
+
+### Gestión de Contenido
+- Anuncios dinámicos con texto enriquecido
+- Calendario de eventos
+- Horarios de servicios
+- Generación automática de contenido con IA
+- Gestión de imágenes
+
+### Gestión de Eventos
+- Crear/Editar/Eliminar eventos
+- Tipos y categorías de eventos
+- Localización con Google Maps
+- Seguimiento de asistencia
+- Eventos recurrentes
+
+### Interfaz
+- Diseño responsivo
+- Tema Claro/Oscuro
+- Transiciones animadas
+- Carruseles interactivos
+- Fuentes y estilos personalizados
+
+## 🚀 Inicio Rápido
+
+1. Clonar el repositorio
+```bash
+git clone <url-repositorio>
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/minimal)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/minimal)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/minimal/devcontainer.json)
+2. Instalar dependencias
+```bash
+npm install
+```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+3. Configurar variables de entorno
+```bash
+cp .env.example .env
+```
 
-## 🚀 Project Structure
+4. Iniciar servidor de desarrollo
+```bash
+npm run dev
+```
 
-Inside of your Astro project, you'll see the following folders and files:
+## 📝 Variables de Entorno
 
-```text
-/
-├── public/
+Crear un archivo `.env`:
+```bash
+FIREBASE_API_KEY=tu_api_key
+FIREBASE_AUTH_DOMAIN=tu_dominio
+FIREBASE_PROJECT_ID=tu_project_id
+FIREBASE_STORAGE_BUCKET=tu_bucket
+FIREBASE_MESSAGING_SENDER_ID=tu_sender_id
+FIREBASE_APP_ID=tu_app_id
+```
+
+## 🛡️ Configuración de Firebase
+
+Este proyecto utiliza Firebase para servicios backend. Necesitarás:
+
+1. Crear un proyecto en Firebase
+2. Habilitar Autenticación con email/contraseña
+3. Configurar base de datos Firestore
+4. Establecer reglas de seguridad
+5. Agregar tu configuración de Firebase al `.env`
+
+## 📦 Estructura del Proyecto
+
+```
+├── public/          # Recursos estáticos
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── components/  # Componentes Vue
+│   ├── layouts/     # Layouts de página
+│   ├── lib/         # Utilidades y APIs
+│   ├── middleware/  # Middleware de autenticación
+│   └── pages/       # Páginas de rutas
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 🤝 Contribuir
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+1. Fork del repositorio
+2. Crear rama de feature
+3. Hacer commit de cambios
+4. Push a la rama
+5. Abrir Pull Request
 
-Any static assets, like images, can be placed in the `public/` directory.
+## 📄 Licencia
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Este proyecto está bajo la Licencia MIT.
