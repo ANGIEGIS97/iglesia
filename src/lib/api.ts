@@ -27,6 +27,10 @@ export interface UserProfile {
   displayName: string;
   email: string;
   updatedAt: Date;
+  userXp?: number;
+  userLevel?: number;
+  achievements?: any[];
+  loginStreak?: number;
 }
 
 export interface UserWithId extends UserProfile {
@@ -90,9 +94,9 @@ export const usuarios = {
       const querySnapshot = await getDocs(usersRef);
       return querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        displayName: doc.data().displayName || "",
-        email: doc.data().email || "",
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+        displayName: doc.data().displayName ?? "",
+        email: doc.data().email ?? "",
+        updatedAt: doc.data().updatedAt?.toDate() ?? new Date(),
       }));
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
@@ -108,16 +112,16 @@ export const usuarios = {
         return {
           data: {
             displayName:
-              data.displayName || auth.currentUser?.displayName || "",
-            email: data.email || auth.currentUser?.email || "",
-            updatedAt: data.updatedAt?.toDate() || new Date(),
+              data.displayName ?? auth.currentUser?.displayName ?? "",
+            email: data.email ?? auth.currentUser?.email ?? "",
+            updatedAt: data.updatedAt?.toDate() ?? new Date(),
           },
         };
       }
       return {
         data: {
-          displayName: auth.currentUser?.displayName || "",
-          email: auth.currentUser?.email || "",
+          displayName: auth.currentUser?.displayName ?? "",
+          email: auth.currentUser?.email ?? "",
           updatedAt: new Date(),
         },
       };
@@ -138,14 +142,14 @@ export const usuarios = {
           const data = doc.data();
           callback({
             displayName:
-              data.displayName || auth.currentUser?.displayName || "",
-            email: data.email || auth.currentUser?.email || "",
-            updatedAt: data.updatedAt?.toDate() || new Date(),
+              data.displayName ?? auth.currentUser?.displayName ?? "",
+            email: data.email ?? auth.currentUser?.email ?? "",
+            updatedAt: data.updatedAt?.toDate() ?? new Date(),
           });
         } else {
           callback({
-            displayName: auth.currentUser?.displayName || "",
-            email: auth.currentUser?.email || "",
+            displayName: auth.currentUser?.displayName ?? "",
+            email: auth.currentUser?.email ?? "",
             updatedAt: new Date(),
           });
         }
@@ -164,6 +168,91 @@ export const usuarios = {
     } catch (error) {
       console.error("Error al actualizar el perfil:", error);
       throw new Error("No se pudo actualizar el perfil del usuario");
+    }
+  },
+
+  getRanking: async (): Promise<UserWithId[]> => {
+    try {
+      const usersRef = collection(db, "users");
+      const querySnapshot = await getDocs(usersRef);
+      return querySnapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            displayName: data.displayName ?? "",
+            email: data.email ?? "",
+            userXp: data.userXp ?? 0,
+            userLevel: data.userLevel ?? 1,
+            achievements: data.achievements ?? [],
+            loginStreak: data.loginStreak ?? 0,
+            updatedAt: data.updatedAt?.toDate() ?? new Date(),
+          };
+        })
+        .sort((a, b) => {
+          if (b.userLevel !== a.userLevel) {
+            return b.userLevel - a.userLevel;
+          }
+          return b.userXp - a.userXp;
+        });
+    } catch (error) {
+      console.error("Error al obtener ranking de usuarios:", error);
+      throw new Error("No se pudo cargar el ranking");
+    }
+  },
+
+  updateGameState: async (
+    userId: string,
+    gameState: {
+      userXp: number;
+      userLevel: number;
+      loginStreak: number;
+      achievements: any[];
+    }
+  ): Promise<void> => {
+    try {
+      checkAuth();
+      const userDocRef = doc(db, "users", userId);
+      await setDoc(
+        userDocRef,
+        {
+          userXp: gameState.userXp,
+          userLevel: gameState.userLevel,
+          loginStreak: gameState.loginStreak,
+          achievements: gameState.achievements,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    } catch (error) {
+      console.error("Error al actualizar estado de gamificación:", error);
+      throw new Error("No se pudo actualizar el estado de gamificación");
+    }
+  },
+
+  getGameState: async (
+    userId: string
+  ): Promise<{
+    userXp: number;
+    userLevel: number;
+    loginStreak: number;
+    achievements: any[];
+  } | null> => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        return {
+          userXp: data.userXp ?? 0,
+          userLevel: data.userLevel ?? 1,
+          loginStreak: data.loginStreak ?? 0,
+          achievements: data.achievements ?? [],
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error("Error al cargar datos de gamificación:", error);
+      return null;
     }
   },
 };
@@ -209,12 +298,12 @@ export const eventos = {
 
       // Formatear los datos antes de guardar
       const eventData = {
-        titulo: data.titulo?.trim() || "",
-        descripcion: data.descripcion?.trim() || "",
-        eslogan: data.eslogan?.trim() || "",
-        linkBoton: data.linkBoton?.trim() || "",
-        image: data.image || "",
-        fecha: data.fecha || new Date().toISOString(),
+        titulo: data.titulo?.trim() ?? "",
+        descripcion: data.descripcion?.trim() ?? "",
+        eslogan: data.eslogan?.trim() ?? "",
+        linkBoton: data.linkBoton?.trim() ?? "",
+        image: data.image ?? "",
+        fecha: data.fecha ?? new Date().toISOString(),
         createdAt: serverTimestamp(),
         createdBy: auth.currentUser.uid,
       };
@@ -230,7 +319,7 @@ export const eventos = {
       };
     } catch (error: any) {
       console.error("Error al crear evento:", error);
-      throw new Error(error.message || "Error al crear el evento");
+      throw new Error(error.message ?? "Error al crear el evento");
     }
   },
   update: async (id: string, data: any) => {
@@ -246,12 +335,12 @@ export const eventos = {
 
       // Formatear los datos antes de actualizar
       const updateData = {
-        titulo: data.titulo?.trim() || "",
-        descripcion: data.descripcion?.trim() || "",
-        eslogan: data.eslogan?.trim() || "",
-        linkBoton: data.linkBoton?.trim() || "",
-        image: data.image || "",
-        fecha: data.fecha || new Date().toISOString(),
+        titulo: data.titulo?.trim() ?? "",
+        descripcion: data.descripcion?.trim() ?? "",
+        eslogan: data.eslogan?.trim() ?? "",
+        linkBoton: data.linkBoton?.trim() ?? "",
+        image: data.image ?? "",
+        fecha: data.fecha ?? new Date().toISOString(),
         updatedAt: serverTimestamp(),
         updatedBy: auth.currentUser.uid,
       };
@@ -266,7 +355,7 @@ export const eventos = {
       };
     } catch (error: any) {
       console.error("Error al actualizar evento:", error);
-      throw new Error(error.message || "Error al actualizar el evento");
+      throw new Error(error.message ?? "Error al actualizar el evento");
     }
   },
   delete: async (id: string) => {
@@ -288,7 +377,7 @@ export const eventos = {
       };
     } catch (error: any) {
       console.error("Error al eliminar evento:", error);
-      throw new Error(error.message || "Error al eliminar el evento");
+      throw new Error(error.message ?? "Error al eliminar el evento");
     }
   },
 };
@@ -305,16 +394,16 @@ export const fechas = {
       const usersSnapshot = await getDocs(usersRef);
       const users = new Map();
       usersSnapshot.docs.forEach((doc) => {
-        users.set(doc.id, doc.data().displayName || doc.data().email);
+        users.set(doc.id, doc.data().displayName ?? doc.data().email);
       });
 
       return {
         data: snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          createdBy: users.get(doc.data().createdBy) || "Desconocido",
+          createdBy: users.get(doc.data().createdBy) ?? "Desconocido",
           updatedBy: doc.data().updatedBy
-            ? users.get(doc.data().updatedBy) || "Desconocido"
+            ? users.get(doc.data().updatedBy) ?? "Desconocido"
             : undefined,
         })),
       };
@@ -449,7 +538,9 @@ export const auth_api = {
         console.error("Error al limpiar IndexedDB:", e);
       }
     } catch (error: any) {
-      throw new Error("Error al cerrar sesión");
+      throw new Error(
+        `Error al cerrar sesión: ${error.message ?? "Error desconocido"}`
+      );
     }
   },
 
@@ -487,7 +578,11 @@ export const auth_api = {
         },
       };
     } catch (error: any) {
-      throw new Error("Error al cambiar la contraseña");
+      throw new Error(
+        `Error al cambiar la contraseña: ${
+          error.message ?? "Error desconocido"
+        }`
+      );
     }
   },
 };

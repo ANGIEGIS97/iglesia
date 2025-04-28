@@ -287,7 +287,12 @@
   </div>
 
   <!-- Admin Sidebar -->
-  <AdminSidebar :isOpen="adminMenuVisible" @close="closeAdminMenu" />
+  <AdminSidebar
+    :isOpen="adminMenuVisible"
+    :darkMode="isDarkMode"
+    @close="closeAdminMenu"
+    ref="adminSidebarRef"
+  />
 
   <!-- Componente de barra de progreso -->
   <BarraProgreso />
@@ -319,6 +324,7 @@ export default {
       isMenuOpen: false,
       isClosing: false,
       isConocenosOpen: false,
+      isDarkMode: true,
       menuItems: [
         { href: "/#inicio", text: "Inicio" },
         { href: "/#anuncios", text: "Anuncios y Eventos" },
@@ -356,6 +362,12 @@ export default {
       const isDarkMode = !document.documentElement.classList.contains("dark");
       document.documentElement.classList.toggle("dark");
       localStorage.setItem("darkMode", isDarkMode);
+      this.isDarkMode = isDarkMode;
+
+      // Solo desbloquear el logro si el usuario está autenticado
+      if (this.isAuthenticated && this.$refs.adminSidebarRef) {
+        this.$refs.adminSidebarRef.unlockAchievement(2); // Índice 2 corresponde al logro de personalización
+      }
     },
     loadDarkModePreference() {
       const darkMode = localStorage.getItem("darkMode");
@@ -365,8 +377,10 @@ export default {
 
       if (darkMode === "true" || (!darkMode && prefersDark)) {
         document.documentElement.classList.add("dark");
+        this.isDarkMode = true;
       } else {
         document.documentElement.classList.remove("dark");
+        this.isDarkMode = false;
       }
     },
     toggleAdminMenu() {

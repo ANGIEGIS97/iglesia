@@ -9,6 +9,7 @@ import {
   type Evento,
 } from "../../lib/api.ts";
 import EventoModal from "./modals/EventoModal.vue";
+import NotificacionXP from "../NotificacionXP.vue";
 
 const eventList = ref<Evento[]>([]);
 const error = ref("");
@@ -17,6 +18,39 @@ const editingEvent = ref<Evento | null>(null);
 const isLoading = ref(true);
 const userName = ref("");
 const userProfiles = ref<{ [key: string]: UserProfile }>({});
+
+// Notificaciones XP
+const showXpNotification = ref(false);
+const xpAmount = ref(0);
+const xpMessage = ref("");
+
+// Función para mostrar notificación XP
+const showXpNotif = (amount: number, message: string) => {
+  xpAmount.value = amount;
+  xpMessage.value = message;
+  showXpNotification.value = true;
+
+  // Actualizar experiencia en el sidebar si está disponible
+  const sidebarComponent = document.querySelector("admin-sidebar");
+  if (sidebarComponent && "awardXp" in sidebarComponent) {
+    (sidebarComponent as any).awardXp(amount);
+  } else {
+    // Si no existe aún el componente, guardar el XP en localStorage
+    const user = auth_api.getCurrentUser();
+    if (user?.uid) {
+      const tempXpKey = `tempXp_${user.uid}`;
+      const currentXp = localStorage.getItem(tempXpKey)
+        ? parseInt(localStorage.getItem(tempXpKey) || "0")
+        : 0;
+      localStorage.setItem(tempXpKey, (currentXp + amount).toString());
+    }
+  }
+
+  // Ocultar después de 3 segundos
+  setTimeout(() => {
+    showXpNotification.value = false;
+  }, 3000);
+};
 
 const loadUserProfiles = async (events: Evento[]) => {
   const userIds = new Set<string>();
@@ -73,6 +107,8 @@ const handleCreate = async (eventData) => {
     await eventos.create(eventData);
     formMode.value = "closed";
     await loadEvents();
+    // Otorgar XP al crear un nuevo anuncio
+    showXpNotif(20, "¡Nuevo anuncio creado!");
   } catch (err: any) {
     error.value = err.response?.data?.mensaje || "Error al crear el evento";
   }
@@ -109,6 +145,8 @@ const handleUpdate = async (eventData) => {
     formMode.value = "closed";
     editingEvent.value = null;
     await loadEvents();
+    // Otorgar XP al actualizar un anuncio
+    showXpNotif(15, "¡Anuncio actualizado!");
   } catch (err: any) {
     error.value =
       err.response?.data?.mensaje || "Error al actualizar el evento";
@@ -122,6 +160,8 @@ const handleDelete = async (id) => {
     error.value = "";
     await eventos.delete(id);
     await loadEvents();
+    // Otorgar XP al eliminar un anuncio
+    showXpNotif(5, "¡Anuncio eliminado!");
   } catch (err: any) {
     console.error("Error al eliminar evento:", err);
     error.value = err.message || "Error al eliminar el evento";
@@ -167,6 +207,13 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6 mt-24">
+    <!-- Notificación XP -->
+    <NotificacionXP
+      :show="showXpNotification"
+      :amount="xpAmount"
+      :message="xpMessage"
+    />
+
     <div
       class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 sm:px-0"
     >

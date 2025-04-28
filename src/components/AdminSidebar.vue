@@ -10,22 +10,29 @@
     <!-- Sidebar -->
     <div
       :class="[
-        'fixed right-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg z-50',
+        'fixed right-0 top-0 h-full w-72 shadow-lg z-50',
         'transform transition-transform duration-300 ease-in-out',
         isOpen ? 'translate-x-0' : 'translate-x-full',
+        isDarkMode
+          ? 'bg-gradient-to-b from-gray-800 to-gray-900 text-white'
+          : 'bg-gradient-to-b from-white to-gray-100 text-gray-800',
       ]"
     >
-      <div class="p-4">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
-            Administración
-          </h2>
+      <div class="p-4 h-full flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold flex items-center">Administracion</h2>
+          <!-- Close Button -->
           <button
             @click="$emit('close')"
-            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="p-2 rounded-lg transition-colors"
+            :class="
+              isDarkMode
+                ? 'hover:bg-gray-700/50 text-gray-300 hover:text-white'
+                : 'hover:bg-gray-200 text-gray-600 hover:text-gray-800'
+            "
           >
             <svg
-              class="w-6 h-6 text-gray-600 dark:text-gray-400"
+              class="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -40,38 +47,90 @@
           </button>
         </div>
 
-        <!-- Perfil del Usuario -->
-        <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <div class="flex items-center space-x-3">
+        <!-- Perfil del Usuario con Nivel y XP -->
+        <div
+          class="mb-6 p-4 rounded-lg border backdrop-blur-sm"
+          :class="
+            isDarkMode
+              ? 'bg-gray-700/50 border-gray-600/50'
+              : 'bg-white/80 border-gray-200'
+          "
+        >
+          <div class="flex items-center space-x-3 mb-3">
             <div
-              class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+              class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
               :style="{ backgroundColor: getUserColor(displayName) }"
             >
               {{ getUserInitial(displayName) }}
+              <div
+                class="absolute -bottom-1 -right-1 bg-yellow-500 text-gray-900 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2"
+                :class="isDarkMode ? 'border-gray-800' : 'border-white'"
+              >
+                {{ userLevel }}
+              </div>
             </div>
             <div class="flex-1">
-              <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+              <h3 class="text-sm font-medium flex items-center">
                 {{ displayName || "Usuario" }}
+                <span
+                  v-if="hasNewAchievement"
+                  class="ml-2 text-yellow-500 animate-pulse"
+                  >⭐</span
+                >
               </h3>
+              <div
+                class="text-xs"
+                :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'"
+              >
+                Nivel {{ userLevel }}
+              </div>
               <button
                 @click="openProfileModal"
-                class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300"
+                class="text-xs mt-1"
+                :class="
+                  isDarkMode
+                    ? 'text-teal-400 hover:text-teal-300'
+                    : 'text-teal-600 hover:text-teal-700'
+                "
               >
                 Editar perfil
               </button>
             </div>
           </div>
+
+          <!-- XP Progress Bar -->
+          <div
+            class="w-full rounded-full h-2.5 mb-1"
+            :class="isDarkMode ? 'bg-gray-600' : 'bg-gray-200'"
+          >
+            <div
+              class="bg-teal-500 h-2.5 rounded-full"
+              :style="{ width: `${xpPercentage}%` }"
+            ></div>
+          </div>
+          <div
+            class="flex justify-between text-xs"
+            :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'"
+          >
+            <span>XP: {{ userXp }}/{{ xpForNextLevel }}</span>
+            <span>{{ xpPercentage }}%</span>
+          </div>
         </div>
 
-        <nav class="space-y-2">
+        <!-- Navigation Menu -->
+        <div class="space-y-1 mb-4">
           <a
             href="/admin/eventos"
             @click.prevent="handleNavigation('/admin/eventos')"
             :class="[
-              'flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700',
+              'flex items-center px-4 py-3 rounded-lg transition-all duration-200 border-l-4',
               currentPath === '/admin/eventos'
-                ? 'text-teal-500 dark:text-teal-400'
-                : 'text-gray-700 dark:text-gray-200',
+                ? isDarkMode
+                  ? 'bg-teal-500/20 text-teal-400 border-teal-500'
+                  : 'bg-teal-50 text-teal-600 border-teal-500'
+                : isDarkMode
+                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
             ]"
           >
             <svg
@@ -79,7 +138,9 @@
               fill="none"
               :stroke="
                 currentPath === '/admin/eventos'
-                  ? 'rgb(20 184 166)'
+                  ? isDarkMode
+                    ? 'rgb(45 212 191)'
+                    : 'rgb(13 148 136)'
                   : 'currentColor'
               "
               viewBox="0 0 24 24"
@@ -91,17 +152,21 @@
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            Administrar Anuncios
+            <span>Administrar Anuncios</span>
           </a>
 
           <a
             href="/admin/fechas"
             @click.prevent="handleNavigation('/admin/fechas')"
             :class="[
-              'flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700',
+              'flex items-center px-4 py-3 rounded-lg transition-all duration-200 border-l-4',
               currentPath === '/admin/fechas'
-                ? 'text-teal-500 dark:text-teal-400'
-                : 'text-gray-700 dark:text-gray-200',
+                ? isDarkMode
+                  ? 'bg-teal-500/20 text-teal-400 border-teal-500'
+                  : 'bg-teal-50 text-teal-600 border-teal-500'
+                : isDarkMode
+                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
             ]"
           >
             <svg
@@ -109,7 +174,9 @@
               fill="none"
               :stroke="
                 currentPath === '/admin/fechas'
-                  ? 'rgb(20 184 166)'
+                  ? isDarkMode
+                    ? 'rgb(45 212 191)'
+                    : 'rgb(13 148 136)'
                   : 'currentColor'
               "
               viewBox="0 0 24 24"
@@ -121,14 +188,16 @@
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Administrar Fechas
+            <span>Administrar Fechas</span>
           </a>
 
           <button
             @click="openChangePassword"
             :class="[
-              'flex items-center w-full px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-left',
-              'text-gray-700 dark:text-gray-200',
+              'flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 border-l-4 border-transparent',
+              isDarkMode
+                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
             ]"
           >
             <svg
@@ -144,12 +213,55 @@
                 d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
               />
             </svg>
-            Cambiar Contraseña
+            <span>Cambiar Contraseña</span>
           </button>
 
+          <!-- Ranking button -->
+          <a
+            href="/admin/ranking"
+            @click.prevent="handleNavigation('/admin/ranking')"
+            :class="[
+              'flex items-center px-4 py-3 rounded-lg transition-all duration-200 border-l-4',
+              currentPath === '/admin/ranking'
+                ? isDarkMode
+                  ? 'bg-teal-500/20 text-teal-400 border-teal-500'
+                  : 'bg-teal-50 text-teal-600 border-teal-500'
+                : isDarkMode
+                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
+            ]"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              :stroke="
+                currentPath === '/admin/ranking'
+                  ? isDarkMode
+                    ? 'rgb(45 212 191)'
+                    : 'rgb(13 148 136)'
+                  : 'currentColor'
+              "
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            <span>Ranking Global</span>
+          </a>
+
+          <!-- Logout button -->
           <button
             @click="handleLogout"
-            class="flex items-center w-full px-4 py-2 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            :class="[
+              'flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 border-l-4 border-transparent',
+              isDarkMode
+                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
+            ]"
           >
             <svg
               class="w-5 h-5 mr-3"
@@ -166,12 +278,90 @@
             </svg>
             Cerrar Sesión
           </button>
-        </nav>
+        </div>
+
+        <!-- Achievements -->
+        <div
+          class="mb-4 p-3 rounded-lg border"
+          :class="
+            isDarkMode
+              ? 'bg-gray-700/30 border-gray-600/50'
+              : 'bg-white border-gray-200'
+          "
+        >
+          <button
+            @click="toggleAchievements"
+            class="w-full text-sm font-semibold mb-2 flex items-center justify-between"
+            :class="isDarkMode ? 'text-yellow-400' : 'text-yellow-600'"
+          >
+            <div class="flex items-center">
+              <span class="mr-1">🏆</span> Logros ({{ unlockedAchievements }}/{{
+                totalAchievements
+              }})
+            </div>
+            <svg
+              class="w-4 h-4 transition-transform"
+              :class="showAchievements ? 'rotate-180' : ''"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <div
+            v-if="showAchievements"
+            class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
+          >
+            <div
+              v-for="(achievement, index) in achievements"
+              :key="index"
+              :class="[
+                'w-full aspect-square rounded-lg flex items-center justify-center',
+                achievement.unlocked
+                  ? 'bg-gradient-to-br from-yellow-500 to-yellow-600'
+                  : isDarkMode
+                  ? 'bg-gray-700'
+                  : 'bg-gray-200',
+                'relative group',
+              ]"
+            >
+              <span
+                :class="[
+                  'text-lg',
+                  achievement.unlocked ? 'opacity-100' : 'opacity-40',
+                ]"
+                >{{ achievement.icon }}</span
+              >
+
+              <!-- Tooltip -->
+              <div
+                class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-xs text-white p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
+              >
+                <p class="font-semibold">{{ achievement.name }}</p>
+                <p class="text-gray-300 text-xs">
+                  {{ achievement.description }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-grow"></div>
       </div>
     </div>
 
     <!-- Modal de Cambio de Contraseña -->
-    <CambioContrasena ref="cambioContrasenaRef" />
+    <CambioContrasena
+      ref="cambioContrasenaRef"
+      @password-changed="awardXp(20)"
+    />
 
     <!-- Modal de Perfil -->
     <ProfileModal
@@ -180,11 +370,35 @@
       @close="showProfileModal = false"
       @update="handleProfileUpdate"
     />
+
+    <!-- Level Up Notification -->
+    <div
+      v-if="showLevelUp"
+      class="fixed top-1/4 left-1/2 transform -translate-x-1/2 bg-gray-800 border-2 border-yellow-500 text-white p-6 rounded-lg shadow-lg z-[100] animate-bounce"
+    >
+      <div class="text-center">
+        <div class="text-yellow-400 text-4xl mb-2">🎉</div>
+        <h3 class="text-xl font-bold mb-1">¡Nivel Subido!</h3>
+        <p class="text-gray-300">Has alcanzado el nivel {{ userLevel }}</p>
+      </div>
+    </div>
+
+    <!-- Achievement Notification -->
+    <div
+      v-if="showAchievement"
+      class="fixed top-1/3 left-1/2 transform -translate-x-1/2 bg-gray-800 border-2 border-yellow-500 text-white p-6 rounded-lg shadow-lg z-[100] animate-bounce"
+    >
+      <div class="text-center">
+        <div class="text-yellow-400 text-4xl mb-2">🏆</div>
+        <h3 class="text-xl font-bold mb-1">¡Nuevo Logro!</h3>
+        <p class="text-gray-300">{{ latestAchievement.name }}</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import CambioContrasena from "./CambioContrasena.vue";
 import ProfileModal from "./ProfileModal.vue";
 import { auth_api, usuarios } from "../lib/api.ts";
@@ -193,6 +407,10 @@ const props = defineProps({
   isOpen: {
     type: Boolean,
     required: true,
+  },
+  darkMode: {
+    type: Boolean,
+    default: true,
   },
 });
 
@@ -203,6 +421,133 @@ const displayName = ref("");
 const showProfileModal = ref(false);
 let unsubscribeAuth = null;
 let unsubscribeProfile = null;
+
+// Theme state
+const isDarkMode = computed(() => props.darkMode);
+
+// Gamification state
+const userXp = ref(0);
+const userLevel = ref(1);
+const xpForNextLevel = computed(() => userLevel.value * 100);
+const xpPercentage = computed(() =>
+  Math.min(100, Math.floor((userXp.value / xpForNextLevel.value) * 100))
+);
+const loginStreak = ref(0);
+const showLevelUp = ref(false);
+const showAchievement = ref(false);
+const hasNewAchievement = ref(false);
+const latestAchievement = ref({});
+const newAnnouncementsCount = ref(2);
+const upcomingDatesCount = ref(3);
+const showAchievements = ref(false);
+
+// Achievements - Updated to exactly 16
+const achievements = ref([
+  {
+    icon: "🔒",
+    name: "Seguridad",
+    description: "Cambia tu contraseña",
+    unlocked: false,
+  },
+  {
+    icon: "👤",
+    name: "Identidad",
+    description: "Personaliza tu perfil",
+    unlocked: false,
+  },
+  {
+    icon: "🎨",
+    name: "Personalización",
+    description: "Cambia el tema de la interfaz",
+    unlocked: false,
+  },
+  {
+    icon: "📢",
+    name: "Comunicador",
+    description: "Crea 3 anuncios",
+    unlocked: false,
+  },
+  {
+    icon: "📅",
+    name: "Organizador",
+    description: "Crea 3 fechas",
+    unlocked: false,
+  },
+  {
+    icon: "📣",
+    name: "Publicista",
+    description: "Crea 10 anuncios",
+    unlocked: false,
+  },
+  {
+    icon: "🗓️",
+    name: "Planificador",
+    description: "Crea 10 fechas",
+    unlocked: false,
+  },
+  {
+    icon: "📯",
+    name: "Comunicador Experto",
+    description: "Crea 25 anuncios",
+    unlocked: false,
+  },
+  {
+    icon: "📆",
+    name: "Planificador Experto",
+    description: "Crea 25 fechas",
+    unlocked: false,
+  },
+  {
+    icon: "✏️",
+    name: "Editor",
+    description: "Modifica 10 anuncios",
+    unlocked: false,
+  },
+  {
+    icon: "🔄",
+    name: "Actualizador",
+    description: "Modifica 10 fechas",
+    unlocked: false,
+  },
+  {
+    icon: "🗑️",
+    name: "Limpiador",
+    description: "Elimina 5 anuncios",
+    unlocked: false,
+  },
+  {
+    icon: "❌",
+    name: "Depurador",
+    description: "Elimina 5 fechas",
+    unlocked: false,
+  },
+  {
+    icon: "⭐",
+    name: "Novato",
+    description: "Alcanza el nivel 5",
+    unlocked: false,
+  },
+  {
+    icon: "🌟",
+    name: "Intermedio",
+    description: "Alcanza el nivel 10",
+    unlocked: false,
+  },
+  {
+    icon: "🌠",
+    name: "Maestro",
+    description: "Alcanza el nivel 100",
+    unlocked: false,
+  },
+]);
+
+const unlockedAchievements = computed(() => {
+  return achievements.value.filter((a) => a.unlocked).length;
+});
+
+const totalAchievements = computed(() => {
+  return achievements.value.length;
+});
 
 // Función para obtener la inicial del nombre de usuario
 const getUserInitial = (name) => {
@@ -230,6 +575,166 @@ const getUserColor = (name) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
+// Función para otorgar XP
+const awardXp = (amount) => {
+  userXp.value += amount;
+
+  // Check for level up
+  if (userXp.value >= xpForNextLevel.value) {
+    userXp.value = userXp.value - xpForNextLevel.value;
+    userLevel.value++;
+    showLevelUp.value = true;
+
+    // Check for level achievements
+    if (userLevel.value >= 5) {
+      unlockAchievement(13); // Unlock "Novato" achievement
+    }
+    if (userLevel.value >= 10) {
+      unlockAchievement(14); // Unlock "Intermedio" achievement
+    }
+    if (userLevel.value >= 100) {
+      unlockAchievement(15); // Unlock "Maestro" achievement
+    }
+
+    setTimeout(() => {
+      showLevelUp.value = false;
+    }, 3000);
+  }
+
+  // Save to localStorage
+  saveGameState();
+};
+
+// Función para desbloquear logros
+const unlockAchievement = (index) => {
+  if (!achievements.value[index].unlocked) {
+    achievements.value[index].unlocked = true;
+    latestAchievement.value = achievements.value[index];
+    showAchievement.value = true;
+    hasNewAchievement.value = true;
+
+    setTimeout(() => {
+      showAchievement.value = false;
+    }, 3000);
+
+    // Save to localStorage
+    saveGameState();
+
+    // Award XP for achievement
+    awardXp(25);
+  }
+};
+
+// Guardar estado del juego
+const saveGameState = async () => {
+  const user = auth_api.getCurrentUser();
+  if (!user?.uid) return; // No guardar si no hay usuario autenticado
+
+  const gameState = {
+    userXp: userXp.value,
+    userLevel: userLevel.value,
+    loginStreak: loginStreak.value,
+    achievements: achievements.value,
+  };
+
+  // Guardar tanto en Firestore como en localStorage para respaldo
+  try {
+    await usuarios.updateGameState(user.uid, gameState);
+  } catch (error) {
+    console.error("Error al guardar estado en Firestore:", error);
+  }
+
+  // Mantener respaldo en localStorage
+  localStorage.setItem(`adminGameState_${user.uid}`, JSON.stringify(gameState));
+};
+
+// Cargar estado del juego
+const loadGameState = async () => {
+  const user = auth_api.getCurrentUser();
+  if (!user?.uid) return; // No cargar si no hay usuario autenticado
+
+  try {
+    // Intentar cargar desde Firestore primero
+    const firestoreGameState = await usuarios.getGameState(user.uid);
+
+    if (firestoreGameState) {
+      // Si se encuentra en Firestore, usar esos datos
+      userXp.value = firestoreGameState.userXp || 0;
+      userLevel.value = firestoreGameState.userLevel || 1;
+      loginStreak.value = firestoreGameState.loginStreak || 0;
+
+      if (
+        firestoreGameState.achievements &&
+        firestoreGameState.achievements.length > 0
+      ) {
+        // Aplicar estado de logros desde Firestore
+        firestoreGameState.achievements.forEach((achievement, index) => {
+          if (index < achievements.value.length) {
+            achievements.value[index].unlocked = achievement.unlocked || false;
+          }
+        });
+      }
+
+      // Guardar una copia local
+      saveGameState();
+      return;
+    }
+  } catch (error) {
+    console.error("Error al cargar estado desde Firestore:", error);
+  }
+
+  // Si hay un error o no hay datos en Firestore, intentar cargar desde localStorage
+  const savedState = localStorage.getItem(`adminGameState_${user.uid}`);
+
+  if (savedState) {
+    const gameState = JSON.parse(savedState);
+    userXp.value = gameState.userXp || 0;
+    userLevel.value = gameState.userLevel || 1;
+    loginStreak.value = gameState.loginStreak || 0;
+
+    if (gameState.achievements) {
+      // Keep the new achievements structure but load unlocked status from saved state
+      const savedAchievements = gameState.achievements;
+      // Map old achievements to new ones where possible
+      if (savedAchievements.length > 0) {
+        // Map security achievement (was at index 3)
+        if (savedAchievements[3] && savedAchievements[3].unlocked) {
+          achievements.value[0].unlocked = true;
+        }
+        // Map identity achievement (was at index 4)
+        if (savedAchievements[4] && savedAchievements[4].unlocked) {
+          achievements.value[1].unlocked = true;
+        }
+        // Map personalization achievement (was at index 8)
+        if (
+          savedAchievements.length > 8 &&
+          savedAchievements[8] &&
+          savedAchievements[8].unlocked
+        ) {
+          achievements.value[2].unlocked = true;
+        }
+      }
+    }
+
+    // Check level achievements
+    if (userLevel.value >= 5) {
+      achievements.value[13].unlocked = true;
+    }
+    if (userLevel.value >= 10) {
+      achievements.value[14].unlocked = true;
+    }
+    if (userLevel.value >= 100) {
+      achievements.value[15].unlocked = true;
+    }
+
+    // Sincronizar con Firestore
+    saveGameState();
+  } else {
+    // First time - initialize
+    saveGameState();
+  }
+};
+
 const openProfileModal = () => {
   showProfileModal.value = true;
   emit("close");
@@ -237,10 +742,20 @@ const openProfileModal = () => {
 
 const handleProfileUpdate = (newDisplayName) => {
   displayName.value = newDisplayName;
+  unlockAchievement(1); // Unlock "Identidad" achievement
+  hasNewAchievement.value = false; // Reset notification
 };
 
 const handleNavigation = (path) => {
   emit("close");
+
+  // Eliminar las referencias a completeTask
+  if (path === "/admin/eventos") {
+    newAnnouncementsCount.value = 0;
+  } else if (path === "/admin/fechas") {
+    upcomingDatesCount.value = 0;
+  }
+
   window.location.href = path;
 };
 
@@ -259,6 +774,7 @@ const handleLogout = async () => {
 const openChangePassword = () => {
   cambioContrasenaRef.value?.openModal();
   emit("close");
+  unlockAchievement(0); // Unlock "Seguridad" achievement
 };
 
 const updateCurrentPath = () => {
@@ -294,17 +810,33 @@ const updateUserProfile = async () => {
   }
 };
 
+const toggleAchievements = () => {
+  showAchievements.value = !showAchievements.value;
+};
+
 onMounted(async () => {
   updateCurrentPath();
   window.addEventListener("popstate", updateCurrentPath);
 
-  // Cargar perfil inicial
-  await updateUserProfile();
-
   // Suscribirse a cambios de autenticación
   unsubscribeAuth = auth_api.onAuthStateChange(async (user) => {
     if (user) {
+      // Cargar perfil del usuario
       await updateUserProfile();
+
+      // Load game state después de que el perfil esté cargado
+      loadGameState();
+
+      // Revisar si hay XP temporal para agregar desde localStorage
+      const tempXpKey = `tempXp_${user.uid}`;
+      const tempXp = localStorage.getItem(tempXpKey);
+      if (tempXp) {
+        const xpToAdd = parseInt(tempXp);
+        if (!isNaN(xpToAdd) && xpToAdd > 0) {
+          awardXp(xpToAdd);
+          localStorage.removeItem(tempXpKey);
+        }
+      }
     } else {
       displayName.value = "";
       // Limpiar la suscripción del perfil si existe
@@ -314,6 +846,27 @@ onMounted(async () => {
       }
     }
   });
+
+  // Registrar el componente como un elemento customizado para poder acceder desde otros componentes
+  if (
+    typeof window !== "undefined" &&
+    typeof customElements !== "undefined" &&
+    !customElements.get("admin-sidebar")
+  ) {
+    class AdminSidebarElement extends HTMLElement {
+      constructor() {
+        super();
+      }
+    }
+    customElements.define("admin-sidebar", AdminSidebarElement);
+
+    // Crear una instancia y adjuntar un método puente para awardXp
+    const sidebarElement = document.createElement("admin-sidebar");
+    sidebarElement.awardXp = (amount) => {
+      awardXp(amount);
+    };
+    document.body.appendChild(sidebarElement);
+  }
 });
 
 onBeforeUnmount(() => {
@@ -328,10 +881,55 @@ onBeforeUnmount(() => {
     unsubscribeProfile = null;
   }
 });
+
+// Watch for changes in achievements to update CambioContrasena component
+watch(
+  () => achievements.value[0].unlocked,
+  (newValue) => {
+    if (newValue && cambioContrasenaRef.value) {
+      cambioContrasenaRef.value.onPasswordChanged = () => {
+        awardXp(20);
+      };
+    }
+  }
+);
+
+// Exponer el método para que pueda ser accedido desde el componente padre
+defineExpose({
+  unlockAchievement,
+});
 </script>
 
 <style scoped>
 a {
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0) translateX(-50%);
+  }
+  50% {
+    transform: translateY(-20px) translateX(-50%);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 </style>

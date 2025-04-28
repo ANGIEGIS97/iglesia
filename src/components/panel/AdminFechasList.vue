@@ -1,5 +1,12 @@
 <template>
   <div>
+    <!-- Notificación XP -->
+    <NotificacionXP
+      :show="showXpNotification"
+      :amount="xpAmount"
+      :message="xpMessage"
+    />
+
     <div class="space-y-6 mt-24">
       <div
         class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 sm:px-0"
@@ -695,6 +702,7 @@
         :fecha="fechaParaConvertir"
         @error="handleConverterError"
         @success="handleConverterSuccess"
+        @xp-earned="handleXpEarned"
         ref="fechaToEventoConverter"
       />
     </div>
@@ -710,6 +718,7 @@
       @submit="handleUpdateEvento"
       @cancel="closeEventoModal"
       @delete="handleDeleteEvento"
+      @xp-earned="handleXpEarned"
     />
   </div>
 </template>
@@ -719,6 +728,7 @@ import { fechas, eventos } from "../../lib/api";
 import FechaModal from "./modals/FechaModal.vue";
 import FechaToEventoConverter from "./utils/FechaToEventoConverter.vue";
 import EventoModal from "./modals/EventoModal.vue";
+import NotificacionXP from "../NotificacionXP.vue";
 
 export default {
   name: "AdminFechasList",
@@ -726,22 +736,27 @@ export default {
     FechaModal,
     FechaToEventoConverter,
     EventoModal,
+    NotificacionXP,
   },
   data() {
     return {
       fechas: [],
-      showModal: false,
-      editingFecha: null,
-      fechaParaConvertir: null,
-      errorMessage: "",
-      isErrorNotification: true,
       isLoading: true,
-      isGeneratingAnuncio: false,
-      generatingStep: "",
       selectedFechas: [],
       isAllSelected: false,
+      showModal: false,
+      errorMessage: "",
+      isErrorNotification: true,
+      editingFecha: null,
+      fechaParaConvertir: null,
+      isGeneratingAnuncio: false,
+      generatingStep: "",
       eventoParaVer: null,
       showEventoModal: false,
+      // Notificaciones XP
+      showXpNotification: false,
+      xpAmount: 0,
+      xpMessage: "",
     };
   },
   async created() {
@@ -875,9 +890,13 @@ export default {
         if (this.editingFecha && this.editingFecha.id) {
           // Estamos editando una fecha existente
           await fechas.update(this.editingFecha.id, fechaData);
+          // Notificación XP por actualizar fecha
+          this.showXpNotif(15, "¡Fecha actualizada!");
         } else {
           // Estamos creando una nueva fecha (ya sea desde cero o duplicando)
           await fechas.create(fechaData);
+          // Notificación XP por crear fecha
+          this.showXpNotif(20, "¡Nueva fecha creada!");
 
           // Mostrar mensaje específico si es una duplicación
           if (fechaData.titulo && fechaData.titulo.includes("(Copia)")) {
@@ -905,6 +924,8 @@ export default {
           await fechas.delete(id);
           // En lugar de recargar todas las fechas, solo eliminamos la fecha del array local
           this.fechas = this.fechas.filter((fecha) => fecha.id !== id);
+          // Notificación XP por eliminar fecha
+          this.showXpNotif(5, "¡Fecha eliminada!");
         } catch (error) {
           console.error("Error al eliminar fecha:", error);
           this.errorMessage = error.message || "Error al eliminar la fecha";
@@ -1209,6 +1230,14 @@ export default {
             false
           );
 
+          // Notificación XP por eliminar fechas (5 XP por cada fecha eliminada)
+          if (this.selectedFechas.length > 0) {
+            this.showXpNotif(
+              5 * this.selectedFechas.length,
+              "¡Fechas eliminadas!"
+            );
+          }
+
           this.selectedFechas = [];
           this.isAllSelected = false;
         } catch (error) {
@@ -1322,6 +1351,32 @@ export default {
         console.error("Error al eliminar el evento:", error);
         this.showNotification("Error al eliminar el anuncio", true);
       }
+    },
+    showXpNotif(amount, message) {
+      this.xpAmount = amount;
+      this.xpMessage = message;
+      this.showXpNotification = true;
+
+      // Actualizar experiencia en el sidebar si está disponible
+      const sidebarComponent = document.querySelector("admin-sidebar");
+      if (sidebarComponent && typeof sidebarComponent.awardXp === "function") {
+        sidebarComponent.awardXp(amount);
+      } else {
+        // Si no existe aún el componente, guardar el XP en localStorage
+        const currentXp = localStorage.getItem("tempXp")
+          ? parseInt(localStorage.getItem("tempXp") || "0")
+          : 0;
+        localStorage.setItem("tempXp", (currentXp + amount).toString());
+      }
+
+      // Ocultar después de 3 segundos
+      setTimeout(() => {
+        this.showXpNotification = false;
+      }, 3000);
+    },
+    // Handler para eventos de XP desde el conversor de fechas a eventos
+    handleXpEarned({ amount, message }) {
+      this.showXpNotif(amount, message);
     },
   },
 };

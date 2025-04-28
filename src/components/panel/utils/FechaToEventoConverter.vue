@@ -64,7 +64,7 @@ export default {
       errorMessage: "",
     };
   },
-  emits: ["error", "success", "notification"],
+  emits: ["error", "success", "notification", "xp-earned"],
   methods: {
     async convertirFechaAEvento() {
       try {
@@ -324,6 +324,9 @@ export default {
 
         let eventoId = this.fecha.eventoId;
 
+        // Determinar si estamos creando o actualizando para la notificación XP
+        const isCreating = !this.fecha.eventoId;
+
         if (this.fecha.eventoId) {
           // Actualizar el evento existente
           await eventos.update(this.fecha.eventoId, anuncioData);
@@ -347,6 +350,15 @@ export default {
         const mensaje = this.fecha.eventoId
           ? "¡Anuncio actualizado con éxito!"
           : "¡Anuncio creado con éxito!";
+
+        // Emitir evento para asignar XP
+        const xpAmount = isCreating ? 20 : 15; // 20 XP por crear, 15 por actualizar
+        this.$emit("xp-earned", {
+          amount: xpAmount,
+          message: isCreating
+            ? "¡Anuncio creado desde fecha!"
+            : "¡Anuncio actualizado desde fecha!",
+        });
 
         this.$emit("success", mensaje, {
           fechaId: this.fecha.id,
@@ -395,6 +407,12 @@ export default {
 
         // Cerrar modal
         this.closeAnuncioModal();
+
+        // Emitir evento XP por eliminar anuncio
+        this.$emit("xp-earned", {
+          amount: 5,
+          message: "¡Anuncio eliminado!",
+        });
 
         // Emitir evento de éxito
         this.$emit("success", "Anuncio eliminado correctamente");

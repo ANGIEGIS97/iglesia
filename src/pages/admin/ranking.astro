@@ -1,0 +1,22 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import UserRanking from "../../components/panel/UserRanking.vue";
+import { redirectIfNotAuthenticated } from "../../middleware/auth";
+
+// Ejecutar la redirección del lado del cliente
+---
+
+<Layout title="Admin - Ranking Global">
+  <main class="container mx-auto px-4 py-8">
+    <UserRanking client:load />
+  </main>
+</Layout>
+
+<script>
+  import { redirectIfNotAuthenticated } from "../../middleware/auth";
+
+  // Esperar a que la autenticación se complete antes de redirigir
+  document.addEventListener("DOMContentLoaded", async () => {
+    await redirectIfNotAuthenticated();
+  });
+</script>

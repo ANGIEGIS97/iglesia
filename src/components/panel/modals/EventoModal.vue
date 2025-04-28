@@ -51,7 +51,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["submit", "cancel", "delete"]);
+const emit = defineEmits(["submit", "cancel", "delete", "xp-earned"]);
 
 const formData = ref({ ...props.event });
 const selectedImageOption = ref("");
@@ -380,8 +380,15 @@ watch([() => formData.value.titulo, () => formData.value.descripcion], () => {
 
 // Función para manejar la eliminación con confirmación
 const handleDelete = () => {
-  emit("delete");
-  emit("cancel");
+  if (window.confirm("¿Estás seguro de que deseas eliminar este anuncio?")) {
+    emit("delete");
+
+    // Emitir evento xp-earned al eliminar
+    emit("xp-earned", {
+      amount: 5,
+      message: "¡Anuncio eliminado!",
+    });
+  }
 };
 
 const handleSubmit = async () => {
@@ -412,6 +419,19 @@ const handleSubmit = async () => {
     };
 
     emit("submit", dataToSubmit);
+
+    // Emitir evento xp-earned
+    if (props.isEdit) {
+      emit("xp-earned", {
+        amount: 15,
+        message: "¡Anuncio actualizado!",
+      });
+    } else {
+      emit("xp-earned", {
+        amount: 20,
+        message: "¡Nuevo anuncio creado!",
+      });
+    }
   } catch (error: any) {
     console.error("Error al procesar el formulario:", error);
     alert(error.message || "Error al procesar el formulario");
