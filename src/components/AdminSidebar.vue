@@ -49,18 +49,23 @@
 
         <!-- Perfil del Usuario con Nivel y XP -->
         <div
-          class="mb-2 p-4 rounded-lg border backdrop-blur-sm"
+          class="mb-2 p-2 rounded-lg border backdrop-blur-sm"
           :class="
             isDarkMode
               ? 'bg-gray-700/50 border-gray-600/50'
               : 'bg-white/80 border-gray-200'
           "
-        >          <div class="flex items-center space-x-3 mb-3 relative">
+        >
+          <div class="flex items-center space-x-3 mb-3 relative">
             <!-- Botón de apagado en la esquina superior derecha -->
             <button
               @click="handleLogout"
               class="absolute -top-2 -right-2 p-2 rounded-full transition-colors"
-              :class="isDarkMode ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'"
+              :class="
+                isDarkMode
+                  ? 'text-red-400 hover:text-red-300'
+                  : 'text-red-500 hover:text-red-600'
+              "
               title="Cerrar sesión"
             >
               <svg
@@ -94,7 +99,7 @@
               <h3 class="text-sm font-medium flex items-center">
                 {{ displayName || "Usuario" }}
                 <span
-                  v-if="hasNewAchievement"
+                  v-if="logrosRef && logrosRef.hasNewAchievement"
                   class="ml-2 text-yellow-500 animate-pulse"
                   >⭐</span
                 >
@@ -275,78 +280,13 @@
           </a>
         </div>
 
-        <!-- Achievements -->
-        <div
-          class="mb-4 p-3 rounded-lg border"
-          :class="
-            isDarkMode
-              ? 'bg-gray-700/30 border-gray-600/50'
-              : 'bg-white border-gray-200'
-          "
-        >
-          <button
-            @click="toggleAchievements"
-            class="w-full text-sm font-semibold mb-2 flex items-center justify-between"
-            :class="isDarkMode ? 'text-yellow-400' : 'text-yellow-600'"
-          >
-            <div class="flex items-center">
-              <span class="mr-1">🏆</span> Logros ({{ unlockedAchievements }}/{{
-                totalAchievements
-              }})
-            </div>
-            <svg
-              class="w-4 h-4 transition-transform"
-              :class="showAchievements ? 'rotate-180' : ''"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
-
-          <div
-            v-if="showAchievements"
-            class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
-          >
-            <div
-              v-for="(achievement, index) in achievements"
-              :key="index"
-              :class="[
-                'w-full aspect-square rounded-lg flex items-center justify-center',
-                achievement.unlocked
-                  ? 'bg-gradient-to-br from-yellow-500 to-yellow-600'
-                  : isDarkMode
-                  ? 'bg-gray-700'
-                  : 'bg-gray-200',
-                'relative group',
-              ]"
-            >
-              <span
-                :class="[
-                  'text-lg',
-                  achievement.unlocked ? 'opacity-100' : 'opacity-40',
-                ]"
-                >{{ achievement.icon }}</span
-              >
-
-              <!-- Tooltip -->
-              <div
-                class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-xs text-white p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
-              >
-                <p class="font-semibold">{{ achievement.name }}</p>
-                <p class="text-gray-300 text-xs">
-                  {{ achievement.description }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- Componente Logros -->
+        <Logros
+          ref="logrosRef"
+          :darkMode="isDarkMode"
+          @achievement-unlocked="handleAchievementUnlocked"
+          @xp-awarded="awardXp"
+        />
 
         <!-- Contador de Estadísticas -->
         <ContadorEstadisticas class="mb-4" :darkMode="isDarkMode" />
@@ -380,18 +320,6 @@
         <p class="text-gray-300">Has alcanzado el nivel {{ userLevel }}</p>
       </div>
     </div>
-
-    <!-- Achievement Notification -->
-    <div
-      v-if="showAchievement"
-      class="fixed top-1/3 left-1/2 transform -translate-x-1/2 bg-gray-800 border-2 border-yellow-500 text-white p-6 rounded-lg shadow-lg z-[100] animate-bounce"
-    >
-      <div class="text-center">
-        <div class="text-yellow-400 text-4xl mb-2">🏆</div>
-        <h3 class="text-xl font-bold mb-1">¡Nuevo Logro!</h3>
-        <p class="text-gray-300">{{ latestAchievement.name }}</p>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -401,6 +329,7 @@ import CambioContrasena from "./CambioContrasena.vue";
 import ProfileModal from "./ProfileModal.vue";
 import { auth_api, usuarios } from "../lib/api.ts";
 import ContadorEstadisticas from "./ContadorEstadisticas.vue";
+import Logros from "./Logros.vue";
 
 const props = defineProps({
   isOpen: {
@@ -418,6 +347,7 @@ const currentPath = ref("");
 const cambioContrasenaRef = ref(null);
 const displayName = ref("");
 const showProfileModal = ref(false);
+const logrosRef = ref(null);
 let unsubscribeAuth = null;
 let unsubscribeProfile = null;
 
@@ -433,144 +363,8 @@ const xpPercentage = computed(() =>
 );
 const loginStreak = ref(0);
 const showLevelUp = ref(false);
-const showAchievement = ref(false);
-const hasNewAchievement = ref(false);
-const latestAchievement = ref({});
 const newAnnouncementsCount = ref(2);
 const upcomingDatesCount = ref(3);
-const showAchievements = ref(false);
-
-// Logros
-const achievements = ref([
-  {
-    icon: "🔒",
-    name: "Guardián de la Fe",
-    description: "Cambia tu contraseña",
-    unlocked: false,
-  },
-  {
-    icon: "👤",
-    name: "Nueva Criatura",
-    description: "Personaliza tu perfil",
-    unlocked: false,
-  },
-  {
-    icon: "🎨",
-    name: "Vasija Renovada",
-    description: "Cambia el tema de la interfaz",
-    unlocked: false,
-  },
-  {
-    icon: "📜",
-    name: "Portador de Buenas Nuevas",
-    description: "Agrega tu primer anuncio",
-    unlocked: false,
-  },
-  {
-    icon: "📢",
-    name: "Mensajero",
-    description: "Agrega 3 anuncios",
-    unlocked: false,
-  },
-  {
-    icon: "📅",
-    name: "Organizador",
-    description: "Agrega 3 fechas",
-    unlocked: false,
-  },
-  {
-    icon: "📣",
-    name: "Heraldo",
-    description: "Agrega 10 anuncios",
-    unlocked: false,
-  },
-  {
-    icon: "🗓️",
-    name: "Planificador",
-    description: "Agrega 10 fechas",
-    unlocked: false,
-  },
-  {
-    icon: "📯",
-    name: "Atalaya",
-    description: "Agrega 25 anuncios",
-    unlocked: false,
-  },
-  {
-    icon: "📆",
-    name: "Cronista de Dios",
-    description: "Agrega 25 fechas",
-    unlocked: false,
-  },
-  {
-    icon: "✏️",
-    name: "Escriba",
-    description: "Modifica 10 anuncios",
-    unlocked: false,
-  },
-  {
-    icon: "🔄",
-    name: "Obrero Diligente",
-    description: "Modifica 10 fechas",
-    unlocked: false,
-  },
-  {
-    icon: "🗑️",
-    name: "Limpiador",
-    description: "Elimina 5 anuncios",
-    unlocked: false,
-  },
-  {
-    icon: "❌",
-    name: "Purificador",
-    description: "Elimina 5 fechas",
-    unlocked: false,
-  },
-  {
-    icon: "🎂",
-    name: "Celebrador de la Vida",
-    description: "Agrega una fecha con icono de cumpleaños",
-    unlocked: false,
-  },
-  {
-    icon: "👨",
-    name: "Varón de Valor",
-    description: "Agrega una fecha con icono de reunión de varones",
-    unlocked: false,
-  },
-  {
-    icon: "👩",
-    name: "Mujer Virtuosa",
-    description: "Agrega una fecha con icono de reunión de damas",
-    unlocked: false,
-  },
-  {
-    icon: "⭐",
-    name: "Siervo Fiel",
-    description: "Alcanza el nivel 5",
-    unlocked: false,
-  },
-  {
-    icon: "🌟",
-    name: "Buen Mayordomo",
-    description: "Alcanza el nivel 10",
-    unlocked: false,
-  },
-  {
-    icon: "🌠",
-    name: "Buen y Fiel Siervo",
-    description: "Alcanza el nivel 100",
-    unlocked: false,
-  },
-]);
-
-const unlockedAchievements = computed(() => {
-  return achievements.value.filter((a) => a.unlocked).length;
-});
-
-const totalAchievements = computed(() => {
-  return achievements.value.length;
-});
 
 // Función para obtener la inicial del nombre de usuario
 const getUserInitial = (name) => {
@@ -609,14 +403,8 @@ const awardXp = (amount) => {
     showLevelUp.value = true;
 
     // Check for level achievements
-    if (userLevel.value >= 5) {
-      unlockAchievement(17); // "Siervo Fiel" - Nivel 5
-    }
-    if (userLevel.value >= 10) {
-      unlockAchievement(18); // "Buen Mayordomo" - Nivel 10
-    }
-    if (userLevel.value >= 100) {
-      unlockAchievement(19); // "Buen y Fiel Siervo" - Nivel 100
+    if (logrosRef.value) {
+      logrosRef.value.checkLevelAchievements(userLevel.value);
     }
 
     setTimeout(() => {
@@ -628,34 +416,10 @@ const awardXp = (amount) => {
   saveGameState();
 };
 
-// Función para desbloquear logros
-const unlockAchievement = (index) => {
-  console.log(`Intentando desbloquear logro con índice: ${index}`);
-
-  if (index < 0 || index >= achievements.value.length) {
-    console.error(`Índice de logro fuera de rango: ${index}`);
-    return;
-  }
-
-  if (!achievements.value[index].unlocked) {
-    console.log(`Desbloqueando logro: ${achievements.value[index].name}`);
-    achievements.value[index].unlocked = true;
-    latestAchievement.value = achievements.value[index];
-    showAchievement.value = true;
-    hasNewAchievement.value = true;
-
-    setTimeout(() => {
-      showAchievement.value = false;
-    }, 3000);
-
-    // Save to localStorage
-    saveGameState();
-
-    // Award XP for achievement
-    awardXp(25);
-  } else {
-    console.log(`Logro ya desbloqueado: ${achievements.value[index].name}`);
-  }
+// Manejar evento de logro desbloqueado
+const handleAchievementUnlocked = () => {
+  // Esta función se llama cuando se desbloquea un logro en el componente Logros
+  saveGameState();
 };
 
 // Guardar estado del juego
@@ -667,7 +431,7 @@ const saveGameState = async () => {
     userXp: userXp.value,
     userLevel: userLevel.value,
     loginStreak: loginStreak.value,
-    achievements: achievements.value,
+    achievements: logrosRef.value ? logrosRef.value.achievements : [],
   };
 
   // Guardar tanto en Firestore como en localStorage para respaldo
@@ -701,16 +465,14 @@ const loadGameState = async () => {
       userLevel.value = firestoreGameState.userLevel || 1;
       loginStreak.value = firestoreGameState.loginStreak || 0;
 
-      if (
-        firestoreGameState.achievements &&
-        firestoreGameState.achievements.length > 0
-      ) {
-        // Aplicar estado de logros desde Firestore
-        firestoreGameState.achievements.forEach((achievement, index) => {
-          if (index < achievements.value.length) {
-            achievements.value[index].unlocked = achievement.unlocked || false;
-          }
-        });
+      // Limpiar datos potencialmente obsoletos en localStorage antes de cargar datos de Firebase
+      if (logrosRef.value) {
+        logrosRef.value.clearAchievementsLocalStorage();
+      }
+
+      // Cargar los logros en el componente Logros
+      if (logrosRef.value && firestoreGameState.achievements) {
+        logrosRef.value.loadAchievements(firestoreGameState);
       }
 
       // Guardar una copia local
@@ -730,32 +492,9 @@ const loadGameState = async () => {
     userLevel.value = gameState.userLevel || 1;
     loginStreak.value = gameState.loginStreak || 0;
 
-    if (
-      gameState.achievements &&
-      gameState.achievements.length === achievements.value.length
-    ) {
-      // Si la estructura coincide, cargar directamente
-      achievements.value = gameState.achievements;
-    } else if (gameState.achievements) {
-      // Keep the new achievements structure but load unlocked status from saved state
-      const savedAchievements = gameState.achievements;
-      // Map old achievements to new ones where possible
-      if (savedAchievements.length > 0) {
-        savedAchievements.forEach((achievement, index) => {
-          if (index < achievements.value.length && achievement.unlocked) {
-            achievements.value[index].unlocked = true;
-          }
-        });
-      }
-    }    // Check level achievements
-    if (userLevel.value >= 5) {
-      achievements.value[17].unlocked = true; // "Siervo Fiel"
-    }
-    if (userLevel.value >= 10) {
-      achievements.value[18].unlocked = true; // "Buen Mayordomo"
-    }
-    if (userLevel.value >= 100) {
-      achievements.value[19].unlocked = true; // "Buen y Fiel Siervo"
+    // Cargar los logros en el componente Logros
+    if (logrosRef.value) {
+      logrosRef.value.loadAchievements(gameState);
     }
 
     // Sincronizar con Firestore
@@ -773,8 +512,11 @@ const openProfileModal = () => {
 
 const handleProfileUpdate = (newDisplayName) => {
   displayName.value = newDisplayName;
-  unlockAchievement(1); // Unlock "Identidad" achievement
-  hasNewAchievement.value = false; // Reset notification
+
+  // Unlock achievement through Logros component
+  if (logrosRef.value) {
+    logrosRef.value.unlockAchievement(1); // Nueva Criatura achievement
+  }
 };
 
 const handleNavigation = (path) => {
@@ -792,6 +534,11 @@ const handleNavigation = (path) => {
 
 const handleLogout = async () => {
   try {
+    // Limpiar datos de logros en localStorage antes de cerrar sesión
+    if (logrosRef.value) {
+      logrosRef.value.clearAchievementsLocalStorage();
+    }
+
     await auth_api.logout();
     // Redirigir a la página de despedida después del logout exitoso
     window.location.replace("/logout");
@@ -805,7 +552,11 @@ const handleLogout = async () => {
 const openChangePassword = () => {
   cambioContrasenaRef.value?.openModal();
   emit("close");
-  unlockAchievement(0); // Unlock "Seguridad" achievement
+
+  // Unlock achievement through Logros component
+  if (logrosRef.value) {
+    logrosRef.value.unlockAchievement(0); // Guardián de la Fe achievement
+  }
 };
 
 const updateCurrentPath = () => {
@@ -841,120 +592,49 @@ const updateUserProfile = async () => {
   }
 };
 
-const toggleAchievements = () => {
-  showAchievements.value = !showAchievements.value;
-};
-
-// Función para comprobar logros basados en las estadísticas
-const checkAchievementsFromStats = () => {
-  // Eliminar la verificación de tiempo para que siempre procese los logros
-  const user = auth_api.getCurrentUser();
-  if (!user?.uid) return;
-
-  // Obtener estadísticas del localStorage
-  const userId = user.uid || "invitado";
-  const contadorKey = `estadisticasContador_${userId}`;
-  const datosGuardados = localStorage.getItem(contadorKey);
-
-  // Verificar si se ha creado un evento de cumpleaños
-  const haCreatedoCumpleanos = localStorage.getItem(
-    `haCreatedoCumpleanos_${userId}`
-  );
-  if (haCreatedoCumpleanos === "true") {
-    console.log("Desbloqueando logro Celebrador (cumpleaños)");
-    unlockAchievement(14); // Logro "Celebrador de la Vida"
-  }
-
-  // Verificar si se ha creado un evento de reunión de varones
-  const haCreadoReunionVarones = localStorage.getItem(
-    `haCreatedoReunionVarones_${userId}`
-  );
-  if (haCreadoReunionVarones === "true") {
-    console.log("Desbloqueando logro Varón de Valor");
-    unlockAchievement(15); // Logro "Varón de Valor"
-  }
-
-  // Verificar si se ha creado un evento de reunión de damas
-  const haCreadoReunionDamas = localStorage.getItem(
-    `haCreatedoReunionDamas_${userId}`
-  );
-  if (haCreadoReunionDamas === "true") {
-    console.log("Desbloqueando logro Mujer Virtuosa");
-    unlockAchievement(16); // Logro "Mujer Virtuosa"
-  }
-
-  if (datosGuardados) {
-    try {
-      const stats = JSON.parse(datosGuardados);
-      console.log("Verificando logros con estadísticas:", stats);
-
-      // Verificar logro del primer anuncio
-      if (stats.eventos.agregados >= 1) {
-        unlockAchievement(3); // Portador de Buenas Nuevas - Primer anuncio
-      }
-
-      // Verificar logros de anuncios (eventos)
-      if (stats.eventos.agregados >= 3) {
-        unlockAchievement(4); // Mensajero - Crea 3 anuncios
-      }
-      if (stats.eventos.agregados >= 10) {
-        unlockAchievement(6); // Heraldo - Crea 10 anuncios
-      }
-      if (stats.eventos.agregados >= 25) {
-        unlockAchievement(8); // Atalaya - Crea 25 anuncios
-      }
-
-      // Verificar logros de fechas
-      if (stats.fechas.agregados >= 3) {
-        unlockAchievement(5); // Organizador - Crea 3 fechas
-      }
-      if (stats.fechas.agregados >= 10) {
-        unlockAchievement(7); // Planificador - Crea 10 fechas
-      }
-      if (stats.fechas.agregados >= 25) {
-        unlockAchievement(9); // Cronista de Dios - Crea 25 fechas
-      }
-
-      // Verificar logros de modificación
-      if (stats.eventos.modificados >= 10) {
-        unlockAchievement(10); // Escriba - Modifica 10 anuncios
-      }
-      if (stats.fechas.modificados >= 10) {
-        unlockAchievement(11); // Obrero Diligente - Modifica 10 fechas
-      }
-
-      // Verificar logros de eliminación
-      if (stats.eventos.eliminados >= 5) {
-        unlockAchievement(12); // Limpiador - Elimina 5 anuncios
-      }
-      if (stats.fechas.eliminados >= 5) {
-        unlockAchievement(13); // Purificador - Elimina 5 fechas
-      }
-
-      // Actualizar la marca de tiempo para evitar verificaciones duplicadas frecuentes
-      localStorage.setItem(
-        `achievementsLastCheck_${user.uid}`,
-        Date.now().toString()
-      );
-    } catch (error) {
-      console.error("Error al procesar estadísticas para logros:", error);
-    }
-  }
-};
-
-// Añadir un listener para eventos personalizados desde ContadorEstadisticas
+// Función para configurar el listener de estadísticas
 const setupStatsListener = () => {
-  // Eliminar el listener existente para evitar duplicados
-  window.removeEventListener("statisticsUpdated", checkAchievementsFromStats);
+  window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
+  window.addEventListener("statisticsUpdated", checkStatsForAchievements);
 
-  // Añadir un nuevo listener con una función personalizada para forzar la verificación inmediata
-  window.addEventListener("statisticsUpdated", () => {
-    console.log(
-      "Evento statisticsUpdated recibido - verificando logros inmediatamente"
-    );
-    // Forzar la verificación de logros inmediatamente sin restricciones de tiempo
-    checkAchievementsFromStats();
-  });
+  // Agregar listener para forzar recarga de estado desde Firebase
+  window.removeEventListener("forceGameStateReload", forceReloadGameState);
+  window.addEventListener("forceGameStateReload", forceReloadGameState);
+};
+
+// Función para forzar recarga del estado desde Firebase
+const forceReloadGameState = async () => {
+  console.log("Forzando recarga de estado desde Firebase");
+  try {
+    const user = auth_api.getCurrentUser();
+    if (!user?.uid) return;
+
+    // Cargar datos directamente desde Firebase
+    const firestoreGameState = await usuarios.getGameState(user.uid);
+
+    if (firestoreGameState) {
+      userXp.value = firestoreGameState.userXp || 0;
+      userLevel.value = firestoreGameState.userLevel || 1;
+      loginStreak.value = firestoreGameState.loginStreak || 0;
+
+      // Cargar los logros en el componente Logros
+      if (logrosRef.value && firestoreGameState.achievements) {
+        logrosRef.value.loadAchievements(firestoreGameState);
+      }
+
+      console.log("Estado recargado exitosamente desde Firebase");
+    }
+  } catch (error) {
+    console.error("Error al forzar recarga desde Firebase:", error);
+  }
+};
+
+// Función para verificar logros cuando se actualizan las estadísticas
+const checkStatsForAchievements = () => {
+  console.log("Evento statisticsUpdated recibido - verificando logros");
+  if (logrosRef.value) {
+    logrosRef.value.checkAchievementsFromStats();
+  }
 };
 
 onMounted(async () => {
@@ -969,19 +649,6 @@ onMounted(async () => {
 
       // Load game state después de que el perfil esté cargado
       await loadGameState();
-
-      // Evitar cargar logros duplicados en cada navegación
-      const lastCheckKey = `achievementsLastCheck_${user.uid}`;
-      const lastCheck = localStorage.getItem(lastCheckKey);
-
-      // Solo verificar si no se ha hecho recientemente (últimos 30 segundos)
-      if (!lastCheck || Date.now() - parseInt(lastCheck) > 30000) {
-        // Verificar logros basados en estadísticas existentes
-        checkAchievementsFromStats();
-
-        // Actualizar marca de tiempo
-        localStorage.setItem(lastCheckKey, Date.now().toString());
-      }
 
       // Configurar listener para actualizaciones de estadísticas
       setupStatsListener();
@@ -1030,8 +697,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("popstate", updateCurrentPath);
-  // Eliminar listener de estadísticas de forma más simple
-  window.removeEventListener("statisticsUpdated", checkAchievementsFromStats);
+  window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
+
   // Limpiar todas las suscripciones
   if (unsubscribeAuth) {
     unsubscribeAuth();
@@ -1043,22 +710,17 @@ onBeforeUnmount(() => {
   }
 });
 
-// Watch for changes in achievements to update CambioContrasena component
+// Watch for changes in cambioContrasenaRef to update event handling
 watch(
-  () => achievements.value[0].unlocked,
-  (newValue) => {
-    if (newValue && cambioContrasenaRef.value) {
-      cambioContrasenaRef.value.onPasswordChanged = () => {
+  () => cambioContrasenaRef.value,
+  (newRef) => {
+    if (newRef) {
+      newRef.onPasswordChanged = () => {
         awardXp(20);
       };
     }
   }
 );
-
-// Exponer el método para que pueda ser accedido desde el componente padre
-defineExpose({
-  unlockAchievement,
-});
 </script>
 
 <style scoped>

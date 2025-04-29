@@ -898,7 +898,7 @@ export default {
           this.tipoXP = "fecha";
           this.accionXP = "modificados";
           // Notificación XP por actualizar fecha
-          this.showXpNotif(15, "¡Fecha actualizada!", "fecha", "modificados");
+          this.showXpNotif(10, "¡Fecha actualizada!", "fecha", "modificados");
         } else {
           // Estamos creando una nueva fecha (ya sea desde cero o duplicando)
           await fechas.create(fechaData);
@@ -906,7 +906,7 @@ export default {
           this.tipoXP = "fecha";
           this.accionXP = "agregados";
           // Notificación XP por crear fecha
-          this.showXpNotif(20, "¡Nueva fecha creada!", "fecha", "agregados");
+          this.showXpNotif(15, "¡Nueva fecha creada!", "fecha", "agregados");
 
           // Mostrar mensaje específico si es una duplicación
           if (fechaData.titulo && fechaData.titulo.includes("(Copia)")) {

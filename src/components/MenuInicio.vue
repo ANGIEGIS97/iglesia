@@ -357,16 +357,27 @@ export default {
         this.isClosing = false;
         document.body.style.overflow = "auto";
       }
-    },
-    toggleDarkMode() {
+    },    toggleDarkMode() {
       const isDarkMode = !document.documentElement.classList.contains("dark");
       document.documentElement.classList.toggle("dark");
       localStorage.setItem("darkMode", isDarkMode);
       this.isDarkMode = isDarkMode;
 
       // Solo desbloquear el logro si el usuario está autenticado
-      if (this.isAuthenticated && this.$refs.adminSidebarRef) {
-        this.$refs.adminSidebarRef.unlockAchievement(2); // Índice 2 corresponde al logro de personalización
+      if (this.isAuthenticated) {
+        // Esperar a que los componentes estén listos
+        this.$nextTick(() => {
+          if (this.$refs.adminSidebarRef) {
+            const adminSidebar = this.$refs.adminSidebarRef;
+            // Intentar acceder al componente Logros 
+            if (adminSidebar.$refs.logrosRef) {
+              adminSidebar.$refs.logrosRef.unlockAchievement(2); // Índice 2 corresponde a "Vasija Renovada"
+              console.log("Logro 'Vasija Renovada' desbloqueado");
+            } else {
+              console.warn("No se pudo acceder al componente Logros");
+            }
+          }
+        });
       }
     },
     loadDarkModePreference() {
