@@ -11,6 +11,13 @@ import {
 import EventoModal from "./modals/EventoModal.vue";
 import NotificacionXP from "../NotificacionXP.vue";
 
+// Declaración para TypeScript: extender la interfaz Window
+declare global {
+  interface Window {
+    actualizarContadorEstadisticas?: () => void;
+  }
+}
+
 const eventList = ref<Evento[]>([]);
 const error = ref("");
 const formMode = ref<"closed" | "create" | "edit">("closed");
@@ -23,12 +30,23 @@ const userProfiles = ref<{ [key: string]: UserProfile }>({});
 const showXpNotification = ref(false);
 const xpAmount = ref(0);
 const xpMessage = ref("");
+const tipoXP = ref("evento");
+const accionXP = ref("agregados");
 
 // Función para mostrar notificación XP
-const showXpNotif = (amount: number, message: string) => {
+const showXpNotif = (
+  amount: number,
+  message: string,
+  tipo: string = "evento",
+  accion: string = "agregados"
+) => {
   xpAmount.value = amount;
   xpMessage.value = message;
+  tipoXP.value = tipo;
+  accionXP.value = accion;
   showXpNotification.value = true;
+
+  console.log(`AdminEventList - showXpNotif: tipo=${tipo}, accion=${accion}`);
 
   // Actualizar experiencia en el sidebar si está disponible
   const sidebarComponent = document.querySelector("admin-sidebar");
@@ -46,10 +64,44 @@ const showXpNotif = (amount: number, message: string) => {
     }
   }
 
+  // Actualizar contador manualmente para mayor seguridad
+  actualizarContadorManualmente(tipo, accion);
+
+  // Actualizar contadores mediante función global
+  if (window.actualizarContadorEstadisticas) {
+    setTimeout(() => window.actualizarContadorEstadisticas(), 500);
+  }
+
   // Ocultar después de 3 segundos
   setTimeout(() => {
     showXpNotification.value = false;
   }, 3000);
+};
+
+// Función para actualizar el contador manualmente
+const actualizarContadorManualmente = (tipo: string, accion: string) => {
+  const contadorKey = "estadisticasContador";
+  let contador = JSON.parse(localStorage.getItem(contadorKey) || "{}");
+
+  // Inicializar contador si no existe
+  if (!contador) contador = {};
+
+  // Estructura: { eventos: { agregados: 0, eliminados: 0, modificados: 0 }, fechas: { agregados: 0, eliminados: 0, modificados: 0 } }
+  if (!contador.eventos)
+    contador.eventos = { agregados: 0, eliminados: 0, modificados: 0 };
+  if (!contador.fechas)
+    contador.fechas = { agregados: 0, eliminados: 0, modificados: 0 };
+
+  // Incrementar el contador correspondiente
+  if (tipo === "evento" || tipo === "eventos") {
+    contador.eventos[accion] = (contador.eventos[accion] || 0) + 1;
+  } else if (tipo === "fecha" || tipo === "fechas") {
+    contador.fechas[accion] = (contador.fechas[accion] || 0) + 1;
+  }
+
+  // Guardar en localStorage
+  localStorage.setItem(contadorKey, JSON.stringify(contador));
+  console.log("Contador actualizado manualmente en AdminEventList:", contador);
 };
 
 const loadUserProfiles = async (events: Evento[]) => {
@@ -95,6 +147,7 @@ const loadEvents = async () => {
 
     await loadUserProfiles(eventList.value);
   } catch (err) {
+    console.error("Error al cargar los eventos:", err);
     error.value = "Error al cargar los eventos";
   } finally {
     isLoading.value = false;
@@ -108,7 +161,7 @@ const handleCreate = async (eventData) => {
     formMode.value = "closed";
     await loadEvents();
     // Otorgar XP al crear un nuevo anuncio
-    showXpNotif(20, "¡Nuevo anuncio creado!");
+    showXpNotif(20, "¡Nuevo anuncio creado!", "evento", "agregados");
   } catch (err: any) {
     error.value = err.response?.data?.mensaje || "Error al crear el evento";
   }
@@ -146,7 +199,7 @@ const handleUpdate = async (eventData) => {
     editingEvent.value = null;
     await loadEvents();
     // Otorgar XP al actualizar un anuncio
-    showXpNotif(15, "¡Anuncio actualizado!");
+    showXpNotif(15, "¡Anuncio actualizado!", "evento", "modificados");
   } catch (err: any) {
     error.value =
       err.response?.data?.mensaje || "Error al actualizar el evento";
@@ -161,7 +214,7 @@ const handleDelete = async (id) => {
     await eventos.delete(id);
     await loadEvents();
     // Otorgar XP al eliminar un anuncio
-    showXpNotif(5, "¡Anuncio eliminado!");
+    showXpNotif(5, "¡Anuncio eliminado!", "evento", "eliminados");
   } catch (err: any) {
     console.error("Error al eliminar evento:", err);
     error.value = err.message || "Error al eliminar el evento";
@@ -212,6 +265,8 @@ onMounted(() => {
       :show="showXpNotification"
       :amount="xpAmount"
       :message="xpMessage"
+      :tipo="tipoXP"
+      :accion="accionXP"
     />
 
     <div

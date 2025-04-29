@@ -353,6 +353,9 @@
           </div>
         </div>
 
+        <!-- Contador de Estadísticas -->
+        <ContadorEstadisticas class="mb-4" :darkMode="isDarkMode" />
+
         <div class="flex-grow"></div>
       </div>
     </div>
@@ -402,6 +405,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import CambioContrasena from "./CambioContrasena.vue";
 import ProfileModal from "./ProfileModal.vue";
 import { auth_api, usuarios } from "../lib/api.ts";
+import ContadorEstadisticas from "./ContadorEstadisticas.vue";
 
 const props = defineProps({
   isOpen: {

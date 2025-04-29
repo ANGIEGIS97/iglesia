@@ -5,6 +5,8 @@
       :show="showXpNotification"
       :amount="xpAmount"
       :message="xpMessage"
+      :tipo="tipoXP"
+      :accion="accionXP"
     />
 
     <div class="space-y-6 mt-24">
@@ -757,6 +759,8 @@ export default {
       showXpNotification: false,
       xpAmount: 0,
       xpMessage: "",
+      tipoXP: "fecha",
+      accionXP: "agregados",
     };
   },
   async created() {
@@ -890,13 +894,19 @@ export default {
         if (this.editingFecha && this.editingFecha.id) {
           // Estamos editando una fecha existente
           await fechas.update(this.editingFecha.id, fechaData);
+          // Establecer tipo y acción específicos
+          this.tipoXP = "fecha";
+          this.accionXP = "modificados";
           // Notificación XP por actualizar fecha
-          this.showXpNotif(15, "¡Fecha actualizada!");
+          this.showXpNotif(15, "¡Fecha actualizada!", "fecha", "modificados");
         } else {
           // Estamos creando una nueva fecha (ya sea desde cero o duplicando)
           await fechas.create(fechaData);
+          // Establecer tipo y acción específicos
+          this.tipoXP = "fecha";
+          this.accionXP = "agregados";
           // Notificación XP por crear fecha
-          this.showXpNotif(20, "¡Nueva fecha creada!");
+          this.showXpNotif(20, "¡Nueva fecha creada!", "fecha", "agregados");
 
           // Mostrar mensaje específico si es una duplicación
           if (fechaData.titulo && fechaData.titulo.includes("(Copia)")) {
@@ -910,6 +920,10 @@ export default {
             }, 3000);
           }
         }
+        // Actualizar contadores manualmente después de las operaciones
+        if (window.actualizarContadorEstadisticas) {
+          setTimeout(() => window.actualizarContadorEstadisticas(), 500);
+        }
         await this.loadFechas();
         this.closeModal();
       } catch (error) {
@@ -919,22 +933,24 @@ export default {
       }
     },
     async deleteFecha(id) {
-      if (window.confirm("¿Estás seguro de que deseas eliminar esta fecha?")) {
+      if (window.confirm("¿Estás seguro que deseas eliminar esta fecha?")) {
         try {
           await fechas.delete(id);
-          // En lugar de recargar todas las fechas, solo eliminamos la fecha del array local
+          this.showNotification("Fecha eliminada con éxito", false);
           this.fechas = this.fechas.filter((fecha) => fecha.id !== id);
+          // Establecer tipo y acción específicos
+          this.tipoXP = "fecha";
+          this.accionXP = "eliminados";
           // Notificación XP por eliminar fecha
-          this.showXpNotif(5, "¡Fecha eliminada!");
+          this.showXpNotif(5, "¡Fecha eliminada!", "fecha", "eliminados");
+
+          // Actualizar contadores manualmente después de las operaciones
+          if (window.actualizarContadorEstadisticas) {
+            setTimeout(() => window.actualizarContadorEstadisticas(), 500);
+          }
         } catch (error) {
           console.error("Error al eliminar fecha:", error);
-          this.errorMessage = error.message || "Error al eliminar la fecha";
-          this.isErrorNotification = true;
-          if (error.message.includes("No hay sesión activa")) {
-            this.errorMessage =
-              "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
-            this.isErrorNotification = true;
-          }
+          this.showNotification("Error al eliminar la fecha", true);
         }
       }
     },
@@ -1234,7 +1250,9 @@ export default {
           if (this.selectedFechas.length > 0) {
             this.showXpNotif(
               5 * this.selectedFechas.length,
-              "¡Fechas eliminadas!"
+              "¡Fechas eliminadas!",
+              "fecha",
+              "eliminados"
             );
           }
 
@@ -1352,10 +1370,14 @@ export default {
         this.showNotification("Error al eliminar el anuncio", true);
       }
     },
-    showXpNotif(amount, message) {
+    showXpNotif(amount, message, tipo = "fecha", accion = "agregados") {
       this.xpAmount = amount;
       this.xpMessage = message;
+      this.tipoXP = tipo;
+      this.accionXP = accion;
       this.showXpNotification = true;
+
+      console.log(`showXpNotif - tipo: ${tipo}, accion: ${accion}`);
 
       // Actualizar experiencia en el sidebar si está disponible
       const sidebarComponent = document.querySelector("admin-sidebar");
@@ -1369,14 +1391,42 @@ export default {
         localStorage.setItem("tempXp", (currentXp + amount).toString());
       }
 
+      // Actualizar contador manualmente (además del que hará NotificacionXP)
+      this.actualizarContadorManualmente(tipo, accion);
+
       // Ocultar después de 3 segundos
       setTimeout(() => {
         this.showXpNotification = false;
       }, 3000);
     },
+    // Actualizar contador manualmente como respaldo
+    actualizarContadorManualmente(tipo, accion) {
+      const contadorKey = "estadisticasContador";
+      let contador = JSON.parse(localStorage.getItem(contadorKey) || "{}");
+
+      // Inicializar contador si no existe
+      if (!contador) contador = {};
+
+      // Estructura: { eventos: { agregados: 0, eliminados: 0, modificados: 0 }, fechas: { agregados: 0, eliminados: 0, modificados: 0 } }
+      if (!contador.eventos)
+        contador.eventos = { agregados: 0, eliminados: 0, modificados: 0 };
+      if (!contador.fechas)
+        contador.fechas = { agregados: 0, eliminados: 0, modificados: 0 };
+
+      // Incrementar el contador correspondiente
+      if (tipo === "evento" || tipo === "eventos") {
+        contador.eventos[accion] = (contador.eventos[accion] || 0) + 1;
+      } else if (tipo === "fecha" || tipo === "fechas") {
+        contador.fechas[accion] = (contador.fechas[accion] || 0) + 1;
+      }
+
+      // Guardar en localStorage
+      localStorage.setItem(contadorKey, JSON.stringify(contador));
+      console.log("Contador actualizado manualmente:", contador);
+    },
     // Handler para eventos de XP desde el conversor de fechas a eventos
-    handleXpEarned({ amount, message }) {
-      this.showXpNotif(amount, message);
+    handleXpEarned({ amount, message, tipo = "evento", accion = "agregados" }) {
+      this.showXpNotif(amount, message, tipo, accion);
     },
   },
 };

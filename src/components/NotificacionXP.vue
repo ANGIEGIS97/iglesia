@@ -18,7 +18,7 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import { defineProps, onMounted } from "vue";
 
 const props = defineProps({
   show: {
@@ -33,6 +33,61 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  tipo: {
+    type: String,
+    default: "",
+  },
+  accion: {
+    type: String,
+    default: "",
+  },
+});
+
+onMounted(() => {
+  if (props.show && props.tipo && props.accion) {
+    console.log("NotificacionXP actualiza contador:", props.tipo, props.accion);
+
+    // Imprimir el estado actual del contador
+    const contadorKey = "estadisticasContador";
+    let contadorAnterior = JSON.parse(
+      localStorage.getItem(contadorKey) || "{}"
+    );
+    console.log("Estado anterior del contador:", contadorAnterior);
+
+    // Actualizar el contador en localStorage
+    let contador = { ...contadorAnterior };
+
+    // Inicializar contador si no existe
+    if (!contador) contador = {};
+
+    // Estructura: { eventos: { agregados: 0, eliminados: 0, modificados: 0 }, fechas: { agregados: 0, eliminados: 0, modificados: 0 } }
+    if (!contador.eventos)
+      contador.eventos = { agregados: 0, eliminados: 0, modificados: 0 };
+    if (!contador.fechas)
+      contador.fechas = { agregados: 0, eliminados: 0, modificados: 0 };
+
+    // Incrementar el contador correspondiente
+    if (props.tipo === "evento" || props.tipo === "eventos") {
+      contador.eventos[props.accion] =
+        (contador.eventos[props.accion] || 0) + 1;
+      console.log(`Incrementando contador de eventos.${props.accion}`);
+    } else if (props.tipo === "fecha" || props.tipo === "fechas") {
+      contador.fechas[props.accion] = (contador.fechas[props.accion] || 0) + 1;
+      console.log(`Incrementando contador de fechas.${props.accion}`);
+    } else {
+      console.error(`Tipo no reconocido: ${props.tipo}`);
+    }
+
+    // Guardar en localStorage
+    localStorage.setItem(contadorKey, JSON.stringify(contador));
+    console.log("Contador actualizado:", contador);
+  } else {
+    console.warn("NotificacionXP no actualizó el contador:", {
+      show: props.show,
+      tipo: props.tipo,
+      accion: props.accion,
+    });
+  }
 });
 </script>
 
