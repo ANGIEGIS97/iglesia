@@ -310,39 +310,59 @@
             </svg>
           </button>
 
-          <div
-            v-if="showAchievements"
-            class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
-          >
-            <div
-              v-for="(achievement, index) in achievements"
-              :key="index"
-              :class="[
-                'w-full aspect-square rounded-lg flex items-center justify-center',
-                achievement.unlocked
-                  ? 'bg-gradient-to-br from-yellow-500 to-yellow-600'
-                  : isDarkMode
-                  ? 'bg-gray-700'
-                  : 'bg-gray-200',
-                'relative group',
-              ]"
-            >
-              <span
+          <div v-if="showAchievements" class="space-y-3">
+            <!-- Tabs -->
+            <div class="flex border-b items-center" :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'">
+              <button 
+                v-for="(tab, index) in achievementTabs" 
+                :key="index"
+                @click="activeAchievementTab = tab.id" 
+                class="py-2 px-3 text-xs font-medium transition-colors duration-200"
                 :class="[
-                  'text-lg',
-                  achievement.unlocked ? 'opacity-100' : 'opacity-40',
+                  activeAchievementTab === tab.id 
+                    ? isDarkMode 
+                      ? 'border-b-2 border-yellow-400 text-yellow-400' 
+                      : 'border-b-2 border-yellow-600 text-yellow-600'
+                    : isDarkMode 
+                      ? 'text-gray-400 hover:text-gray-300' 
+                      : 'text-gray-500 hover:text-gray-700'
                 ]"
-                >{{ achievement.icon }}</span
               >
+                {{ tab.name }}
+              </button>
+            </div>
 
-              <!-- Tooltip -->
+            <!-- Grid de logros -->
+            <div class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out">
               <div
-                class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-xs text-white p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
+                v-for="achievement in currentAchievements"
+                :key="achievement.name"
+                :class="[
+                  'w-full aspect-square rounded-lg flex items-center justify-center',
+                  achievement.unlocked
+                    ? 'bg-gradient-to-br from-yellow-500 to-yellow-600'
+                    : isDarkMode
+                    ? 'bg-gray-700'
+                    : 'bg-gray-200',
+                  'relative group',
+                ]"
               >
-                <p class="font-semibold">{{ achievement.name }}</p>
-                <p class="text-gray-300 text-xs">
-                  {{ achievement.description }}
-                </p>
+                <span
+                  :class="[
+                    'text-lg',
+                    achievement.unlocked ? 'opacity-100' : 'opacity-40',
+                  ]"
+                  >{{ achievement.icon }}</span>
+
+                <!-- Tooltip -->
+                <div
+                  class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-xs text-white p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
+                >
+                  <p class="font-semibold">{{ achievement.name }}</p>
+                  <p class="text-gray-300 text-xs">
+                    {{ achievement.description }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -1056,6 +1076,42 @@ watch(
 // Exponer el método para que pueda ser accedido desde el componente padre
 defineExpose({
   unlockAchievement,
+});
+
+const activeAchievementTab = ref('basicos');
+const achievementTabs = [
+  { id: 'basicos', name: 'Básicos' },
+  { id: 'eventos', name: 'Eventos' },
+  { id: 'avanzados', name: 'Niveles' }
+];
+
+// Computed para filtrar logros según el tab activo
+const currentAchievements = computed(() => {
+  const achievementsPerPage = 12; // 4 columnas x 3 filas
+  
+  let filteredAchievements = [];
+  switch (activeAchievementTab.value) {
+    case 'basicos':
+      // Logros básicos (cambio de contraseña, perfil, tema)
+      filteredAchievements = achievements.value.slice(0, 3);
+      break;
+    case 'eventos':
+      // Logros relacionados con anuncios y fechas
+      filteredAchievements = achievements.value.filter(a => 
+        a.description.toLowerCase().includes('anuncio') ||
+        a.description.toLowerCase().includes('fecha') || 
+        a.description.toLowerCase().includes('reunión') ||
+        a.description.toLowerCase().includes('cumpleaños'));
+      break;
+    case 'avanzados':
+      // Logros de nivel y especiales
+      filteredAchievements = achievements.value.filter(a => 
+        a.description.toLowerCase().includes('nivel'));
+      break;
+  }
+  
+  // Asegurar que no excedemos el límite de 12 logros por página
+  return filteredAchievements.slice(0, achievementsPerPage);
 });
 </script>
 
