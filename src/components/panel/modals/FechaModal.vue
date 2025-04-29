@@ -341,6 +341,7 @@
 <script>
 import "animate.css";
 import { geminiService } from "../../../lib/gemini";
+import { auth_api } from "../../../lib/api";
 
 export default {
   name: "FechaModal",
@@ -473,12 +474,6 @@ export default {
           )
             ? this.fechaForm.infoIconoTexto
             : "";
-
-          // Imprimir tipoIcono al cargar
-          console.log(
-            "Cargando fecha con tipoIcono:",
-            this.fechaForm.tipoIcono
-          );
         } else {
           this.resetForm();
         }
@@ -569,48 +564,28 @@ export default {
         this.fechaForm.banner = null;
       }
 
-      // Verificar si es un evento con icono de cumpleaños
-      const esCumpleanos =
-        this.fechaForm.infoAdiccional === 1 &&
-        this.fechaForm.tipoIcono === "Cumpleaños";
+      // Verificar los iconos para los logros
+      const userId = auth_api.getCurrentUser()?.uid || 'invitado';
 
-      // Verificar si es un evento con icono de reunión de varones
-      const esReunionVarones =
-        this.fechaForm.infoAdiccional === 1 &&
-        this.fechaForm.tipoIcono === "Reunión de varones";
+      // Logro "Celebrador de la Vida" - Cumpleaños
+      if (this.fechaForm.tipoIcono === "Cumpleaños") {
+        localStorage.setItem(`haCreatedoCumpleanos_${userId}`, 'true');
+        window.dispatchEvent(new Event('statisticsUpdated'));
+      }
 
-      // Verificar si es un evento con icono de reunión de damas
-      const esReunionDamas =
-        this.fechaForm.infoAdiccional === 1 &&
-        this.fechaForm.tipoIcono === "Reunión de damas";
+      // Logro "Varón de Valor" - Reunión de varones
+      if (this.fechaForm.tipoIcono === "Reunión de varones") {
+        localStorage.setItem(`haCreatedoReunionVarones_${userId}`, 'true');
+        window.dispatchEvent(new Event('statisticsUpdated'));
+      }
 
-      // Depurar los valores
-      console.log("Guardando fecha con icono:", this.fechaForm.tipoIcono);
-      console.log("Info adicional:", this.fechaForm.infoAdiccional);
-      console.log("Es cumpleaños:", esCumpleanos);
-      console.log("Es reunión de varones:", esReunionVarones);
-      console.log("Es reunión de damas:", esReunionDamas);
+      // Logro "Mujer Virtuosa" - Reunión de damas
+      if (this.fechaForm.tipoIcono === "Reunión de damas") {
+        localStorage.setItem(`haCreatedoReunionDamas_${userId}`, 'true');
+        window.dispatchEvent(new Event('statisticsUpdated'));
+      }
 
       this.$emit("save", this.fechaForm);
-
-      // Emitir evento especial para cumpleaños
-      if (esCumpleanos) {
-        console.log("Emitiendo evento: cumpleanos-creado");
-        this.$emit("cumpleanos-creado");
-      }
-
-      // Emitir evento especial para reunión de varones
-      if (esReunionVarones) {
-        console.log("Emitiendo evento: reunion-varones-creada");
-        this.$emit("reunion-varones-creada");
-      }
-
-      // Emitir evento especial para reunión de damas
-      if (esReunionDamas) {
-        console.log("Emitiendo evento: reunion-damas-creada");
-        this.$emit("reunion-damas-creada");
-      }
-
       this.resetForm();
     },
     async convertirAGoogleMaps() {
@@ -669,13 +644,6 @@ export default {
         );
       }
     },
-  },
-  mounted() {
-    // Imprimir todos los valores de iconos disponibles
-    console.log(
-      "Iconos disponibles:",
-      this.iconOptions.map((opt) => opt.value)
-    );
   },
 };
 </script>

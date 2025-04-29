@@ -310,59 +310,39 @@
             </svg>
           </button>
 
-          <div v-if="showAchievements" class="space-y-3">
-            <!-- Tabs -->
-            <div class="flex border-b items-center" :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'">
-              <button 
-                v-for="(tab, index) in achievementTabs" 
-                :key="index"
-                @click="activeAchievementTab = tab.id" 
-                class="py-2 px-3 text-xs font-medium transition-colors duration-200"
+          <div
+            v-if="showAchievements"
+            class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
+          >
+            <div
+              v-for="(achievement, index) in achievements"
+              :key="index"
+              :class="[
+                'w-full aspect-square rounded-lg flex items-center justify-center',
+                achievement.unlocked
+                  ? 'bg-gradient-to-br from-yellow-500 to-yellow-600'
+                  : isDarkMode
+                  ? 'bg-gray-700'
+                  : 'bg-gray-200',
+                'relative group',
+              ]"
+            >
+              <span
                 :class="[
-                  activeAchievementTab === tab.id 
-                    ? isDarkMode 
-                      ? 'border-b-2 border-yellow-400 text-yellow-400' 
-                      : 'border-b-2 border-yellow-600 text-yellow-600'
-                    : isDarkMode 
-                      ? 'text-gray-400 hover:text-gray-300' 
-                      : 'text-gray-500 hover:text-gray-700'
+                  'text-lg',
+                  achievement.unlocked ? 'opacity-100' : 'opacity-40',
                 ]"
+                >{{ achievement.icon }}</span
               >
-                {{ tab.name }}
-              </button>
-            </div>
 
-            <!-- Grid de logros -->
-            <div class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out">
+              <!-- Tooltip -->
               <div
-                v-for="achievement in currentAchievements"
-                :key="achievement.name"
-                :class="[
-                  'w-full aspect-square rounded-lg flex items-center justify-center',
-                  achievement.unlocked
-                    ? 'bg-gradient-to-br from-yellow-500 to-yellow-600'
-                    : isDarkMode
-                    ? 'bg-gray-700'
-                    : 'bg-gray-200',
-                  'relative group',
-                ]"
+                class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-xs text-white p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
               >
-                <span
-                  :class="[
-                    'text-lg',
-                    achievement.unlocked ? 'opacity-100' : 'opacity-40',
-                  ]"
-                  >{{ achievement.icon }}</span>
-
-                <!-- Tooltip -->
-                <div
-                  class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-32 bg-gray-800 text-xs text-white p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
-                >
-                  <p class="font-semibold">{{ achievement.name }}</p>
-                  <p class="text-gray-300 text-xs">
-                    {{ achievement.description }}
-                  </p>
-                </div>
+                <p class="font-semibold">{{ achievement.name }}</p>
+                <p class="text-gray-300 text-xs">
+                  {{ achievement.description }}
+                </p>
               </div>
             </div>
           </div>
@@ -460,7 +440,7 @@ const newAnnouncementsCount = ref(2);
 const upcomingDatesCount = ref(3);
 const showAchievements = ref(false);
 
-// Achievements - Updated to exactly 16
+// Logros
 const achievements = ref([
   {
     icon: "🔒",
@@ -630,13 +610,13 @@ const awardXp = (amount) => {
 
     // Check for level achievements
     if (userLevel.value >= 5) {
-      unlockAchievement(16); // Unlock "Novato" achievement
+      unlockAchievement(17); // "Siervo Fiel" - Nivel 5
     }
     if (userLevel.value >= 10) {
-      unlockAchievement(17); // Unlock "Intermedio" achievement
+      unlockAchievement(18); // "Buen Mayordomo" - Nivel 10
     }
     if (userLevel.value >= 100) {
-      unlockAchievement(18); // Unlock "Maestro" achievement
+      unlockAchievement(19); // "Buen y Fiel Siervo" - Nivel 100
     }
 
     setTimeout(() => {
@@ -767,17 +747,15 @@ const loadGameState = async () => {
           }
         });
       }
-    }
-
-    // Check level achievements
+    }    // Check level achievements
     if (userLevel.value >= 5) {
-      achievements.value[16].unlocked = true;
+      achievements.value[17].unlocked = true; // "Siervo Fiel"
     }
     if (userLevel.value >= 10) {
-      achievements.value[17].unlocked = true;
+      achievements.value[18].unlocked = true; // "Buen Mayordomo"
     }
     if (userLevel.value >= 100) {
-      achievements.value[18].unlocked = true;
+      achievements.value[19].unlocked = true; // "Buen y Fiel Siervo"
     }
 
     // Sincronizar con Firestore
@@ -884,7 +862,7 @@ const checkAchievementsFromStats = () => {
   );
   if (haCreatedoCumpleanos === "true") {
     console.log("Desbloqueando logro Celebrador (cumpleaños)");
-    unlockAchievement(13); // Desbloquear el logro "Celebrador"
+    unlockAchievement(14); // Logro "Celebrador de la Vida"
   }
 
   // Verificar si se ha creado un evento de reunión de varones
@@ -892,8 +870,8 @@ const checkAchievementsFromStats = () => {
     `haCreatedoReunionVarones_${userId}`
   );
   if (haCreadoReunionVarones === "true") {
-    console.log("Desbloqueando logro Líder de Varones");
-    unlockAchievement(14); // Desbloquear el logro "Líder de Varones"
+    console.log("Desbloqueando logro Varón de Valor");
+    unlockAchievement(15); // Logro "Varón de Valor"
   }
 
   // Verificar si se ha creado un evento de reunión de damas
@@ -901,12 +879,13 @@ const checkAchievementsFromStats = () => {
     `haCreatedoReunionDamas_${userId}`
   );
   if (haCreadoReunionDamas === "true") {
-    console.log("Desbloqueando logro Líder de Damas");
-    unlockAchievement(15); // Desbloquear el logro "Líder de Damas"
+    console.log("Desbloqueando logro Mujer Virtuosa");
+    unlockAchievement(16); // Logro "Mujer Virtuosa"
   }
 
   if (datosGuardados) {
-    try {      const stats = JSON.parse(datosGuardados);
+    try {
+      const stats = JSON.parse(datosGuardados);
       console.log("Verificando logros con estadísticas:", stats);
 
       // Verificar logro del primer anuncio
@@ -917,7 +896,8 @@ const checkAchievementsFromStats = () => {
       // Verificar logros de anuncios (eventos)
       if (stats.eventos.agregados >= 3) {
         unlockAchievement(4); // Mensajero - Crea 3 anuncios
-      }      if (stats.eventos.agregados >= 10) {
+      }
+      if (stats.eventos.agregados >= 10) {
         unlockAchievement(6); // Heraldo - Crea 10 anuncios
       }
       if (stats.eventos.agregados >= 25) {
@@ -933,7 +913,9 @@ const checkAchievementsFromStats = () => {
       }
       if (stats.fechas.agregados >= 25) {
         unlockAchievement(9); // Cronista de Dios - Crea 25 fechas
-      }      // Verificar logros de modificación
+      }
+
+      // Verificar logros de modificación
       if (stats.eventos.modificados >= 10) {
         unlockAchievement(10); // Escriba - Modifica 10 anuncios
       }
@@ -949,7 +931,7 @@ const checkAchievementsFromStats = () => {
         unlockAchievement(13); // Purificador - Elimina 5 fechas
       }
 
-      // Actualizar la marca de tiempo para evitar verificaciones duplicadas frecuentes en otras partes
+      // Actualizar la marca de tiempo para evitar verificaciones duplicadas frecuentes
       localStorage.setItem(
         `achievementsLastCheck_${user.uid}`,
         Date.now().toString()
@@ -1076,42 +1058,6 @@ watch(
 // Exponer el método para que pueda ser accedido desde el componente padre
 defineExpose({
   unlockAchievement,
-});
-
-const activeAchievementTab = ref('basicos');
-const achievementTabs = [
-  { id: 'basicos', name: 'Básicos' },
-  { id: 'eventos', name: 'Eventos' },
-  { id: 'avanzados', name: 'Niveles' }
-];
-
-// Computed para filtrar logros según el tab activo
-const currentAchievements = computed(() => {
-  const achievementsPerPage = 12; // 4 columnas x 3 filas
-  
-  let filteredAchievements = [];
-  switch (activeAchievementTab.value) {
-    case 'basicos':
-      // Logros básicos (cambio de contraseña, perfil, tema)
-      filteredAchievements = achievements.value.slice(0, 3);
-      break;
-    case 'eventos':
-      // Logros relacionados con anuncios y fechas
-      filteredAchievements = achievements.value.filter(a => 
-        a.description.toLowerCase().includes('anuncio') ||
-        a.description.toLowerCase().includes('fecha') || 
-        a.description.toLowerCase().includes('reunión') ||
-        a.description.toLowerCase().includes('cumpleaños'));
-      break;
-    case 'avanzados':
-      // Logros de nivel y especiales
-      filteredAchievements = achievements.value.filter(a => 
-        a.description.toLowerCase().includes('nivel'));
-      break;
-  }
-  
-  // Asegurar que no excedemos el límite de 12 logros por página
-  return filteredAchievements.slice(0, achievementsPerPage);
 });
 </script>
 

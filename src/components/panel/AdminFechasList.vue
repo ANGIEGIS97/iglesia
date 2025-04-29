@@ -692,13 +692,10 @@
 
       <!-- Modal para Agregar/Editar -->
       <FechaModal
-        :showModal="showModal"
-        :editingFecha="editingFecha"
+        :show-modal="showModal"
+        :editing-fecha="editingFecha"
         @close="closeModal"
         @save="saveFecha"
-        @cumpleanos-creado="handleCumpleanosCreado"
-        @reunion-varones-creada="handleReunionVaronesCreada"
-        @reunion-damas-creada="handleReunionDamasCreada"
       />
 
       <!-- Componente para convertir fecha a evento -->
@@ -729,12 +726,10 @@
 </template>
 
 <script>
-import { ref, onMounted, getCurrentInstance } from "vue";
+import { fechas, eventos } from "../../lib/api";
 import FechaModal from "./modals/FechaModal.vue";
-import EventoModal from "../Eventos/EventoModal.vue";
 import FechaToEventoConverter from "./utils/FechaToEventoConverter.vue";
-import { fechas, eventos, usuarios, auth_api } from "../../lib/api";
-import "animate.css";
+import EventoModal from "./modals/EventoModal.vue";
 import NotificacionXP from "../NotificacionXP.vue";
 
 export default {
@@ -770,19 +765,6 @@ export default {
   },
   async created() {
     await this.loadFechas();
-  },
-  mounted() {
-    // Verificar que los métodos existen en este componente
-    console.log("Métodos disponibles:", {
-      handleCumpleanosCreado: typeof this.handleCumpleanosCreado === "function",
-      handleReunionVaronesCreada:
-        typeof this.handleReunionVaronesCreada === "function",
-      handleReunionDamasCreada:
-        typeof this.handleReunionDamasCreada === "function",
-    });
-
-    // Cargar fechas al iniciar
-    this.loadFechas();
   },
   methods: {
     showNotification(mensaje, isError = true, timeout = 5000) {
@@ -1409,157 +1391,26 @@ export default {
         localStorage.setItem("tempXp", (currentXp + amount).toString());
       }
 
-      // Actualizar contador manualmente como respaldo
-      this.actualizarContadorManualmente(tipo, accion);
+      // Actualizar contador usando la función global expuesta por ContadorEstadisticas
+      if (window.actualizarContador) {
+        window.actualizarContador(tipo, accion);
+        console.log(`Llamando a window.actualizarContador(${tipo}, ${accion})`);
+      } else {
+        console.warn(
+          "La función window.actualizarContador no está disponible."
+        );
+        // Como fallback, podríamos llamar a la versión manual, pero idealmente no debería pasar
+        // this.actualizarContadorManualmente(tipo, accion);
+      }
 
       // Ocultar después de 3 segundos
       setTimeout(() => {
         this.showXpNotification = false;
       }, 3000);
     },
-    // Actualizar contador manualmente como respaldo
-    actualizarContadorManualmente(tipo, accion) {
-      // Verificar si existe la función global para actualizar contadores
-      if (window.actualizarContador) {
-        window.actualizarContador(tipo, accion);
-        console.log(
-          `Contador actualizado para ${tipo}.${accion} usando función global en AdminFechasList`
-        );
-        return;
-      }
-
-      // Método de respaldo en caso de que la función global no esté disponible
-      console.warn(
-        "La función global actualizarContador no está disponible, usando método local"
-      );
-
-      const contadorKey = "estadisticasContador";
-      let contador = JSON.parse(localStorage.getItem(contadorKey) || "{}");
-
-      // Inicializar contador si no existe
-      if (!contador) contador = {};
-
-      // Estructura: { eventos: { agregados: 0, eliminados: 0, modificados: 0 }, fechas: { agregados: 0, eliminados: 0, modificados: 0 } }
-      if (!contador.eventos)
-        contador.eventos = { agregados: 0, eliminados: 0, modificados: 0 };
-      if (!contador.fechas)
-        contador.fechas = { agregados: 0, eliminados: 0, modificados: 0 };
-
-      // Incrementar el contador correspondiente
-      if (tipo === "evento" || tipo === "eventos") {
-        contador.eventos[accion] = (contador.eventos[accion] || 0) + 1;
-      } else if (tipo === "fecha" || tipo === "fechas") {
-        contador.fechas[accion] = (contador.fechas[accion] || 0) + 1;
-      }
-
-      // Guardar en localStorage
-      localStorage.setItem(contadorKey, JSON.stringify(contador));
-      console.log("Contador actualizado manualmente:", contador);
-    },
     // Handler para eventos de XP desde el conversor de fechas a eventos
     handleXpEarned({ amount, message, tipo = "evento", accion = "agregados" }) {
       this.showXpNotif(amount, message, tipo, accion);
-    },
-    handleCumpleanosCreado() {
-      this.showNotification(
-        "¡Has creado un evento de cumpleaños! Logro desbloqueado.",
-        false
-      );
-
-      // Guardar en localStorage que se ha creado un evento de cumpleaños
-      const user = auth_api.getCurrentUser();
-      if (user?.uid) {
-        localStorage.setItem(`haCreatedoCumpleanos_${user.uid}`, "true");
-      }
-
-      // Buscar el componente sidebar para desbloquear el logro
-      const sidebarComponent = document.querySelector("admin-sidebar");
-      if (sidebarComponent) {
-        // Si existe el método unlockAchievement, lo llamamos con el índice 13 (Celebrador)
-        if (typeof sidebarComponent.unlockAchievement === "function") {
-          sidebarComponent.unlockAchievement(13);
-        }
-
-        // Añadir XP por desbloquear el logro
-        if (typeof sidebarComponent.awardXp === "function") {
-          sidebarComponent.awardXp(25);
-        }
-      } else {
-        console.log(
-          "El componente admin-sidebar no está disponible para desbloquear el logro"
-        );
-      }
-
-      // Disparar evento de actualización de estadísticas
-      window.dispatchEvent(new CustomEvent("statisticsUpdated"));
-    },
-    handleReunionVaronesCreada() {
-      console.log("Handler de reunión de varones ejecutado");
-      this.showNotification(
-        "¡Has creado un evento de reunión de varones! Logro desbloqueado.",
-        false
-      );
-
-      // Guardar en localStorage que se ha creado un evento de reunión de varones
-      const user = auth_api.getCurrentUser();
-      if (user?.uid) {
-        localStorage.setItem(`haCreatedoReunionVarones_${user.uid}`, "true");
-      }
-
-      // Buscar el componente sidebar para desbloquear el logro
-      const sidebarComponent = document.querySelector("admin-sidebar");
-      if (sidebarComponent) {
-        // Si existe el método unlockAchievement, lo llamamos con el índice 14 (Celebrador)
-        if (typeof sidebarComponent.unlockAchievement === "function") {
-          sidebarComponent.unlockAchievement(14);
-        }
-
-        // Añadir XP por desbloquear el logro
-        if (typeof sidebarComponent.awardXp === "function") {
-          sidebarComponent.awardXp(25);
-        }
-      } else {
-        console.log(
-          "El componente admin-sidebar no está disponible para desbloquear el logro"
-        );
-      }
-
-      // Disparar evento de actualización de estadísticas
-      window.dispatchEvent(new CustomEvent("statisticsUpdated"));
-    },
-    handleReunionDamasCreada() {
-      console.log("Handler de reunión de damas ejecutado");
-      this.showNotification(
-        "¡Has creado un evento de reunión de damas! Logro desbloqueado.",
-        false
-      );
-
-      // Guardar en localStorage que se ha creado un evento de reunión de damas
-      const user = auth_api.getCurrentUser();
-      if (user?.uid) {
-        localStorage.setItem(`haCreatedoReunionDamas_${user.uid}`, "true");
-      }
-
-      // Buscar el componente sidebar para desbloquear el logro
-      const sidebarComponent = document.querySelector("admin-sidebar");
-      if (sidebarComponent) {
-        // Si existe el método unlockAchievement, lo llamamos con el índice 15 (Celebrador)
-        if (typeof sidebarComponent.unlockAchievement === "function") {
-          sidebarComponent.unlockAchievement(15);
-        }
-
-        // Añadir XP por desbloquear el logro
-        if (typeof sidebarComponent.awardXp === "function") {
-          sidebarComponent.awardXp(25);
-        }
-      } else {
-        console.log(
-          "El componente admin-sidebar no está disponible para desbloquear el logro"
-        );
-      }
-
-      // Disparar evento de actualización de estadísticas
-      window.dispatchEvent(new CustomEvent("statisticsUpdated"));
     },
   },
 };
