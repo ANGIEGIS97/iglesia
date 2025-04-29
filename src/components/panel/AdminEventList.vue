@@ -15,6 +15,7 @@ import NotificacionXP from "../NotificacionXP.vue";
 declare global {
   interface Window {
     actualizarContadorEstadisticas?: () => void;
+    actualizarContador?: (tipo: string, accion: string) => void;
   }
 }
 
@@ -80,6 +81,20 @@ const showXpNotif = (
 
 // Función para actualizar el contador manualmente
 const actualizarContadorManualmente = (tipo: string, accion: string) => {
+  // Verificar si existe la función global para actualizar contadores
+  if (window.actualizarContador) {
+    window.actualizarContador(tipo, accion);
+    console.log(
+      `Contador actualizado para ${tipo}.${accion} usando función global en AdminEventList`
+    );
+    return;
+  }
+
+  // Método de respaldo en caso de que la función global no esté disponible
+  console.warn(
+    "La función global actualizarContador no está disponible, usando método local"
+  );
+
   const contadorKey = "estadisticasContador";
   let contador = JSON.parse(localStorage.getItem(contadorKey) || "{}");
 

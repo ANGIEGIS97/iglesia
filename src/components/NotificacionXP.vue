@@ -47,40 +47,22 @@ onMounted(() => {
   if (props.show && props.tipo && props.accion) {
     console.log("NotificacionXP actualiza contador:", props.tipo, props.accion);
 
-    // Imprimir el estado actual del contador
-    const contadorKey = "estadisticasContador";
-    let contadorAnterior = JSON.parse(
-      localStorage.getItem(contadorKey) || "{}"
-    );
-    console.log("Estado anterior del contador:", contadorAnterior);
-
-    // Actualizar el contador en localStorage
-    let contador = { ...contadorAnterior };
-
-    // Inicializar contador si no existe
-    if (!contador) contador = {};
-
-    // Estructura: { eventos: { agregados: 0, eliminados: 0, modificados: 0 }, fechas: { agregados: 0, eliminados: 0, modificados: 0 } }
-    if (!contador.eventos)
-      contador.eventos = { agregados: 0, eliminados: 0, modificados: 0 };
-    if (!contador.fechas)
-      contador.fechas = { agregados: 0, eliminados: 0, modificados: 0 };
-
-    // Incrementar el contador correspondiente
-    if (props.tipo === "evento" || props.tipo === "eventos") {
-      contador.eventos[props.accion] =
-        (contador.eventos[props.accion] || 0) + 1;
-      console.log(`Incrementando contador de eventos.${props.accion}`);
-    } else if (props.tipo === "fecha" || props.tipo === "fechas") {
-      contador.fechas[props.accion] = (contador.fechas[props.accion] || 0) + 1;
-      console.log(`Incrementando contador de fechas.${props.accion}`);
+    // Usar la función global para actualizar el contador
+    if (window.actualizarContador) {
+      window.actualizarContador(props.tipo, props.accion);
+      console.log(
+        `Contador actualizado para ${props.tipo}.${props.accion} usando función global`
+      );
     } else {
-      console.error(`Tipo no reconocido: ${props.tipo}`);
-    }
+      console.warn(
+        "La función global actualizarContador no está disponible, intentando actualizar directamente"
+      );
 
-    // Guardar en localStorage
-    localStorage.setItem(contadorKey, JSON.stringify(contador));
-    console.log("Contador actualizado:", contador);
+      // Verificar si actualizarContadorEstadisticas está disponible como respaldo
+      if (window.actualizarContadorEstadisticas) {
+        window.actualizarContadorEstadisticas();
+      }
+    }
   } else {
     console.warn("NotificacionXP no actualizó el contador:", {
       show: props.show,

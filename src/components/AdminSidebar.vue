@@ -49,14 +49,35 @@
 
         <!-- Perfil del Usuario con Nivel y XP -->
         <div
-          class="mb-6 p-4 rounded-lg border backdrop-blur-sm"
+          class="mb-2 p-4 rounded-lg border backdrop-blur-sm"
           :class="
             isDarkMode
               ? 'bg-gray-700/50 border-gray-600/50'
               : 'bg-white/80 border-gray-200'
           "
-        >
-          <div class="flex items-center space-x-3 mb-3">
+        >          <div class="flex items-center space-x-3 mb-3 relative">
+            <!-- Botón de apagado en la esquina superior derecha -->
+            <button
+              @click="handleLogout"
+              class="absolute -top-2 -right-2 p-2 rounded-full transition-colors"
+              :class="isDarkMode ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'"
+              title="Cerrar sesión"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+            </button>
+
             <div
               class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
               :style="{ backgroundColor: getUserColor(displayName) }"
@@ -118,7 +139,7 @@
         </div>
 
         <!-- Navigation Menu -->
-        <div class="space-y-1 mb-4">
+        <div class="space-y-1 mb-2">
           <a
             href="/admin/eventos"
             @click.prevent="handleNavigation('/admin/eventos')"
@@ -252,32 +273,6 @@
             </svg>
             <span>Ranking Global</span>
           </a>
-
-          <!-- Logout button -->
-          <button
-            @click="handleLogout"
-            :class="[
-              'flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 border-l-4 border-transparent',
-              isDarkMode
-                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
-            ]"
-          >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            Cerrar Sesión
-          </button>
         </div>
 
         <!-- Achievements -->
@@ -449,67 +444,73 @@ const showAchievements = ref(false);
 const achievements = ref([
   {
     icon: "🔒",
-    name: "Seguridad",
+    name: "Guardián de la Fe",
     description: "Cambia tu contraseña",
     unlocked: false,
   },
   {
     icon: "👤",
-    name: "Identidad",
+    name: "Nueva Criatura",
     description: "Personaliza tu perfil",
     unlocked: false,
   },
   {
     icon: "🎨",
-    name: "Personalización",
+    name: "Vasija Renovada",
     description: "Cambia el tema de la interfaz",
     unlocked: false,
   },
   {
+    icon: "📜",
+    name: "Portador de Buenas Nuevas",
+    description: "Agrega tu primer anuncio",
+    unlocked: false,
+  },
+  {
     icon: "📢",
-    name: "Comunicador",
-    description: "Crea 3 anuncios",
+    name: "Mensajero",
+    description: "Agrega 3 anuncios",
     unlocked: false,
   },
   {
     icon: "📅",
     name: "Organizador",
-    description: "Crea 3 fechas",
+    description: "Agrega 3 fechas",
     unlocked: false,
   },
   {
     icon: "📣",
-    name: "Publicista",
-    description: "Crea 10 anuncios",
+    name: "Heraldo",
+    description: "Agrega 10 anuncios",
     unlocked: false,
   },
   {
     icon: "🗓️",
     name: "Planificador",
-    description: "Crea 10 fechas",
+    description: "Agrega 10 fechas",
     unlocked: false,
   },
   {
     icon: "📯",
-    name: "Comunicador Experto",
-    description: "Crea 25 anuncios",
+    name: "Atalaya",
+    description: "Agrega 25 anuncios",
     unlocked: false,
   },
   {
     icon: "📆",
-    name: "Planificador Experto",
-    description: "Crea 25 fechas",
+    name: "Cronista de Dios",
+    description: "Agrega 25 fechas",
     unlocked: false,
   },
   {
     icon: "✏️",
-    name: "Editor",
+    name: "Escriba",
     description: "Modifica 10 anuncios",
     unlocked: false,
   },
   {
     icon: "🔄",
-    name: "Actualizador",
+    name: "Obrero Diligente",
     description: "Modifica 10 fechas",
     unlocked: false,
   },
@@ -521,25 +522,43 @@ const achievements = ref([
   },
   {
     icon: "❌",
-    name: "Depurador",
+    name: "Purificador",
     description: "Elimina 5 fechas",
     unlocked: false,
   },
   {
+    icon: "🎂",
+    name: "Celebrador de la Vida",
+    description: "Agrega una fecha con icono de cumpleaños",
+    unlocked: false,
+  },
+  {
+    icon: "👨",
+    name: "Varón de Valor",
+    description: "Agrega una fecha con icono de reunión de varones",
+    unlocked: false,
+  },
+  {
+    icon: "👩",
+    name: "Mujer Virtuosa",
+    description: "Agrega una fecha con icono de reunión de damas",
+    unlocked: false,
+  },
+  {
     icon: "⭐",
-    name: "Novato",
+    name: "Siervo Fiel",
     description: "Alcanza el nivel 5",
     unlocked: false,
   },
   {
     icon: "🌟",
-    name: "Intermedio",
+    name: "Buen Mayordomo",
     description: "Alcanza el nivel 10",
     unlocked: false,
   },
   {
     icon: "🌠",
-    name: "Maestro",
+    name: "Buen y Fiel Siervo",
     description: "Alcanza el nivel 100",
     unlocked: false,
   },
@@ -591,13 +610,13 @@ const awardXp = (amount) => {
 
     // Check for level achievements
     if (userLevel.value >= 5) {
-      unlockAchievement(13); // Unlock "Novato" achievement
+      unlockAchievement(16); // Unlock "Novato" achievement
     }
     if (userLevel.value >= 10) {
-      unlockAchievement(14); // Unlock "Intermedio" achievement
+      unlockAchievement(17); // Unlock "Intermedio" achievement
     }
     if (userLevel.value >= 100) {
-      unlockAchievement(15); // Unlock "Maestro" achievement
+      unlockAchievement(18); // Unlock "Maestro" achievement
     }
 
     setTimeout(() => {
@@ -611,7 +630,15 @@ const awardXp = (amount) => {
 
 // Función para desbloquear logros
 const unlockAchievement = (index) => {
+  console.log(`Intentando desbloquear logro con índice: ${index}`);
+
+  if (index < 0 || index >= achievements.value.length) {
+    console.error(`Índice de logro fuera de rango: ${index}`);
+    return;
+  }
+
   if (!achievements.value[index].unlocked) {
+    console.log(`Desbloqueando logro: ${achievements.value[index].name}`);
     achievements.value[index].unlocked = true;
     latestAchievement.value = achievements.value[index];
     showAchievement.value = true;
@@ -626,6 +653,8 @@ const unlockAchievement = (index) => {
 
     // Award XP for achievement
     awardXp(25);
+  } else {
+    console.log(`Logro ya desbloqueado: ${achievements.value[index].name}`);
   }
 };
 
@@ -644,6 +673,11 @@ const saveGameState = async () => {
   // Guardar tanto en Firestore como en localStorage para respaldo
   try {
     await usuarios.updateGameState(user.uid, gameState);
+    // Almacenar una marca de tiempo para prevenir verificaciones duplicadas
+    localStorage.setItem(
+      `achievementsLastCheck_${user.uid}`,
+      Date.now().toString()
+    );
   } catch (error) {
     console.error("Error al guardar estado en Firestore:", error);
   }
@@ -696,39 +730,34 @@ const loadGameState = async () => {
     userLevel.value = gameState.userLevel || 1;
     loginStreak.value = gameState.loginStreak || 0;
 
-    if (gameState.achievements) {
+    if (
+      gameState.achievements &&
+      gameState.achievements.length === achievements.value.length
+    ) {
+      // Si la estructura coincide, cargar directamente
+      achievements.value = gameState.achievements;
+    } else if (gameState.achievements) {
       // Keep the new achievements structure but load unlocked status from saved state
       const savedAchievements = gameState.achievements;
       // Map old achievements to new ones where possible
       if (savedAchievements.length > 0) {
-        // Map security achievement (was at index 3)
-        if (savedAchievements[3] && savedAchievements[3].unlocked) {
-          achievements.value[0].unlocked = true;
-        }
-        // Map identity achievement (was at index 4)
-        if (savedAchievements[4] && savedAchievements[4].unlocked) {
-          achievements.value[1].unlocked = true;
-        }
-        // Map personalization achievement (was at index 8)
-        if (
-          savedAchievements.length > 8 &&
-          savedAchievements[8] &&
-          savedAchievements[8].unlocked
-        ) {
-          achievements.value[2].unlocked = true;
-        }
+        savedAchievements.forEach((achievement, index) => {
+          if (index < achievements.value.length && achievement.unlocked) {
+            achievements.value[index].unlocked = true;
+          }
+        });
       }
     }
 
     // Check level achievements
     if (userLevel.value >= 5) {
-      achievements.value[13].unlocked = true;
+      achievements.value[16].unlocked = true;
     }
     if (userLevel.value >= 10) {
-      achievements.value[14].unlocked = true;
+      achievements.value[17].unlocked = true;
     }
     if (userLevel.value >= 100) {
-      achievements.value[15].unlocked = true;
+      achievements.value[18].unlocked = true;
     }
 
     // Sincronizar con Firestore
@@ -818,6 +847,114 @@ const toggleAchievements = () => {
   showAchievements.value = !showAchievements.value;
 };
 
+// Función para comprobar logros basados en las estadísticas
+const checkAchievementsFromStats = () => {
+  // Eliminar la verificación de tiempo para que siempre procese los logros
+  const user = auth_api.getCurrentUser();
+  if (!user?.uid) return;
+
+  // Obtener estadísticas del localStorage
+  const userId = user.uid || "invitado";
+  const contadorKey = `estadisticasContador_${userId}`;
+  const datosGuardados = localStorage.getItem(contadorKey);
+
+  // Verificar si se ha creado un evento de cumpleaños
+  const haCreatedoCumpleanos = localStorage.getItem(
+    `haCreatedoCumpleanos_${userId}`
+  );
+  if (haCreatedoCumpleanos === "true") {
+    console.log("Desbloqueando logro Celebrador (cumpleaños)");
+    unlockAchievement(13); // Desbloquear el logro "Celebrador"
+  }
+
+  // Verificar si se ha creado un evento de reunión de varones
+  const haCreadoReunionVarones = localStorage.getItem(
+    `haCreatedoReunionVarones_${userId}`
+  );
+  if (haCreadoReunionVarones === "true") {
+    console.log("Desbloqueando logro Líder de Varones");
+    unlockAchievement(14); // Desbloquear el logro "Líder de Varones"
+  }
+
+  // Verificar si se ha creado un evento de reunión de damas
+  const haCreadoReunionDamas = localStorage.getItem(
+    `haCreatedoReunionDamas_${userId}`
+  );
+  if (haCreadoReunionDamas === "true") {
+    console.log("Desbloqueando logro Líder de Damas");
+    unlockAchievement(15); // Desbloquear el logro "Líder de Damas"
+  }
+
+  if (datosGuardados) {
+    try {      const stats = JSON.parse(datosGuardados);
+      console.log("Verificando logros con estadísticas:", stats);
+
+      // Verificar logro del primer anuncio
+      if (stats.eventos.agregados >= 1) {
+        unlockAchievement(3); // Portador de Buenas Nuevas - Primer anuncio
+      }
+
+      // Verificar logros de anuncios (eventos)
+      if (stats.eventos.agregados >= 3) {
+        unlockAchievement(4); // Mensajero - Crea 3 anuncios
+      }      if (stats.eventos.agregados >= 10) {
+        unlockAchievement(6); // Heraldo - Crea 10 anuncios
+      }
+      if (stats.eventos.agregados >= 25) {
+        unlockAchievement(8); // Atalaya - Crea 25 anuncios
+      }
+
+      // Verificar logros de fechas
+      if (stats.fechas.agregados >= 3) {
+        unlockAchievement(5); // Organizador - Crea 3 fechas
+      }
+      if (stats.fechas.agregados >= 10) {
+        unlockAchievement(7); // Planificador - Crea 10 fechas
+      }
+      if (stats.fechas.agregados >= 25) {
+        unlockAchievement(9); // Cronista de Dios - Crea 25 fechas
+      }      // Verificar logros de modificación
+      if (stats.eventos.modificados >= 10) {
+        unlockAchievement(10); // Escriba - Modifica 10 anuncios
+      }
+      if (stats.fechas.modificados >= 10) {
+        unlockAchievement(11); // Obrero Diligente - Modifica 10 fechas
+      }
+
+      // Verificar logros de eliminación
+      if (stats.eventos.eliminados >= 5) {
+        unlockAchievement(12); // Limpiador - Elimina 5 anuncios
+      }
+      if (stats.fechas.eliminados >= 5) {
+        unlockAchievement(13); // Purificador - Elimina 5 fechas
+      }
+
+      // Actualizar la marca de tiempo para evitar verificaciones duplicadas frecuentes en otras partes
+      localStorage.setItem(
+        `achievementsLastCheck_${user.uid}`,
+        Date.now().toString()
+      );
+    } catch (error) {
+      console.error("Error al procesar estadísticas para logros:", error);
+    }
+  }
+};
+
+// Añadir un listener para eventos personalizados desde ContadorEstadisticas
+const setupStatsListener = () => {
+  // Eliminar el listener existente para evitar duplicados
+  window.removeEventListener("statisticsUpdated", checkAchievementsFromStats);
+
+  // Añadir un nuevo listener con una función personalizada para forzar la verificación inmediata
+  window.addEventListener("statisticsUpdated", () => {
+    console.log(
+      "Evento statisticsUpdated recibido - verificando logros inmediatamente"
+    );
+    // Forzar la verificación de logros inmediatamente sin restricciones de tiempo
+    checkAchievementsFromStats();
+  });
+};
+
 onMounted(async () => {
   updateCurrentPath();
   window.addEventListener("popstate", updateCurrentPath);
@@ -829,7 +966,23 @@ onMounted(async () => {
       await updateUserProfile();
 
       // Load game state después de que el perfil esté cargado
-      loadGameState();
+      await loadGameState();
+
+      // Evitar cargar logros duplicados en cada navegación
+      const lastCheckKey = `achievementsLastCheck_${user.uid}`;
+      const lastCheck = localStorage.getItem(lastCheckKey);
+
+      // Solo verificar si no se ha hecho recientemente (últimos 30 segundos)
+      if (!lastCheck || Date.now() - parseInt(lastCheck) > 30000) {
+        // Verificar logros basados en estadísticas existentes
+        checkAchievementsFromStats();
+
+        // Actualizar marca de tiempo
+        localStorage.setItem(lastCheckKey, Date.now().toString());
+      }
+
+      // Configurar listener para actualizaciones de estadísticas
+      setupStatsListener();
 
       // Revisar si hay XP temporal para agregar desde localStorage
       const tempXpKey = `tempXp_${user.uid}`;
@@ -875,6 +1028,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("popstate", updateCurrentPath);
+  // Eliminar listener de estadísticas de forma más simple
+  window.removeEventListener("statisticsUpdated", checkAchievementsFromStats);
   // Limpiar todas las suscripciones
   if (unsubscribeAuth) {
     unsubscribeAuth();
