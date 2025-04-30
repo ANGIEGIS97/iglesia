@@ -143,13 +143,21 @@
           </div>
         </div>
 
+        <!-- Componente Logros -->
+        <Logros
+          ref="logrosRef"
+          :darkMode="isDarkMode"
+          @achievement-unlocked="handleAchievementUnlocked"
+          @xp-awarded="awardXp"
+        />
+
         <!-- Navigation Menu -->
         <div class="space-y-1 mb-2">
           <a
             href="/admin/eventos"
             @click.prevent="handleNavigation('/admin/eventos')"
             :class="[
-              'flex items-center px-4 py-3 rounded-lg transition-all duration-200 border-l-4',
+              'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4',
               currentPath === '/admin/eventos'
                 ? isDarkMode
                   ? 'bg-teal-500/20 text-teal-400 border-teal-500'
@@ -185,7 +193,7 @@
             href="/admin/fechas"
             @click.prevent="handleNavigation('/admin/fechas')"
             :class="[
-              'flex items-center px-4 py-3 rounded-lg transition-all duration-200 border-l-4',
+              'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4',
               currentPath === '/admin/fechas'
                 ? isDarkMode
                   ? 'bg-teal-500/20 text-teal-400 border-teal-500'
@@ -220,7 +228,7 @@
           <button
             @click="openChangePassword"
             :class="[
-              'flex items-center w-full px-4 py-3 rounded-lg text-left transition-all duration-200 border-l-4 border-transparent',
+              'flex items-center w-full px-4 py-[10px] rounded-lg text-left transition-all duration-200 border-l-4 border-transparent',
               isDarkMode
                 ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
                 : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
@@ -247,7 +255,7 @@
             href="/admin/ranking"
             @click.prevent="handleNavigation('/admin/ranking')"
             :class="[
-              'flex items-center px-4 py-3 rounded-lg transition-all duration-200 border-l-4',
+              'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4',
               currentPath === '/admin/ranking'
                 ? isDarkMode
                   ? 'bg-teal-500/20 text-teal-400 border-teal-500'
@@ -279,14 +287,6 @@
             <span>Ranking Global</span>
           </a>
         </div>
-
-        <!-- Componente Logros -->
-        <Logros
-          ref="logrosRef"
-          :darkMode="isDarkMode"
-          @achievement-unlocked="handleAchievementUnlocked"
-          @xp-awarded="awardXp"
-        />
 
         <!-- Contador de Estadísticas -->
         <ContadorEstadisticas class="mb-4" :darkMode="isDarkMode" />
