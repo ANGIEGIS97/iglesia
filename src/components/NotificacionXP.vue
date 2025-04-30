@@ -1,7 +1,6 @@
-<template>
-  <div
+<template>  <div
     v-if="show"
-    class="fixed top-20 right-4 bg-gradient-to-r from-teal-600 to-teal-500 text-white p-3 rounded-lg shadow-xl z-40 animate-slide-in-right"
+    class="fixed top-20 right-4 bg-gradient-to-r from-teal-600 to-teal-500 text-white p-3 rounded-lg shadow-xl z-40 animate-slide-in-right border-[1px] border-white dark:border-gray-800"
   >
     <div class="flex items-center">
       <div

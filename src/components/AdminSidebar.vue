@@ -312,7 +312,7 @@
     <!-- Level Up Notification -->
     <div
       v-if="showLevelUp"
-      class="fixed top-20 right-4 bg-gradient-to-r from-yellow-600 to-orange-500 text-white p-3 rounded-lg shadow-xl z-50 animate__animated animate__slideInRight"
+      class="fixed top-20 right-4 bg-gradient-to-r from-yellow-600 to-orange-500 text-white p-3 rounded-lg shadow-xl z-50 animate__animated animate__slideInRight border-[1px] border-white dark:border-gray-800"
     >
       <div class="flex items-center">
         <div
