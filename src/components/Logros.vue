@@ -2,7 +2,7 @@
   <div>
     <!-- Achievements -->
     <div
-      class="mb-4 p-3 rounded-lg border"
+      class="mb-2 p-3 rounded-lg border"
       :class="
         isDarkMode
           ? 'bg-gray-700/30 border-gray-600/50'
@@ -169,7 +169,7 @@ const achievements = ref([
     unlocked: false,
   },
   {
-    icon: "👤",
+    icon: "😇",
     name: "Nueva Criatura",
     description: "Personaliza tu perfil",
     unlocked: false,
@@ -253,13 +253,13 @@ const achievements = ref([
     unlocked: false,
   },
   {
-    icon: "👨",
+    icon: "👨🏻",
     name: "Varón de Valor",
     description: "Agrega una fecha con icono de reunión de varones",
     unlocked: false,
   },
   {
-    icon: "👩",
+    icon: "👩🏽",
     name: "Mujer Virtuosa",
     description: "Agrega una fecha con icono de reunión de damas",
     unlocked: false,

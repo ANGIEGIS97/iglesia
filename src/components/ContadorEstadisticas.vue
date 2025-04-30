@@ -336,6 +336,28 @@ const handleAuthChange = (user) => {
   }
 };
 
+// Exponer los contadores globalmente
+const getEventosAgregados = () => estadisticas.value.eventos.agregados;
+const getFechasAgregadas = () => estadisticas.value.fechas.agregados;
+
+// Exponer funciones para reiniciar contadores específicos
+const reiniciarContadorEventos = () => {
+  estadisticas.value.eventos = { agregados: 0, eliminados: 0, modificados: 0 };
+  saveEstadisticas();
+};
+
+const reiniciarContadorFechas = () => {
+  estadisticas.value.fechas = { agregados: 0, eliminados: 0, modificados: 0 };
+  saveEstadisticas();
+};
+
+// Función auxiliar para guardar estadísticas
+const saveEstadisticas = () => {
+  const contadorKey = `estadisticasContador_${userId.value}`;
+  localStorage.setItem(contadorKey, JSON.stringify(estadisticas.value));
+  window.dispatchEvent(new CustomEvent("statisticsUpdated"));
+};
+
 onMounted(() => {
   console.log("ContadorEstadisticas montado");
 
@@ -362,6 +384,12 @@ onMounted(() => {
   // Exponer función para actualizar contadores desde otros componentes
   window.actualizarContador = actualizarContador;
 
+  // Exponer métodos globalmente
+  window.getEventosAgregados = getEventosAgregados;
+  window.getFechasAgregadas = getFechasAgregadas;
+  window.reiniciarContadorEventos = reiniciarContadorEventos;
+  window.reiniciarContadorFechas = reiniciarContadorFechas;
+
   // Limpiar el intervalo cuando el componente se desmonte
   onBeforeUnmount(() => {
     clearInterval(intervalo);
@@ -369,6 +397,11 @@ onMounted(() => {
     authUnsub(); // Cancelar subscripción a cambios de auth
     delete window.actualizarContadorEstadisticas;
     delete window.actualizarContador;
+    // Limpiar métodos globales
+    delete window.getEventosAgregados;
+    delete window.getFechasAgregadas;
+    delete window.reiniciarContadorEventos;
+    delete window.reiniciarContadorFechas;
   });
 });
 </script>

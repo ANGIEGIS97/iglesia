@@ -3,7 +3,7 @@
     <!-- Overlay -->
     <div
       v-if="isOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity touch-none"
       @click="$emit('close')"
     ></div>
 
@@ -312,12 +312,18 @@
     <!-- Level Up Notification -->
     <div
       v-if="showLevelUp"
-      class="fixed top-1/4 left-1/2 transform -translate-x-1/2 bg-gray-800 border-2 border-yellow-500 text-white p-6 rounded-lg shadow-lg z-[100] animate-bounce"
+      class="fixed top-16 right-4 bg-gradient-to-r from-yellow-600 to-orange-500 text-white p-3 rounded-lg shadow-xl z-50 animate-slide-in-right"
     >
-      <div class="text-center">
-        <div class="text-yellow-400 text-4xl mb-2">🎉</div>
-        <h3 class="text-xl font-bold mb-1">¡Nivel Subido!</h3>
-        <p class="text-gray-300">Has alcanzado el nivel {{ userLevel }}</p>
+      <div class="flex items-center">
+        <div
+          class="mr-3 bg-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold"
+        >
+          {{ userLevel }}
+        </div>
+        <div>
+          <p class="font-semibold">¡Nivel Subido 🎉!</p>
+          <p class="text-sm">Has alcanzado el nivel {{ userLevel }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -363,8 +369,6 @@ const xpPercentage = computed(() =>
 );
 const loginStreak = ref(0);
 const showLevelUp = ref(false);
-const newAnnouncementsCount = ref(2);
-const upcomingDatesCount = ref(3);
 
 // Función para obtener la inicial del nombre de usuario
 const getUserInitial = (name) => {
@@ -521,14 +525,6 @@ const handleProfileUpdate = (newDisplayName) => {
 
 const handleNavigation = (path) => {
   emit("close");
-
-  // Eliminar las referencias a completeTask
-  if (path === "/admin/eventos") {
-    newAnnouncementsCount.value = 0;
-  } else if (path === "/admin/fechas") {
-    upcomingDatesCount.value = 0;
-  }
-
   window.location.href = path;
 };
 
@@ -695,6 +691,22 @@ onMounted(async () => {
   }
 });
 
+// Watch for changes in isOpen to control body scroll
+watch(
+  () => props.isOpen,
+  (isOpen) => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+    }
+  }
+);
+
 onBeforeUnmount(() => {
   window.removeEventListener("popstate", updateCurrentPath);
   window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
@@ -754,5 +766,20 @@ a {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
 }
 </style>
