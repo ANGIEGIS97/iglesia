@@ -20,7 +20,7 @@
     >
       <div class="p-4 h-full flex flex-col">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold flex items-center">Administracion</h2>
+          <h2 class="text-xl font-bold flex items-center">Administración</h2>
           <!-- Close Button -->
           <button
             @click="$emit('close')"
@@ -312,7 +312,7 @@
     <!-- Level Up Notification -->
     <div
       v-if="showLevelUp"
-      class="fixed top-16 right-4 bg-gradient-to-r from-yellow-600 to-orange-500 text-white p-3 rounded-lg shadow-xl z-50 animate-slide-in-right"
+      class="fixed top-20 right-4 bg-gradient-to-r from-yellow-600 to-orange-500 text-white p-3 rounded-lg shadow-xl z-50 animate__animated animate__slideInRight"
     >
       <div class="flex items-center">
         <div
@@ -766,20 +766,5 @@ a {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes slide-in-right {
-  0% {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.3s ease-out forwards;
 }
 </style>

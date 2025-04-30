@@ -38,33 +38,33 @@
       <div
         v-if="showAchievements"
         class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
+        @click.stop="closeAllTooltips"
       >
         <div
           v-for="(achievement, index) in achievements"
           :key="index"
-          :class="
-            [
-              'w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300',
-              achievement.unlocked
-                ? isDarkMode
-                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg shadow-amber-700/30'
-                  : 'bg-gradient-to-br from-amber-400 to-amber-600 shadow-md shadow-amber-500/20'
-                : isDarkMode
-                ? 'bg-gray-700/80 hover:bg-gray-700'
-                : 'bg-gray-100 hover:bg-gray-200',
-              'relative group cursor-help',
-            ]"
+          @click.stop="(event) => toggleTooltip(event, index)"
+          :class="[
+            'w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300',
+            achievement.unlocked
+              ? isDarkMode
+                ? 'bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg shadow-amber-700/30'
+                : 'bg-gradient-to-br from-amber-400 to-amber-600 shadow-md shadow-amber-500/20'
+              : isDarkMode
+              ? 'bg-gray-700/80 hover:bg-gray-700'
+              : 'bg-gray-100 hover:bg-gray-200',
+            'relative group cursor-help',
+          ]"
         >
           <span
-            :class="
-              [
-                'text-xl',
-                achievement.unlocked
-                  ? 'opacity-100 scale-110 transition-transform duration-300'
-                  : isDarkMode
-                  ? 'opacity-40 text-gray-400'
-                  : 'opacity-40 text-gray-500',
-              ]"
+            :class="[
+              'text-xl',
+              achievement.unlocked
+                ? 'opacity-100 scale-110 transition-transform duration-300'
+                : isDarkMode
+                ? 'opacity-40 text-gray-400'
+                : 'opacity-40 text-gray-500',
+            ]"
             >{{ achievement.icon }}</span
           >
 
@@ -81,9 +81,19 @@
             </div>
           </div>
 
-          <!-- Tooltip -->
+          <!-- Tooltip Unificado -->
           <div
-            class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-40 z-10 opacity-0 group-hover:opacity-100 transition-all duration-200 scale-95 group-hover:scale-100 pointer-events-none"
+            :class="[
+              'absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-40 z-10 transition-all duration-200',
+              'pointer-events-none', // Deshabilitar eventos de puntero por defecto para hover
+              // Lógica de visibilidad móvil (click) - usando === estricto y verificando explícitamente valores numéricos
+              activeTooltipIndex === index
+                ? 'opacity-100 scale-100 md:opacity-0 md:scale-95' // Visible en móvil si activo, oculto en escritorio
+                : 'opacity-0 scale-95', // Oculto si no está activo
+              // Lógica de visibilidad escritorio (hover) - prevalece sobre móvil en pantallas md+
+              'md:group-hover:opacity-100 md:group-hover:scale-100', // Visible en escritorio al hacer hover
+            ]"
+            @click.stop
           >
             <div
               class="p-3 rounded-lg shadow-xl text-xs"
@@ -118,6 +128,7 @@
               ></div>
             </div>
           </div>
+          <!-- Fin Tooltip Unificado -->
         </div>
       </div>
     </div>
@@ -139,7 +150,15 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits, defineExpose } from "vue";
+import {
+  ref,
+  computed,
+  defineProps,
+  defineEmits,
+  defineExpose,
+  onMounted,
+  onUnmounted,
+} from "vue";
 import { auth_api } from "../lib/api.ts";
 
 const props = defineProps({
@@ -159,6 +178,8 @@ const showAchievements = ref(false);
 const showAchievement = ref(false);
 const latestAchievement = ref({});
 const hasNewAchievement = ref(false);
+// Indice del logro con tooltip activo (para dispositivos móviles)
+const activeTooltipIndex = ref(null);
 
 // Logros
 const achievements = ref([
@@ -427,6 +448,11 @@ const checkLevelAchievements = (level) => {
 
 const toggleAchievements = () => {
   showAchievements.value = !showAchievements.value;
+
+  // Si se cierra el panel de logros, resetear cualquier tooltip abierto
+  if (!showAchievements.value) {
+    activeTooltipIndex.value = null;
+  }
 };
 
 // Cargar logros desde el estado del juego
@@ -514,6 +540,71 @@ const clearAchievementsLocalStorage = () => {
     console.error("Error al limpiar datos de logros del localStorage:", error);
   }
 };
+
+// Función para alternar el tooltip en dispositivos móviles
+const toggleTooltip = (event, index) => {
+  // Detener propagación para que no llegue al evento global
+  event.stopPropagation();
+
+  console.log(
+    "Toggle tooltip para índice:",
+    index,
+    "Actual:",
+    activeTooltipIndex.value
+  );
+
+  // Verificar si el índice actual es exactamente igual al índice seleccionado
+  if (activeTooltipIndex.value === index) {
+    // Si es el mismo que ya está activo, lo cerramos
+    activeTooltipIndex.value = null;
+    console.log("Cerrando tooltip:", index);
+  } else {
+    // Si es diferente o no hay ninguno activo, activamos este
+    activeTooltipIndex.value = index;
+    console.log("Abriendo tooltip para índice:", index);
+  }
+};
+
+// Cerrar tooltip cuando se toca fuera
+const closeAllTooltips = (event) => {
+  // Si se proporciona un evento, detenemos su propagación
+  if (event) {
+    event.stopPropagation();
+  }
+
+  // Solo cerramos tooltips si hay alguno abierto
+  if (activeTooltipIndex.value !== null) {
+    console.log("Cerrando todos los tooltips");
+    // Pequeño delay para evitar conflictos
+    setTimeout(() => {
+      activeTooltipIndex.value = null;
+    }, 5);
+  }
+};
+
+// Función para cerrar tooltips al hacer clic en cualquier lugar
+const handleGlobalClick = (event) => {
+  // Verificar si el evento no proviene de un tooltip o un icono de logro
+  // Solo cerramos si hay un tooltip abierto
+  if (activeTooltipIndex.value !== null) {
+    // Añadir un pequeño retraso para evitar conflictos con el evento de clic
+    setTimeout(() => {
+      activeTooltipIndex.value = null;
+    }, 10);
+  }
+};
+
+// Agregar/remover event listener global
+onMounted(() => {
+  // Usamos un timeout para evitar que el evento se dispare inmediatamente al montar
+  setTimeout(() => {
+    window.addEventListener("click", handleGlobalClick);
+  }, 100);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("click", handleGlobalClick);
+});
 
 // Propiedades y métodos expuestos al componente padre
 defineExpose({
