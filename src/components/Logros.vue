@@ -116,7 +116,11 @@
                 class="mt-1 text-xs"
                 :class="isDarkMode ? 'text-amber-400' : 'text-amber-600'"
               >
-                {{ achievement.unlocked ? "✓ Desbloqueado" : "🔒 Bloqueado" }}
+                {{
+                  achievement.unlocked
+                    ? "📖 " + achievement.verse
+                    : "🔒 Bloqueado"
+                }}
               </div>
               <div
                 class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
@@ -142,7 +146,10 @@
         <div class="text-center">
           <div class="text-yellow-400 text-4xl mb-2">🏆</div>
           <h3 class="text-xl font-bold mb-1">¡Nuevo Logro!</h3>
-          <p class="text-gray-300">{{ latestAchievement.name }}</p>
+          <p class="text-gray-300 mb-1">{{ latestAchievement.name }}</p>
+          <p class="text-amber-400 text-xs mt-1">
+            📖 {{ latestAchievement.verse }}
+          </p>
         </div>
       </div>
     </Teleport>
@@ -188,120 +195,140 @@ const achievements = ref([
     name: "Guardián de la Fe",
     description: "Cambia tu contraseña",
     unlocked: false,
+    verse: "Salmo 23:1",
   },
   {
     icon: "😇",
     name: "Nueva Criatura",
     description: "Personaliza tu perfil",
     unlocked: false,
+    verse: "2 Corintios 5:17",
   },
   {
     icon: "🎨",
     name: "Vasija Renovada",
     description: "Cambia el tema de la interfaz",
     unlocked: false,
+    verse: "Isaías 64:8",
   },
   {
     icon: "📜",
     name: "Portador de Buenas Nuevas",
     description: "Agrega tu primer anuncio",
     unlocked: false,
+    verse: "Isaías 52:7",
   },
   {
     icon: "📢",
     name: "Mensajero",
     description: "Agrega 3 anuncios",
     unlocked: false,
+    verse: "Proverbios 25:25",
   },
   {
     icon: "📅",
     name: "Organizador",
     description: "Agrega 3 fechas",
     unlocked: false,
+    verse: "Eclesiastés 3:1",
   },
   {
     icon: "📣",
     name: "Heraldo",
     description: "Agrega 10 anuncios",
     unlocked: false,
+    verse: "Marcos 16:15",
   },
   {
     icon: "🗓️",
     name: "Planificador",
     description: "Agrega 10 fechas",
     unlocked: false,
+    verse: "Proverbios 16:9",
   },
   {
     icon: "📯",
     name: "Atalaya",
     description: "Agrega 25 anuncios",
     unlocked: false,
+    verse: "Ezequiel 33:6",
   },
   {
     icon: "📆",
     name: "Cronista de Dios",
     description: "Agrega 25 fechas",
     unlocked: false,
+    verse: "Salmo 90:12",
   },
   {
     icon: "✏️",
     name: "Escriba",
     description: "Modifica 10 anuncios",
     unlocked: false,
+    verse: "Jeremías 30:2",
   },
   {
     icon: "🔄",
     name: "Obrero Diligente",
     description: "Modifica 10 fechas",
     unlocked: false,
+    verse: "Colosenses 3:23",
   },
   {
     icon: "🗑️",
     name: "Limpiador",
     description: "Elimina 5 anuncios",
     unlocked: false,
+    verse: "Salmo 51:10",
   },
   {
     icon: "❌",
     name: "Purificador",
     description: "Elimina 5 fechas",
     unlocked: false,
+    verse: "1 Juan 1:9",
   },
   {
     icon: "🎂",
     name: "Celebrador de la Vida",
     description: "Agrega una fecha con icono de cumpleaños",
     unlocked: false,
+    verse: "Salmo 118:24",
   },
   {
     icon: "👨🏻",
     name: "Varón de Valor",
     description: "Agrega una fecha con icono de reunión de varones",
     unlocked: false,
+    verse: "Josué 1:9",
   },
   {
     icon: "👩🏽",
     name: "Mujer Virtuosa",
     description: "Agrega una fecha con icono de reunión de damas",
     unlocked: false,
+    verse: "Proverbios 31:10",
   },
   {
     icon: "⭐",
     name: "Siervo Fiel",
     description: "Alcanza el nivel 5",
     unlocked: false,
+    verse: "Mateo 25:21",
   },
   {
     icon: "🌟",
     name: "Buen Mayordomo",
     description: "Alcanza el nivel 10",
     unlocked: false,
+    verse: "1 Corintios 4:2",
   },
   {
     icon: "🌠",
     name: "Buen y Fiel Siervo",
     description: "Alcanza el nivel 100",
     unlocked: false,
+    verse: "Apocalipsis 2:10",
   },
 ]);
 
@@ -324,6 +351,39 @@ const unlockAchievement = (index) => {
 
   if (!achievements.value[index].unlocked) {
     console.log(`Desbloqueando logro: ${achievements.value[index].name}`);
+
+    // Asegurarnos de que el logro tenga un versículo asignado
+    if (!achievements.value[index].verse) {
+      // Lista de versículos por defecto en caso de que falte
+      const versiculosPorDefecto = [
+        "2 Timoteo 4:7",
+        "2 Corintios 5:17",
+        "Isaías 64:8",
+        "Isaías 52:7",
+        "Proverbios 25:25",
+        "Eclesiastés 3:1",
+        "Marcos 16:15",
+        "Proverbios 16:9",
+        "Ezequiel 33:6",
+        "Salmo 90:12",
+        "Jeremías 30:2",
+        "Colosenses 3:23",
+        "Salmo 51:10",
+        "1 Juan 1:9",
+        "Salmo 118:24",
+        "Josué 1:9",
+        "Proverbios 31:10",
+        "Mateo 25:21",
+        "1 Corintios 4:2",
+        "Apocalipsis 2:10",
+      ];
+      // Asignar un versículo por defecto según el índice
+      achievements.value[index].verse =
+        index < versiculosPorDefecto.length
+          ? versiculosPorDefecto[index]
+          : "Salmo 23";
+    }
+
     achievements.value[index].unlocked = true;
     latestAchievement.value = achievements.value[index];
     showAchievement.value = true;
@@ -331,13 +391,16 @@ const unlockAchievement = (index) => {
 
     setTimeout(() => {
       showAchievement.value = false;
-    }, 3000);
+    }, 4000);
 
     // Notificar al componente padre
     emit("achievement-unlocked");
 
     // Conceder XP por logro
     emit("xp-awarded", 10);
+
+    // Sincronizar inmediatamente con localStorage
+    syncAchievementsToLocalStorage(achievements.value);
   } else {
     console.log(`Logro ya desbloqueado: ${achievements.value[index].name}`);
   }
@@ -461,11 +524,21 @@ const loadAchievements = (gameState) => {
     gameState.achievements &&
     gameState.achievements.length === achievements.value.length
   ) {
-    // Si la estructura coincide, cargar directamente
-    achievements.value = gameState.achievements;
+    // Si la estructura coincide, mantener los versos y actualizar solo los estados
+    const savedAchievements = gameState.achievements;
+    savedAchievements.forEach((achievement, index) => {
+      if (index < achievements.value.length) {
+        // Conservar el verso del logro definido localmente
+        const verse = achievements.value[index].verse;
+        // Actualizar el estado del logro
+        achievements.value[index].unlocked = achievement.unlocked;
+        // Asegurar que el verso se preserve
+        achievements.value[index].verse = verse;
+      }
+    });
 
     // Sincronizar con localStorage
-    syncAchievementsToLocalStorage(gameState.achievements);
+    syncAchievementsToLocalStorage(achievements.value);
   } else if (gameState.achievements) {
     // Mantener la nueva estructura pero cargar estados desde el guardado
     const savedAchievements = gameState.achievements;
@@ -473,10 +546,11 @@ const loadAchievements = (gameState) => {
       savedAchievements.forEach((achievement, index) => {
         if (index < achievements.value.length && achievement.unlocked) {
           achievements.value[index].unlocked = true;
+          // El verso ya está definido en la estructura local
         }
       });
 
-      // Sincronizar con localStorage
+      // Sincronizar con localStorage con la estructura actualizada
       syncAchievementsToLocalStorage(achievements.value);
     }
   }
@@ -494,10 +568,19 @@ const syncAchievementsToLocalStorage = (achievementsData) => {
 
   const userId = user.uid;
   try {
-    localStorage.setItem(
-      `achievements_${userId}`,
-      JSON.stringify(achievementsData)
-    );
+    // Asegurarnos de que todos los logros tengan sus versículos correspondientes
+    const dataToSave = achievementsData.map((achievement, index) => {
+      // Si falta el versículo, usar el de la definición original
+      if (!achievement.verse && index < achievements.value.length) {
+        return {
+          ...achievement,
+          verse: achievements.value[index].verse,
+        };
+      }
+      return achievement;
+    });
+
+    localStorage.setItem(`achievements_${userId}`, JSON.stringify(dataToSave));
   } catch (error) {
     console.error("Error al guardar logros en localStorage:", error);
   }
@@ -509,8 +592,33 @@ const forceFirebaseSync = async () => {
   if (!user?.uid) return;
 
   try {
+    // Guardar la configuración actual de versículos
+    const versiculosActuales = achievements.value.map(
+      (achievement) => achievement.verse
+    );
+
     // Limpiar datos locales primero
     clearAchievementsLocalStorage();
+
+    // Configurar un listener para restaurar los versículos después de la recarga
+    const handleReload = () => {
+      // Restaurar versículos después de la carga
+      setTimeout(() => {
+        achievements.value.forEach((achievement, index) => {
+          if (index < versiculosActuales.length) {
+            achievement.verse = versiculosActuales[index];
+          }
+        });
+        // Sincronizar de nuevo para guardar los versículos
+        syncAchievementsToLocalStorage(achievements.value);
+      }, 1000); // Dar tiempo a que se complete la carga
+
+      // Eliminar el listener después de usarlo
+      window.removeEventListener("gameStateLoaded", handleReload);
+    };
+
+    // Escuchar el evento de carga completada
+    window.addEventListener("gameStateLoaded", handleReload);
 
     // Esto disparará una recarga completa desde Firebase
     window.dispatchEvent(new CustomEvent("forceGameStateReload"));
