@@ -675,11 +675,7 @@ onMounted(async () => {
     typeof customElements !== "undefined" &&
     !customElements.get("admin-sidebar")
   ) {
-    class AdminSidebarElement extends HTMLElement {
-      constructor() {
-        super();
-      }
-    }
+    class AdminSidebarElement extends HTMLElement {}
     customElements.define("admin-sidebar", AdminSidebarElement);
 
     // Crear una instancia y adjuntar un método puente para awardXp
@@ -699,6 +695,8 @@ watch(
       document.body.style.overflow = "hidden";
       document.body.style.position = "fixed";
       document.body.style.width = "100%";
+      // Actualizar la ruta actual cuando se abre el sidebar
+      updateCurrentPath();
     } else {
       document.body.style.overflow = "";
       document.body.style.position = "";

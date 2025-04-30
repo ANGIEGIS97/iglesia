@@ -1,3 +1,4 @@
+AdminEventList con checked
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import {
@@ -26,6 +27,8 @@ const editingEvent = ref<Evento | null>(null);
 const isLoading = ref(true);
 const userName = ref("");
 const userProfiles = ref<{ [key: string]: UserProfile }>({});
+const selectedEvents = ref<string[]>([]);
+const isAllSelected = ref(false);
 
 // Notificaciones XP
 const showXpNotification = ref(false);
@@ -267,6 +270,52 @@ const loadUserProfile = async () => {
   }
 };
 
+// Selección de eventos
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedEvents.value = [];
+  } else {
+    selectedEvents.value = eventList.value.map((e) => e.id);
+  }
+  isAllSelected.value = !isAllSelected.value;
+};
+
+const deleteSelected = async () => {
+  if (selectedEvents.value.length === 0) return;
+
+  if (
+    !confirm(
+      `¿Estás seguro de que deseas eliminar ${selectedEvents.value.length} anuncios seleccionados?`
+    )
+  )
+    return;
+
+  try {
+    error.value = "";
+    const selectedCount = selectedEvents.value.length; // Guardar la cantidad antes de reiniciar
+    for (const id of selectedEvents.value) {
+      await eventos.delete(id);
+    }
+    await loadEvents();
+    selectedEvents.value = [];
+    isAllSelected.value = false;
+    // Otorgar XP por eliminación masiva
+    showXpNotif(
+      5 * selectedCount, // Usar la cantidad guardada
+      `¡${selectedCount} anuncios eliminados!`, // Usar la cantidad guardada
+      "evento",
+      "eliminados"
+    );
+  } catch (err: any) {
+    console.error("Error al eliminar eventos:", err);
+    error.value = err.message || "Error al eliminar los eventos";
+    if (err.message.includes("No hay sesión activa")) {
+      error.value =
+        "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+    }
+  }
+};
+
 onMounted(() => {
   loadEvents();
   loadUserProfile();
@@ -287,36 +336,68 @@ onMounted(() => {
     <div
       class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 sm:px-0"
     >
-      <div>
-        <h2
-          class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent flex items-center gap-2"
-        >
-          Administrar Anuncios
-        </h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          Gestiona los anuncios y eventos especiales
-        </p>
+      <div class="flex items-center gap-4">
+        <!-- Título -->
+        <div>
+          <h2
+            class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent flex items-center gap-2"
+          >
+            Administrar Anuncios
+          </h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Gestiona los anuncios y eventos especiales
+          </p>
+        </div>
       </div>
-      <button
-        @click="formMode = 'create'"
-        class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+      <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+        <!-- Botón de eliminar seleccionados -->
+        <transition
+          enter-active-class="animate__animated animate__fadeIn"
+          leave-active-class="animate__animated animate__fadeOut"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        Nuevo Anuncio
-      </button>
+          <button
+            v-if="selectedEvents.length > 0"
+            @click="deleteSelected"
+            class="w-full sm:w-auto px-4 py-2 rounded-lg transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-red-500 text-white hover:bg-red-600 order-2 sm:order-1"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+            Eliminar {{ selectedEvents.length }} seleccionados
+          </button>
+        </transition>
+        <button
+          @click="formMode = 'create'"
+          class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600 order-1 sm:order-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          Nuevo Anuncio
+        </button>
+      </div>
     </div>
 
     <div
@@ -388,8 +469,18 @@ onMounted(() => {
         :key="evento.id"
         class="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative"
       >
+        <!-- Checkbox para selección -->
+        <div class="absolute top-3 left-3 z-[5]">
+          <input
+            type="checkbox"
+            :checked="selectedEvents.includes(evento.id)"
+            @change="e => (e.target as HTMLInputElement).checked ? selectedEvents.push(evento.id) : selectedEvents.splice(selectedEvents.indexOf(evento.id), 1)"
+            class="form-checkbox h-5 w-5 text-teal-600 rounded-full border-gray-300 focus:ring-teal-500 dark:border-gray-600 dark:bg-gray-700 opacity-60 hover:opacity-100 transition-opacity duration-200"
+          />
+        </div>
+        <!-- Numeración -->
         <div
-          class="absolute top-4 right-4 z-[5] bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-md"
+          class="absolute top-3 right-3 z-[5] bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-md"
         >
           {{ index + 1 }}
         </div>

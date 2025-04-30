@@ -67,6 +67,7 @@
           </button>
         </div>
         <button
+          v-if="showResetButton"
           @click="reiniciarContadores"
           class="p-1.5 rounded-full transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
           :title="'Reiniciar contadores'"
@@ -92,10 +93,10 @@
       <div class="mt-3">
         <!-- Eventos Tab -->
         <div v-if="activeTab === 'eventos'" class="space-y-1">
-          <div class="grid grid-cols-3 gap-2">
-            <div
-              class="p-2 rounded-lg text-center"
+          <div class="grid grid-cols-3 gap-2">            <div
+              class="p-2 rounded-lg text-center cursor-pointer"
               :class="isDarkMode ? 'bg-green-800/40' : 'bg-green-100'"
+              @click="handleStatClick('agregados')"
             >
               <div
                 class="text-xl font-bold"
@@ -111,8 +112,9 @@
               </div>
             </div>
             <div
-              class="p-2 rounded-lg text-center"
+              class="p-2 rounded-lg text-center cursor-pointer"
               :class="isDarkMode ? 'bg-yellow-800/40' : 'bg-yellow-100'"
+              @click="handleStatClick('modificados')"
             >
               <div
                 class="text-xl font-bold"
@@ -128,8 +130,9 @@
               </div>
             </div>
             <div
-              class="p-2 rounded-lg text-center"
+              class="p-2 rounded-lg text-center cursor-pointer"
               :class="isDarkMode ? 'bg-red-800/40' : 'bg-red-100'"
+              @click="handleStatClick('eliminados')"
             >
               <div
                 class="text-xl font-bold"
@@ -221,13 +224,33 @@ const props = defineProps({
 const isDarkMode = computed(() => props.darkMode);
 const showEstadisticas = ref(false);
 const activeTab = ref('eventos'); // Default active tab
+const showResetButton = ref(false); // Estado para mostrar/ocultar el botón
+const clickSequence = ref([]); // Array para guardar la secuencia de clicks
+
 const estadisticas = ref({
   eventos: { agregados: 0, eliminados: 0, modificados: 0 },
   fechas: { agregados: 0, eliminados: 0, modificados: 0 },
 });
 const userId = ref(null);
 
-// Cargar estadísticas desde localStorage con ID de usuario
+// Función para manejar los clicks en las estadísticas
+const handleStatClick = (tipo) => {
+  clickSequence.value.push(tipo);
+  
+  // Verificar si la secuencia es correcta: agregados -> modificados -> eliminados
+  if (clickSequence.value.length === 3) {
+    if (
+      clickSequence.value[0] === 'agregados' &&
+      clickSequence.value[1] === 'modificados' &&
+      clickSequence.value[2] === 'eliminados'
+    ) {
+      showResetButton.value = true;
+    }
+    // Reiniciar la secuencia después de 3 clicks
+    clickSequence.value = [];
+  }
+};
+
 const cargarEstadisticas = () => {
   console.log("Cargando estadísticas...");
 
@@ -276,6 +299,9 @@ const reiniciarContadores = () => {
 
     // Disparar evento personalizado para notificar que las estadísticas han cambiado
     window.dispatchEvent(new CustomEvent("statisticsUpdated"));
+    
+    // Ocultar el botón después de reiniciar
+    showResetButton.value = false;
   }
 };
 
