@@ -1,212 +1,239 @@
 <template>
-  <div
-    :class="[
-      'p-3 rounded-lg border',
-      isDarkMode
-        ? 'bg-gray-700/30 border-gray-600/50'
-        : 'bg-white border-gray-200',
-    ]"
-  >
-    <button
-      @click="toggleEstadisticas"
-      class="w-full text-sm font-semibold mb-2 flex items-center justify-between"
-      :class="isDarkMode ? 'text-teal-400' : 'text-teal-600'"
+  <div>
+    <!-- Botón para abrir/cerrar estadísticas en estilo de navegación -->
+    <a
+      @click.prevent="toggleEstadisticas"
+      :class="[
+        'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4 w-full',
+        showEstadisticas
+          ? isDarkMode
+            ? 'bg-teal-500/20 text-teal-400 border-teal-500'
+            : 'bg-teal-50 text-teal-600 border-teal-500'
+          : isDarkMode
+          ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
+          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
+      ]"
     >
-      <div class="flex items-center">
-        <span class="mr-1">📊</span> Estadísticas
-      </div>
-      <svg
-        class="w-4 h-4 transition-transform"
-        :class="showEstadisticas ? 'rotate-180' : ''"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
-
-    <div v-if="showEstadisticas" class="mt-2 space-y-3">
-      <!-- Tabs -->
-      <div class="flex border-b items-center justify-between" :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'">
-        <div class="flex">
-          <button 
-            @click="activeTab = 'eventos'" 
-            class="py-2 px-4 text-sm font-medium transition-colors duration-200"
-            :class="[
-              activeTab === 'eventos' 
-                ? isDarkMode 
-                  ? 'border-b-2 border-teal-400 text-teal-400' 
-                  : 'border-b-2 border-teal-600 text-teal-600'
-                : isDarkMode 
-                  ? 'text-gray-400 hover:text-gray-300' 
-                  : 'text-gray-500 hover:text-gray-700'
-            ]"
-          >
-            Anuncios
-          </button>
-          <button 
-            @click="activeTab = 'fechas'" 
-            class="py-2 px-4 text-sm font-medium transition-colors duration-200"
-            :class="[
-              activeTab === 'fechas' 
-                ? isDarkMode 
-                  ? 'border-b-2 border-teal-400 text-teal-400' 
-                  : 'border-b-2 border-teal-600 text-teal-600'
-                : isDarkMode 
-                  ? 'text-gray-400 hover:text-gray-300' 
-                  : 'text-gray-500 hover:text-gray-700'
-            ]"
-          >
-            Fechas
-          </button>
-        </div>
-        <button
-          v-if="showResetButton"
-          @click="reiniciarContadores"
-          class="p-1.5 rounded-full transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-          :title="'Reiniciar contadores'"
+      <i
+        class="fas fa-chart-bar w-5 h-5 mr-3"
+        :class="
+          showEstadisticas
+            ? isDarkMode
+              ? 'text-teal-400'
+              : 'text-teal-600'
+            : ''
+        "
+      ></i>
+      <span>Estadísticas</span>
+      <span class="ml-auto">
+        <svg
+          class="w-4 h-4 transition-transform"
+          :class="showEstadisticas ? 'rotate-180' : ''"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <svg
-            class="w-4 h-4"
-            :class="isDarkMode ? 'text-gray-400' : 'text-gray-600'"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </span>
+    </a>
+
+    <!-- Contenido de las estadísticas -->
+    <div v-if="showEstadisticas" class="mt-2 mb-2">
+      <div
+        class="p-3 rounded-lg border"
+        :class="
+          isDarkMode
+            ? 'bg-gray-700/30 border-gray-600/50'
+            : 'bg-white border-gray-200'
+        "
+      >
+        <!-- Tabs -->
+        <div
+          class="flex border-b items-center justify-between"
+          :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'"
+        >
+          <div class="flex">
+            <button
+              @click="activeTab = 'eventos'"
+              class="py-2 px-4 text-sm font-medium transition-colors duration-200"
+              :class="[
+                activeTab === 'eventos'
+                  ? isDarkMode
+                    ? 'border-b-2 border-teal-400 text-teal-400'
+                    : 'border-b-2 border-teal-600 text-teal-600'
+                  : isDarkMode
+                  ? 'text-gray-400 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700',
+              ]"
+            >
+              Anuncios
+            </button>
+            <button
+              @click="activeTab = 'fechas'"
+              class="py-2 px-4 text-sm font-medium transition-colors duration-200"
+              :class="[
+                activeTab === 'fechas'
+                  ? isDarkMode
+                    ? 'border-b-2 border-teal-400 text-teal-400'
+                    : 'border-b-2 border-teal-600 text-teal-600'
+                  : isDarkMode
+                  ? 'text-gray-400 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700',
+              ]"
+            >
+              Fechas
+            </button>
+          </div>
+          <button
+            v-if="showResetButton"
+            @click="reiniciarContadores"
+            class="p-1.5 rounded-full transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            :title="'Reiniciar contadores'"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-        </button>
+            <svg
+              class="w-4 h-4"
+              :class="isDarkMode ? 'text-gray-400' : 'text-gray-600'"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="mt-3">
+          <!-- Eventos Tab -->
+          <div v-if="activeTab === 'eventos'" class="space-y-1">
+            <div class="grid grid-cols-3 gap-2">
+              <div
+                class="p-2 rounded-lg text-center cursor-pointer"
+                :class="isDarkMode ? 'bg-green-800/40' : 'bg-green-100'"
+                @click="handleStatClick('agregados')"
+              >
+                <div
+                  class="text-xl font-bold"
+                  :class="isDarkMode ? 'text-green-400' : 'text-green-700'"
+                >
+                  {{ estadisticas.eventos.agregados }}
+                </div>
+                <div
+                  class="text-[10px]"
+                  :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+                >
+                  Agregados
+                </div>
+              </div>
+              <div
+                class="p-2 rounded-lg text-center cursor-pointer"
+                :class="isDarkMode ? 'bg-yellow-800/40' : 'bg-yellow-100'"
+                @click="handleStatClick('modificados')"
+              >
+                <div
+                  class="text-xl font-bold"
+                  :class="isDarkMode ? 'text-yellow-400' : 'text-yellow-700'"
+                >
+                  {{ estadisticas.eventos.modificados }}
+                </div>
+                <div
+                  class="text-[10px]"
+                  :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+                >
+                  Modificados
+                </div>
+              </div>
+              <div
+                class="p-2 rounded-lg text-center cursor-pointer"
+                :class="isDarkMode ? 'bg-red-800/40' : 'bg-red-100'"
+                @click="handleStatClick('eliminados')"
+              >
+                <div
+                  class="text-xl font-bold"
+                  :class="isDarkMode ? 'text-red-400' : 'text-red-700'"
+                >
+                  {{ estadisticas.eventos.eliminados }}
+                </div>
+                <div
+                  class="text-[10px]"
+                  :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+                >
+                  Eliminados
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fechas Tab -->
+          <div v-if="activeTab === 'fechas'" class="space-y-1">
+            <div class="grid grid-cols-3 gap-2">
+              <div
+                class="p-2 rounded-lg text-center"
+                :class="isDarkMode ? 'bg-green-800/40' : 'bg-green-100'"
+              >
+                <div
+                  class="text-xl font-bold"
+                  :class="isDarkMode ? 'text-green-400' : 'text-green-700'"
+                >
+                  {{ estadisticas.fechas.agregados }}
+                </div>
+                <div
+                  class="text-[10px]"
+                  :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+                >
+                  Agregadas
+                </div>
+              </div>
+              <div
+                class="p-2 rounded-lg text-center"
+                :class="isDarkMode ? 'bg-yellow-800/40' : 'bg-yellow-100'"
+              >
+                <div
+                  class="text-xl font-bold"
+                  :class="isDarkMode ? 'text-yellow-400' : 'text-yellow-700'"
+                >
+                  {{ estadisticas.fechas.modificados }}
+                </div>
+                <div
+                  class="text-[10px]"
+                  :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+                >
+                  Modificadas
+                </div>
+              </div>
+              <div
+                class="p-2 rounded-lg text-center"
+                :class="isDarkMode ? 'bg-red-800/40' : 'bg-red-100'"
+              >
+                <div
+                  class="text-xl font-bold"
+                  :class="isDarkMode ? 'text-red-400' : 'text-red-700'"
+                >
+                  {{ estadisticas.fechas.eliminados }}
+                </div>
+                <div
+                  class="text-[10px]"
+                  :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+                >
+                  Eliminadas
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <!-- Tab Content -->
-      <div class="mt-3">
-        <!-- Eventos Tab -->
-        <div v-if="activeTab === 'eventos'" class="space-y-1">
-          <div class="grid grid-cols-3 gap-2">            <div
-              class="p-2 rounded-lg text-center cursor-pointer"
-              :class="isDarkMode ? 'bg-green-800/40' : 'bg-green-100'"
-              @click="handleStatClick('agregados')"
-            >
-              <div
-                class="text-xl font-bold"
-                :class="isDarkMode ? 'text-green-400' : 'text-green-700'"
-              >
-                {{ estadisticas.eventos.agregados }}
-              </div>
-              <div
-                class="text-[10px]"
-                :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
-              >
-                Agregados
-              </div>
-            </div>
-            <div
-              class="p-2 rounded-lg text-center cursor-pointer"
-              :class="isDarkMode ? 'bg-yellow-800/40' : 'bg-yellow-100'"
-              @click="handleStatClick('modificados')"
-            >
-              <div
-                class="text-xl font-bold"
-                :class="isDarkMode ? 'text-yellow-400' : 'text-yellow-700'"
-              >
-                {{ estadisticas.eventos.modificados }}
-              </div>
-              <div
-                class="text-[10px]"
-                :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
-              >
-                Modificados
-              </div>
-            </div>
-            <div
-              class="p-2 rounded-lg text-center cursor-pointer"
-              :class="isDarkMode ? 'bg-red-800/40' : 'bg-red-100'"
-              @click="handleStatClick('eliminados')"
-            >
-              <div
-                class="text-xl font-bold"
-                :class="isDarkMode ? 'text-red-400' : 'text-red-700'"
-              >
-                {{ estadisticas.eventos.eliminados }}
-              </div>
-              <div
-                class="text-[10px]"
-                :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
-              >
-                Eliminados
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Fechas Tab -->
-        <div v-if="activeTab === 'fechas'" class="space-y-1">
-          <div class="grid grid-cols-3 gap-2">
-            <div
-              class="p-2 rounded-lg text-center"
-              :class="isDarkMode ? 'bg-green-800/40' : 'bg-green-100'"
-            >
-              <div
-                class="text-xl font-bold"
-                :class="isDarkMode ? 'text-green-400' : 'text-green-700'"
-              >
-                {{ estadisticas.fechas.agregados }}
-              </div>
-              <div
-                class="text-[10px]"
-                :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
-              >
-                Agregadas
-              </div>
-            </div>
-            <div
-              class="p-2 rounded-lg text-center"
-              :class="isDarkMode ? 'bg-yellow-800/40' : 'bg-yellow-100'"
-            >
-              <div
-                class="text-xl font-bold"
-                :class="isDarkMode ? 'text-yellow-400' : 'text-yellow-700'"
-              >
-                {{ estadisticas.fechas.modificados }}
-              </div>
-              <div
-                class="text-[10px]"
-                :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
-              >
-                Modificadas
-              </div>
-            </div>
-            <div
-              class="p-2 rounded-lg text-center"
-              :class="isDarkMode ? 'bg-red-800/40' : 'bg-red-100'"
-            >
-              <div
-                class="text-xl font-bold"
-                :class="isDarkMode ? 'text-red-400' : 'text-red-700'"
-              >
-                {{ estadisticas.fechas.eliminados }}
-              </div>
-              <div
-                class="text-[10px]"
-                :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
-              >
-                Eliminadas
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>    </div>
+    </div>
   </div>
 </template>
 
@@ -223,7 +250,7 @@ const props = defineProps({
 
 const isDarkMode = computed(() => props.darkMode);
 const showEstadisticas = ref(false);
-const activeTab = ref('eventos'); // Default active tab
+const activeTab = ref("eventos"); // Default active tab
 const showResetButton = ref(false); // Estado para mostrar/ocultar el botón
 const clickSequence = ref([]); // Array para guardar la secuencia de clicks
 
@@ -236,13 +263,13 @@ const userId = ref(null);
 // Función para manejar los clicks en las estadísticas
 const handleStatClick = (tipo) => {
   clickSequence.value.push(tipo);
-  
+
   // Verificar si la secuencia es correcta: agregados -> modificados -> eliminados
   if (clickSequence.value.length === 3) {
     if (
-      clickSequence.value[0] === 'agregados' &&
-      clickSequence.value[1] === 'modificados' &&
-      clickSequence.value[2] === 'eliminados'
+      clickSequence.value[0] === "agregados" &&
+      clickSequence.value[1] === "modificados" &&
+      clickSequence.value[2] === "eliminados"
     ) {
       showResetButton.value = true;
     }
@@ -299,7 +326,7 @@ const reiniciarContadores = () => {
 
     // Disparar evento personalizado para notificar que las estadísticas han cambiado
     window.dispatchEvent(new CustomEvent("statisticsUpdated"));
-    
+
     // Ocultar el botón después de reiniciar
     showResetButton.value = false;
   }

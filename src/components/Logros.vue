@@ -1,24 +1,31 @@
 <template>
   <div>
-    <!-- Achievements -->
-    <div
-      class="mb-2 p-3 rounded-lg border"
-      :class="
-        isDarkMode
-          ? 'bg-gray-700/30 border-gray-600/50'
-          : 'bg-white border-gray-200'
-      "
+    <!-- Botón para abrir/cerrar logros en estilo de navegación -->
+    <a
+      @click.prevent="toggleAchievements"
+      :class="[
+        'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4 w-full',
+        showAchievements
+          ? isDarkMode
+            ? 'bg-teal-500/20 text-teal-400 border-teal-500'
+            : 'bg-teal-50 text-teal-600 border-teal-500'
+          : isDarkMode
+          ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
+          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
+      ]"
     >
-      <button
-        @click="toggleAchievements"
-        class="w-full text-sm font-semibold mb-2 flex items-center justify-between"
-        :class="isDarkMode ? 'text-yellow-400' : 'text-yellow-600'"
-      >
-        <div class="flex items-center">
-          <span class="mr-1">🏆</span> Logros ({{ unlockedAchievements }}/{{
-            totalAchievements
-          }})
-        </div>
+      <i
+        class="fas fa-trophy w-5 h-5 mr-3"
+        :class="
+          showAchievements
+            ? isDarkMode
+              ? 'text-teal-400'
+              : 'text-teal-600'
+            : ''
+        "
+      ></i>
+      <span>Logros ({{ unlockedAchievements }}/{{ totalAchievements }})</span>
+      <span class="ml-auto">
         <svg
           class="w-4 h-4 transition-transform"
           :class="showAchievements ? 'rotate-180' : ''"
@@ -33,106 +40,119 @@
             d="M19 9l-7 7-7-7"
           />
         </svg>
-      </button>
+      </span>
+    </a>
 
+    <!-- Contenido de los logros -->
+    <div v-if="showAchievements" class="mt-2 w-full">
       <div
-        v-if="showAchievements"
-        class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
-        @click.stop="closeAllTooltips"
+        class="p-3 rounded-lg border w-full"
+        :class="
+          isDarkMode
+            ? 'bg-gray-700/30 border-gray-600/50'
+            : 'bg-white border-gray-200'
+        "
       >
         <div
-          v-for="(achievement, index) in achievements"
-          :key="index"
-          @click.stop="(event) => toggleTooltip(event, index)"
-          :class="[
-            'w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300',
-            achievement.unlocked
-              ? isDarkMode
-                ? 'bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg shadow-amber-700/30'
-                : 'bg-gradient-to-br from-amber-400 to-amber-600 shadow-md shadow-amber-500/20'
-              : isDarkMode
-              ? 'bg-gray-700/80 hover:bg-gray-700'
-              : 'bg-gray-100 hover:bg-gray-200',
-            'relative group cursor-help',
-          ]"
+          class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
+          @click.stop="closeAllTooltips"
         >
-          <span
+          <div
+            v-for="(achievement, index) in achievements"
+            :key="index"
+            @click.stop="(event) => toggleTooltip(event, index)"
             :class="[
-              'text-xl',
+              'w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300',
               achievement.unlocked
-                ? 'opacity-100 scale-110 transition-transform duration-300'
+                ? isDarkMode
+                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg shadow-amber-700/30'
+                  : 'bg-gradient-to-br from-amber-400 to-amber-600 shadow-md shadow-amber-500/20'
                 : isDarkMode
-                ? 'opacity-40 text-gray-400'
-                : 'opacity-40 text-gray-500',
+                ? 'bg-gray-700/80 hover:bg-gray-700'
+                : 'bg-gray-100 hover:bg-gray-200',
+              'relative group cursor-help',
             ]"
-            >{{ achievement.icon }}</span
           >
-
-          <!-- Locked overlay -->
-          <div
-            v-if="!achievement.unlocked"
-            class="absolute inset-0 flex items-center justify-center"
-          >
-            <div
-              class="text-lg opacity-70"
-              :class="isDarkMode ? 'text-gray-500' : 'text-gray-400'"
+            <span
+              :class="[
+                'text-xl',
+                achievement.unlocked
+                  ? 'opacity-100 scale-110 transition-transform duration-300'
+                  : isDarkMode
+                  ? 'opacity-30 text-gray-400'
+                  : 'opacity-40 text-gray-500',
+              ]"
+              >{{ achievement.icon }}</span
             >
-              🔒
-            </div>
-          </div>
 
-          <!-- Tooltip Unificado -->
-          <div
-            :class="[
-              'absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-40 z-10 transition-all duration-200',
-              'pointer-events-none', // Deshabilitar eventos de puntero por defecto para hover
-              // Lógica de visibilidad móvil (click) - usando === estricto y verificando explícitamente valores numéricos
-              activeTooltipIndex === index
-                ? 'opacity-100 scale-100 md:opacity-0 md:scale-95' // Visible en móvil si activo, oculto en escritorio
-                : 'opacity-0 scale-95', // Oculto si no está activo
-              // Lógica de visibilidad escritorio (hover) - prevalece sobre móvil en pantallas md+
-              'md:group-hover:opacity-100 md:group-hover:scale-100', // Visible en escritorio al hacer hover
-            ]"
-            @click.stop
-          >
+            <!-- Locked overlay -->
             <div
-              class="p-3 rounded-lg shadow-xl text-xs"
-              :class="
-                isDarkMode
-                  ? 'bg-gray-800 border border-gray-700'
-                  : 'bg-white border border-gray-200 shadow-gray-200/50'
-              "
+              v-if="!achievement.unlocked"
+              class="absolute inset-0 flex items-center justify-center"
             >
-              <p
-                class="font-bold mb-1"
-                :class="isDarkMode ? 'text-white' : 'text-gray-800'"
-              >
-                {{ achievement.name }}
-              </p>
-              <p :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
-                {{ achievement.description }}
-              </p>
               <div
-                class="mt-1 text-xs"
-                :class="isDarkMode ? 'text-amber-400' : 'text-amber-600'"
+                :class="[
+                  isDarkMode ? 'opacity-80 text-white' : ' text-gray-500',
+                ]"
               >
-                {{
-                  achievement.unlocked
-                    ? "📖 " + achievement.verse
-                    : "🔒 Bloqueado"
-                }}
+                <i class="fas fa-lock"></i>
               </div>
+            </div>
+
+            <!-- Tooltip Unificado -->
+            <div
+              :class="[
+                'absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-40 z-10 transition-all duration-200',
+                'pointer-events-none', // Deshabilitar eventos de puntero por defecto para hover
+                // Lógica de visibilidad móvil (click) - usando === estricto y verificando explícitamente valores numéricos
+                activeTooltipIndex === index
+                  ? 'opacity-100 scale-100 md:opacity-0 md:scale-95' // Visible en móvil si activo, oculto en escritorio
+                  : 'opacity-0 scale-95', // Oculto si no está activo
+                // Lógica de visibilidad escritorio (hover) - prevalece sobre móvil en pantallas md+
+                'md:group-hover:opacity-100 md:group-hover:scale-100', // Visible en escritorio al hacer hover
+              ]"
+              @click.stop
+            >
               <div
-                class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
+                class="p-3 rounded-lg shadow-xl text-xs"
                 :class="
                   isDarkMode
-                    ? 'bg-gray-800 border-r border-b border-gray-700'
-                    : 'bg-white border-r border-b border-gray-200'
+                    ? 'bg-gray-800 border border-gray-700'
+                    : 'bg-white border border-gray-200 shadow-gray-200/50'
                 "
-              ></div>
+              >
+                <p
+                  class="font-bold mb-1"
+                  :class="isDarkMode ? 'text-white' : 'text-gray-800'"
+                >
+                  {{ achievement.name }}
+                </p>
+                <p :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+                  {{ achievement.description }}
+                </p>
+                <div
+                  class="mt-1 text-xs"
+                  :class="isDarkMode ? 'text-amber-400' : 'text-amber-600'"
+                >
+                  {{
+                    achievement.unlocked
+                      ? "📖 " + achievement.verse
+                      : "Bloqueado"
+                  }}
+                  <i v-if="!achievement.unlocked" class="fas fa-lock ml-1"></i>
+                </div>
+                <div
+                  class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
+                  :class="
+                    isDarkMode
+                      ? 'bg-gray-800 border-r border-b border-gray-700'
+                      : 'bg-white border-r border-b border-gray-200'
+                  "
+                ></div>
+              </div>
             </div>
+            <!-- Fin Tooltip Unificado -->
           </div>
-          <!-- Fin Tooltip Unificado -->
         </div>
       </div>
     </div>

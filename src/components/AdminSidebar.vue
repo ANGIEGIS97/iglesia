@@ -31,19 +31,7 @@
                 : 'hover:bg-gray-200 text-gray-600 hover:text-gray-800'
             "
           >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <i class="fas fa-times w-6 h-6"></i>
           </button>
         </div>
 
@@ -56,7 +44,7 @@
               : 'bg-white/80 border-gray-200'
           "
         >
-          <div class="flex items-center space-x-3 mb-3 relative">
+          <div class="flex items-center mb-3 relative px-1">
             <!-- Botón de apagado en la esquina superior derecha -->
             <button
               @click="handleLogout"
@@ -68,19 +56,7 @@
               "
               title="Cerrar sesión"
             >
-              <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
+              <i class="fas fa-power-off w-5 h-5"></i>
             </button>
 
             <div
@@ -95,7 +71,7 @@
                 {{ userLevel }}
               </div>
             </div>
-            <div class="flex-1">
+            <div class="flex-1 ml-3">
               <h3 class="text-sm font-medium flex items-center">
                 {{ displayName || "Usuario" }}
                 <span
@@ -143,16 +119,16 @@
           </div>
         </div>
 
-        <!-- Componente Logros -->
-        <Logros
-          ref="logrosRef"
-          :darkMode="isDarkMode"
-          @achievement-unlocked="handleAchievementUnlocked"
-          @xp-awarded="awardXp"
-        />
-
         <!-- Navigation Menu -->
         <div class="space-y-1 mb-2">
+          <!-- Componente Logros -->
+          <Logros
+            ref="logrosRef"
+            :darkMode="isDarkMode"
+            @achievement-unlocked="handleAchievementUnlocked"
+            @xp-awarded="awardXp"
+          />
+
           <a
             href="/admin/eventos"
             @click.prevent="handleNavigation('/admin/eventos')"
@@ -167,25 +143,16 @@
                 : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
             ]"
           >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              :stroke="
+            <i
+              class="fas fa-calendar-alt w-5 h-5 mr-3"
+              :class="
                 currentPath === '/admin/eventos'
                   ? isDarkMode
-                    ? 'rgb(45 212 191)'
-                    : 'rgb(13 148 136)'
-                  : 'currentColor'
+                    ? 'text-teal-400'
+                    : 'text-teal-600'
+                  : ''
               "
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
+            ></i>
             <span>Administrar Anuncios</span>
           </a>
 
@@ -203,25 +170,16 @@
                 : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
             ]"
           >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              :stroke="
+            <i
+              class="fas fa-clock w-5 h-5 mr-3"
+              :class="
                 currentPath === '/admin/fechas'
                   ? isDarkMode
-                    ? 'rgb(45 212 191)'
-                    : 'rgb(13 148 136)'
-                  : 'currentColor'
+                    ? 'text-teal-400'
+                    : 'text-teal-600'
+                  : ''
               "
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            ></i>
             <span>Administrar Fechas</span>
           </a>
 
@@ -234,19 +192,7 @@
                 : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
             ]"
           >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-              />
-            </svg>
+            <i class="fas fa-key w-5 h-5 mr-3"></i>
             <span>Cambiar Contraseña</span>
           </button>
 
@@ -265,31 +211,22 @@
                 : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
             ]"
           >
-            <svg
-              class="w-5 h-5 mr-3"
-              fill="none"
-              :stroke="
+            <i
+              class="fas fa-crown w-5 h-5 mr-3"
+              :class="
                 currentPath === '/admin/ranking'
                   ? isDarkMode
-                    ? 'rgb(45 212 191)'
-                    : 'rgb(13 148 136)'
-                  : 'currentColor'
+                    ? 'text-teal-400'
+                    : 'text-teal-600'
+                  : ''
               "
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
+            ></i>
             <span>Ranking Global</span>
           </a>
-        </div>
 
-        <!-- Contador de Estadísticas -->
-        <ContadorEstadisticas class="mb-4" :darkMode="isDarkMode" />
+          <!-- Contador de Estadísticas -->
+          <ContadorEstadisticas :darkMode="isDarkMode" />
+        </div>
 
         <div class="flex-grow"></div>
       </div>
