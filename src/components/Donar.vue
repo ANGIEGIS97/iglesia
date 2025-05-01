@@ -55,7 +55,7 @@
 
           <!-- Payment Options -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <button
+            <!-- <button
               @click="showPaymentInfo('online')"
               class="flex items-center justify-center space-x-2 py-4 px-6 rounded-lg hover:bg-opacity-90 transition-all"
               :class="
@@ -66,7 +66,7 @@
             >
               <span class="material-icons">language</span>
               <span>Pagos en línea</span>
-            </button>
+            </button> -->
             <button
               @click="showPaymentInfo('cash')"
               class="flex items-center justify-center space-x-2 py-4 px-6 rounded-lg hover:bg-opacity-90 transition-all"
@@ -126,7 +126,7 @@
         </div>
 
         <!-- Certificate Info -->
-        <div class="text-center text-[#001e62] dark:text-gray-200">
+        <!-- <div class="text-center text-[#001e62] dark:text-gray-200">
           <p class="text-lg">
             Solicita tu
             <span class="font-semibold">certificado de donaciones</span> al
@@ -135,12 +135,12 @@
               href="mailto:certificaciones@example.org"
               class="text-[#a50034] dark:text-teal-300 hover:underline"
             >
-              correo@gmail.com
+              iglesiasugraciaesmayor@gmail.com
             </a>
             con tu Ciudad, Nombre completo, Número de Identificación, Correo
             electrónico y teléfono de contacto.
           </p>
-        </div>
+        </div> -->
         <!-- Info -->
         <div
           class="bg-teal-600 dark:bg-gray-600 p-4 text-center mt-12 rounded-lg"
@@ -193,19 +193,15 @@ const paymentInfo = computed(() => {
           {
             icon: "schedule",
             title: "Horario de Atención",
-            description: "Lunes a Viernes de 9:00 AM a 5:00 PM",
+            description: "Domingos de 9:00 AM a 1:00 PM",
           },
           {
             icon: "location_on",
             title: "Dirección",
-            description: "Calle Principal #123, Ciudad",
-          },
-          {
-            icon: "info",
-            title: "Información Adicional",
             description:
-              "Por favor traer identificación válida para donaciones mayores a $500",
+              "Calle 70 Bis Sur #80-56 Salon comunal Asovivir, Bosa, Bogota",
           },
+
         ],
       };
     case "bank":
@@ -214,8 +210,8 @@ const paymentInfo = computed(() => {
         details: [
           {
             icon: "account_balance",
-            title: "Cuenta Bancaria",
-            description: "Banco Example - Cuenta Corriente: 1234-5678-9012",
+            title: "Nequi",
+            description: "3205605833",
           },
           {
             icon: "business",
@@ -226,7 +222,7 @@ const paymentInfo = computed(() => {
             icon: "description",
             title: "Proceso de Verificación",
             description:
-              "Enviar comprobante de consignación al correo: donaciones@example.com",
+              "Enviar comprobante de consignación al correo: iglesiasugraciaesmayor@gmail.com",
           },
         ],
       };
