@@ -98,12 +98,54 @@ const imageOptions = [
     label: "6- Imagen misionero",
     url: "https://i.ibb.co/nCJpgjQ/misionero.jpg",
   },
-  { value: "custom", label: "7- Imagen personalizada" },
+  { value: "custom", label: "7- URL Imagen / YouTube" },
 ];
 
 const showModal = ref(false);
 const isGeneratingDescription = ref(false);
 const isGeneratingImage = ref(false);
+
+// Función para extraer el ID del video de YouTube de una URL
+const getYoutubeVideoId = (url: string): string | null => {
+  const regExps = [
+    /^https?:\/\/(?:www\.)?youtube\.com\/watch\?(?=.*v=([^&]+))(?:\S+)?$/,
+    /^https?:\/\/(?:www\.)?youtube\.com\/embed\/([^?]+)(?:\S+)?$/,
+    /^https?:\/\/(?:www\.)?youtu\.be\/([^?]+)(?:\S+)?$/,
+  ];
+
+  for (const regex of regExps) {
+    const match = url.match(regex);
+    if (match) return match[1];
+  }
+
+  return null;
+};
+
+// Función para obtener la URL de la miniatura de YouTube de alta calidad
+const getYoutubeThumbnailUrl = (videoId: string): string => {
+  // Intentamos obtener la versión en calidad maxresdefault (alta calidad)
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+};
+
+// Mejorar la función para intentar con diferentes calidades de miniatura
+const getThumbnailWithFallback = async (videoId: string): Promise<string> => {
+  try {
+    // Intentar primero con la calidad máxima
+    const maxResUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    const response = await fetch(maxResUrl, { method: "HEAD" });
+
+    if (response.ok) {
+      return maxResUrl;
+    } else {
+      // Si no está disponible la maxresdefault, usar sddefault
+      return `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+    }
+  } catch (error) {
+    console.error("Error al verificar la miniatura:", error);
+    // En caso de error, utilizar sddefault como respaldo
+    return `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+  }
+};
 
 // Función para inicializar el editor ProseMirror
 const initEditor = () => {
@@ -361,9 +403,36 @@ watch(
   { immediate: true, deep: true }
 );
 
+// Modificar el watch para procesar URLs de YouTube
 watch([selectedImageOption, customImageUrl], () => {
   if (selectedImageOption.value === "custom") {
-    formData.value.image = customImageUrl.value || defaultImageUrl;
+    // Verificar si es una URL de YouTube para extraer la miniatura
+    if (customImageUrl.value) {
+      const videoId = getYoutubeVideoId(customImageUrl.value);
+      if (videoId) {
+        // Es una URL de YouTube, obtener la miniatura
+        // Mostrar la URL de alta calidad inmediatamente mientras verificamos
+        formData.value.image = getYoutubeThumbnailUrl(videoId);
+        console.log("Verificando URL de miniatura de YouTube para:", videoId);
+
+        // Iniciar proceso para verificar y posiblemente usar alternativa
+        getThumbnailWithFallback(videoId)
+          .then((url) => {
+            formData.value.image = url;
+            console.log("URL final de miniatura de YouTube:", url);
+          })
+          .catch((error) => {
+            console.error("Error al obtener miniatura de YouTube:", error);
+            // Si hay error, usar hqdefault como última opción
+            formData.value.image = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+          });
+      } else {
+        // Es una URL normal
+        formData.value.image = customImageUrl.value || defaultImageUrl;
+      }
+    } else {
+      formData.value.image = defaultImageUrl;
+    }
   } else {
     const selected = imageOptions.find(
       (option) => option.value === selectedImageOption.value
@@ -401,7 +470,12 @@ const handleSubmit = async () => {
     // Si es una URL personalizada, validar que sea una URL válida
     if (selectedImageOption.value === "custom" && customImageUrl.value) {
       try {
-        new URL(customImageUrl.value);
+        // Verificar si es una URL de YouTube primero
+        const videoId = getYoutubeVideoId(customImageUrl.value);
+        if (!videoId) {
+          // No es una URL de YouTube, verificar que sea una URL válida
+          new URL(customImageUrl.value);
+        }
       } catch (e) {
         alert("La URL de la imagen no es válida");
         return;
@@ -601,7 +675,7 @@ const createFormatButton = (name, icon, title, onClick) => {
                     for="customUrl"
                     class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                   >
-                    URL de la imagen
+                    URL de la imagen o YouTube
                   </label>
                 </div>
               </div>
