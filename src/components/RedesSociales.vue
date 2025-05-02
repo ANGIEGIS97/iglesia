@@ -11,7 +11,7 @@
     <!-- Contenido -->
     <div class="relative z-10 text-center">
       <a
-        href="https://www.facebook.com/"
+        href="https://www.facebook.com/iglesiabautistabosa/"
         target="_blank"
         rel="noopener noreferrer"
         class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-full transition duration-300text-lg"
