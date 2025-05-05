@@ -37,7 +37,7 @@
           <swiper
             :modules="modulos"
             :slides-per-view="2"
-            :space-between="4"
+            :space-between="3"
             :pagination="{ clickable: true }"
             :navigation="false"
             :grab-cursor="false"
@@ -45,7 +45,7 @@
             :breakpoints="{
               '420': {
                 slidesPerView: 2,
-                spaceBetween: 7,
+                spaceBetween: 3,
               },
               '768': {
                 slidesPerView: 3,
@@ -67,7 +67,7 @@
                 <div
                   class="bg-white dark:bg-slate-600/85 rounded-lg shadow flex flex-col h-[340px] md:h-[330px] relative z-10 backdrop-blur-sm"
                 >
-                  <div class="flex-grow py-2 px-2 sm:px-6">
+                  <div class="flex-grow py-2 px-[6px] sm:px-6">
                     <div class="flex items-center justify-center p-4">
                       <div
                         :class="[
@@ -162,14 +162,18 @@
                       </svg>
                     </h3>
                     <p
-                      class="text-sm text-gray-600 mb-2 flex items-center dark:text-white"
+                      class="text-sm text-gray-600 mb-2 flex flex-col sm:flex-row items-start sm:items-center dark:text-white"
                     >
-                      <i class="fas fa-clock mr-2"></i
-                      >{{ obtenerDiaSemana(evento.fecha) }},
-                      {{ formatTime(evento.hora) }}
+                      <span class="flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        {{ obtenerDiaSemana(evento.fecha) }},
+                      </span>
+                      <span class="ml-6 sm:ml-2 mt-1 sm:mt-0">
+                        {{ formatTime(evento.hora) }}
+                      </span>
                     </p>
                     <p
-                      class="text-[13px] sm:text-sm text-gray-600 dark:text-white mb-2 flex"
+                      class="text-[14px] sm:text-sm text-gray-600 dark:text-white mb-2 flex"
                     >
                       <i
                         :class="{
@@ -187,7 +191,7 @@
                           "
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="mr-[2px] sm:mr-[6px] break-all text-blue-500 dark:text-white hover:underline"
+                          class="mr-[2px] sm:mr-[6px] break-words whitespace-normal text-blue-500 dark:text-white hover:underline"
                         >
                           <template v-if="evento.lugar.includes('tinyurl.com')">
                             Ubicación Google Maps
@@ -196,8 +200,7 @@
                             {{ evento.lugar }}
                           </template>
                         </a>
-                      </template>
-                      <span v-else class="mr-[2px] sm:mr-[6px] break-all">
+                      </template>                      <span v-else class="mr-[2px] sm:mr-[6px] break-words whitespace-normal">
                         {{ evento.lugar }}
                       </span>
                     </p>
