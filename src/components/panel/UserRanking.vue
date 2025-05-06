@@ -403,9 +403,10 @@ onMounted(() => {
                   >
                     {{ getInitial(user.displayName) }}
                   </div>
-                  <div>
-                    <div class="font-bold text-gray-800 dark:text-gray-200">
-                      {{ user.displayName || "Usuario" }}
+                  <div class="flex-1">
+                    <div class="font-bold text-gray-800 dark:text-gray-200 flex items-center justify-between">
+                      <span>{{ user.displayName || "Usuario" }}</span>
+                      <span class="text-sm text-gray-500 dark:text-gray-400 md:hidden">{{ user.userXp }} XP</span>
                     </div>
                     <div class="flex items-center space-x-2 mt-1">
                       <!-- Rango -->
@@ -416,16 +417,23 @@ onMounted(() => {
                           'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': user.userRank === 2,
                           'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': user.userRank === 3,
                           'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100': user.userRank === 4,
-                          'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100': user.userRank === 5,
+                          'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100': user.userRank === 5
                         }"
                       >
-                        <i class="fas fa-star text-xs mr-1"></i>
-                        {{ getRankName(user.userRank) }}
+                        <i class="fas fa-star text-[8px] mr-1"></i>
+                        {{ getRankName(user.userRank || 1) }}
                       </span>
                       
                       <!-- Nivel -->
                       <span
-                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
+                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                        :class="{
+                          'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100': user.userRank === 1,
+                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': user.userRank === 2,
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': user.userRank === 3,
+                          'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100': user.userRank === 4,
+                          'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100': user.userRank === 5
+                        }"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -442,27 +450,6 @@ onMounted(() => {
                           />
                         </svg>
                         Nivel {{ user.userLevel }}
-                      </span>
-                      
-                      <!-- XP -->
-                      <span
-                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-800 dark:text-teal-100"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-3 w-3 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        {{ user.userXp }} XP
                       </span>
                     </div>
                   </div>
