@@ -191,7 +191,11 @@ import { auth_api } from "../lib/api.ts";
 const props = defineProps({
   darkMode: {
     type: Boolean,
-    default: true,
+    default: false,
+  },
+  userRank: {
+    type: Number,
+    default: 1, // Usar rango 1 (Bronce) como valor predeterminado
   },
 });
 
@@ -207,6 +211,22 @@ const latestAchievement = ref({});
 const hasNewAchievement = ref(false);
 // Indice del logro con tooltip activo (para dispositivos móviles)
 const activeTooltipIndex = ref(null);
+
+// Nombres de rangos
+const rankNames = [
+  "Bronce",
+  "Plata",
+  "Oro",
+  "Diamante",
+  "Platino"
+];
+
+// Obtener el nombre del rango actual
+const currentRankName = computed(() => {
+  // Ajustar el índice para acceder al array (restar 1 porque los rangos empiezan en 1 pero los arrays en 0)
+  const rankIndex = Math.max(0, props.userRank - 1);
+  return rankNames[Math.min(rankIndex, rankNames.length - 1)];
+});
 
 // Logros
 const achievements = ref([
@@ -339,14 +359,42 @@ const achievements = ref([
   {
     icon: "🌟",
     name: "Buen Mayordomo",
-    description: "Alcanza el nivel 10",
+    description: "Alcanza el nivel 9",
     unlocked: false,
     verse: "1 Corintios 4:2",
   },
   {
-    icon: "🌠",
-    name: "Buen y Fiel Siervo",
-    description: "Alcanza el nivel 100",
+    icon: "🥇",
+    name: "Medalla de Bronce",
+    description: "Alcanza el nivel máximo del rango Bronce (nivel 10)",
+    unlocked: false,
+    verse: "1 Corintios 9:25",
+  },
+  {
+    icon: "🥈",
+    name: "Medalla de Plata",
+    description: "Alcanza el nivel máximo del rango Plata (nivel 10)",
+    unlocked: false,
+    verse: "Proverbios 25:11",
+  },
+  {
+    icon: "🥉",
+    name: "Medalla de Oro",
+    description: "Alcanza el nivel máximo del rango Oro (nivel 10)",
+    unlocked: false,
+    verse: "Job 23:10",
+  },
+  {
+    icon: "💎",
+    name: "Diamante Precioso",
+    description: "Alcanza el nivel máximo del rango Diamante (nivel 10)",
+    unlocked: false,
+    verse: "Zacarías 9:16",
+  },
+  {
+    icon: "✨",
+    name: "Platino Celestial",
+    description: "Alcanza el nivel máximo del rango Platino (nivel 10)",
     unlocked: false,
     verse: "Apocalipsis 2:10",
   },
@@ -516,16 +564,37 @@ const checkAchievementsFromStats = () => {
   }
 };
 
-// Verificar logros de nivel
+// Función para verificar logros de nivel
 const checkLevelAchievements = (level) => {
+  // Logros basados en nivel
   if (level >= 5) {
-    unlockAchievement(17); // "Siervo Fiel" - Nivel 5
+    unlockAchievement(17); // Siervo Fiel
   }
-  if (level >= 10) {
-    unlockAchievement(18); // "Buen Mayordomo" - Nivel 10
+  if (level >= 9) {
+    unlockAchievement(18); // Buen Mayordomo
   }
   if (level >= 100) {
-    unlockAchievement(19); // "Buen y Fiel Siervo" - Nivel 100
+    unlockAchievement(23); // Buen y Fiel Siervo
+  }
+};
+
+// Función para verificar logros de rango y nivel máximo
+const checkRankAchievements = (rank, level) => {
+  // Logros basados en rango y nivel máximo (nivel 10 de cada rango)
+  if (rank == 1 && level >= 10) {
+    unlockAchievement(19); // Medalla de Bronce - Nivel máximo del rango Bronce
+  }
+  if (rank == 2 && level >= 10) {
+    unlockAchievement(20); // Medalla de Plata - Nivel máximo del rango Plata
+  }
+  if (rank == 3 && level >= 10) {
+    unlockAchievement(21); // Medalla de Oro - Nivel máximo del rango Oro
+  }
+  if (rank == 4 && level >= 10) {
+    unlockAchievement(22); // Diamante Precioso - Nivel máximo del rango Diamante
+  }
+  if (rank == 5 && level >= 10) {
+    unlockAchievement(23); // Platino Celestial - Nivel máximo del rango Platino
   }
 };
 
@@ -540,44 +609,33 @@ const toggleAchievements = () => {
 
 // Cargar logros desde el estado del juego
 const loadAchievements = (gameState) => {
-  if (
-    gameState.achievements &&
-    gameState.achievements.length === achievements.value.length
-  ) {
-    // Si la estructura coincide, mantener los versos y actualizar solo los estados
-    const savedAchievements = gameState.achievements;
-    savedAchievements.forEach((achievement, index) => {
-      if (index < achievements.value.length) {
-        // Conservar el verso del logro definido localmente
-        const verse = achievements.value[index].verse;
-        // Actualizar el estado del logro
-        achievements.value[index].unlocked = achievement.unlocked;
-        // Asegurar que el verso se preserve
-        achievements.value[index].verse = verse;
-      }
-    });
-
-    // Sincronizar con localStorage
-    syncAchievementsToLocalStorage(achievements.value);
-  } else if (gameState.achievements) {
-    // Mantener la nueva estructura pero cargar estados desde el guardado
-    const savedAchievements = gameState.achievements;
-    if (savedAchievements.length > 0) {
-      savedAchievements.forEach((achievement, index) => {
-        if (index < achievements.value.length && achievement.unlocked) {
-          achievements.value[index].unlocked = true;
-          // El verso ya está definido en la estructura local
-        }
-      });
-
-      // Sincronizar con localStorage con la estructura actualizada
-      syncAchievementsToLocalStorage(achievements.value);
-    }
+  if (!gameState?.achievements || !Array.isArray(gameState.achievements)) {
+    console.warn("No hay logros para cargar o formato incorrecto");
+    return;
   }
 
-  // Verificar logros de nivel
-  if (gameState.userLevel) {
-    checkLevelAchievements(gameState.userLevel);
+  // Actualizar estado de desbloqueo para cada logro
+  gameState.achievements.forEach((achievement, index) => {
+    if (
+      index < achievements.value.length &&
+      typeof achievement === "object" &&
+      achievement.hasOwnProperty("unlocked")
+    ) {
+      achievements.value[index].unlocked = achievement.unlocked;
+    }
+  });
+
+  // Verificar si hay nuevos logros desbloqueados
+  const hasUnlocked = achievements.value.some((a) => a.unlocked);
+  hasNewAchievement.value = hasUnlocked;
+  
+  // Verificar logros de rango si hay información de rango y nivel
+  if (gameState.userRank !== undefined) {
+    // Pasamos el rango y el nivel actual del usuario
+    checkRankAchievements(gameState.userRank, gameState.userLevel || 0);
+  } else {
+    // Si no hay información de rango, usamos valores por defecto
+    checkRankAchievements(1, 0);
   }
 };
 
@@ -739,6 +797,7 @@ defineExpose({
   unlockAchievement,
   checkAchievementsFromStats,
   checkLevelAchievements,
+  checkRankAchievements,
   loadAchievements,
   clearAchievementsLocalStorage,
   syncAchievementsToLocalStorage,

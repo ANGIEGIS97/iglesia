@@ -63,28 +63,72 @@
               class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
               :style="{ backgroundColor: getUserColor(displayName) }"
             >
-              {{ getUserInitial(displayName) }}
-              <div
-                class="absolute -bottom-1 -right-1 bg-yellow-500 text-gray-900 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2"
-                :class="isDarkMode ? 'border-gray-800' : 'border-white'"
+              {{ getUserInitial(displayName) }}              <div
+                class="absolute -bottom-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2"
+                :class="{
+                  'bg-amber-500 text-amber-950 ': userRank === 1,
+                  'bg-gray-400 text-gray-950': userRank === 2,
+                  'bg-yellow-500 text-yellow-950': userRank === 3,
+                  'bg-blue-500 text-blue-950 ': userRank === 4,
+                  'bg-purple-500 text-purple-950 ': userRank === 5,
+                  'border-gray-800': isDarkMode,
+                  'border-white': !isDarkMode
+                }"
               >
                 {{ userLevel }}
               </div>
+  
             </div>
             <div class="flex-1 ml-3">
               <h3 class="text-sm font-medium flex items-center">
                 {{ displayName || "Usuario" }}
-                <span
-                  v-if="logrosRef && logrosRef.hasNewAchievement"
-                  class="ml-2 text-yellow-500 animate-pulse"
-                  >⭐</span
-                >
+
               </h3>
               <div
-                class="text-xs"
-                :class="isDarkMode ? 'text-gray-300' : 'text-gray-500'"
+                class="text-[10px] flex items-center gap-1 mt-1"
               >
-                Nivel {{ userLevel }}
+                <!-- Rango en pill -->  
+                <span
+                  v-if="userRank > 0"
+                  class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
+                  :class="{
+                    'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100': userRank === 1,
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': userRank === 2,
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': userRank === 3,
+                    'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100': userRank === 4,
+                    'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100': userRank === 5
+                  }"
+                >
+                  <i class="fas fa-star text-[8px] mr-0.5"></i>
+                  {{ currentRankName }}
+                </span>
+                  <!-- Nivel en pill -->
+                <span
+                  class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
+                  :class="{
+                    'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100': userRank === 1,
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': userRank === 2,
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': userRank === 3,
+                    'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100': userRank === 4,
+                    'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100': userRank === 5
+                  }"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-2.5 w-2.5 mr-0.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                    />
+                  </svg>
+                  Nivel {{ userLevel }}
+                </span>
               </div>
               <button
                 @click="openProfileModal"
@@ -125,6 +169,7 @@
           <Logros
             ref="logrosRef"
             :darkMode="isDarkMode"
+            :userRank="userRank"
             @achievement-unlocked="handleAchievementUnlocked"
             @xp-awarded="awardXp"
           />
@@ -246,21 +291,36 @@
       @update="handleProfileUpdate"
     />
 
-    <!-- Level Up Notification -->
+    <!-- Notificación de Nivel Subido -->
     <div
       v-if="showLevelUp"
-      class="fixed top-20 right-4 bg-gradient-to-r from-yellow-600 to-orange-500 text-white p-3 rounded-lg shadow-xl z-50 animate__animated animate__slideInRight border-[1px] border-white dark:border-gray-800"
+      class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-3 z-50"
     >
-      <div class="flex items-center">
-        <div
-          class="mr-3 bg-purple-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg font-bold"
-        >
-          {{ userLevel }}
-        </div>
-        <div>
-          <p class="font-semibold">¡Nivel Subido 🎉!</p>
-          <p class="text-sm">Has alcanzado el nivel {{ userLevel }}</p>
-        </div>
+      <div
+        class="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center text-gray-900 font-bold"
+      >
+        {{ userLevel }}
+      </div>
+      <div>
+        <p class="font-semibold">¡Nivel Subido 🎉!</p>
+        <p class="text-sm">Has alcanzado el nivel {{ userLevel }}</p>
+      </div>
+    </div>
+    
+    <!-- Notificación de Rango Subido -->
+    <div
+      v-if="showRankUp"
+      class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-3 z-50"
+    >
+      <div
+        class="w-10 h-10 relative"
+      >
+        <i class="fas fa-star text-yellow-400 text-4xl absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
+        <span class="absolute inset-0 flex items-center justify-center text-base font-bold text-black">{{ userRank }}</span>
+      </div>
+      <div>
+        <p class="font-semibold">¡Rango Subido 🏆!</p>
+        <p class="text-sm">Has alcanzado el rango de {{ currentRankName }}</p>
       </div>
     </div>
   </div>
@@ -300,12 +360,28 @@ const isDarkMode = computed(() => props.darkMode);
 // Gamification state
 const userXp = ref(0);
 const userLevel = ref(1);
+const userRank = ref(1); // Iniciar con rango Bronce (1)
+const rankNames = [
+  "Bronce",
+  "Plata",
+  "Oro",
+  "Diamante",
+  "Platino"
+];
 const xpForNextLevel = computed(() => userLevel.value * 100);
 const xpPercentage = computed(() =>
   Math.min(100, Math.floor((userXp.value / xpForNextLevel.value) * 100))
 );
 const loginStreak = ref(0);
 const showLevelUp = ref(false);
+const showRankUp = ref(false);
+
+// Obtener el nombre del rango actual
+const currentRankName = computed(() => {
+  // Ajustar el índice para acceder al array (restar 1 porque los rangos empiezan en 1 pero los arrays en 0)
+  const rankIndex = Math.max(0, userRank.value - 1);
+  return rankNames[Math.min(rankIndex, rankNames.length - 1)];
+});
 
 // Función para obtener la inicial del nombre de usuario
 const getUserInitial = (name) => {
@@ -341,16 +417,30 @@ const awardXp = (amount) => {
   if (userXp.value >= xpForNextLevel.value) {
     userXp.value = userXp.value - xpForNextLevel.value;
     userLevel.value++;
-    showLevelUp.value = true;
-
-    // Check for level achievements
-    if (logrosRef.value) {
-      logrosRef.value.checkLevelAchievements(userLevel.value);
+    
+    // Check if user reached level 10 to increase rank
+    if (userLevel.value > 10) {
+      userLevel.value = 1;
+      userRank.value++;
+      
+      if (userRank.value <= rankNames.length) {
+        showRankUp.value = true;
+        setTimeout(() => {
+          showRankUp.value = false;
+        }, 3000);
+      }
+    } else {
+      showLevelUp.value = true;
+      setTimeout(() => {
+        showLevelUp.value = false;
+      }, 3000);
     }
 
-    setTimeout(() => {
-      showLevelUp.value = false;
-    }, 3000);
+    // Check for level and rank achievements
+    if (logrosRef.value) {
+      logrosRef.value.checkLevelAchievements(userLevel.value);
+      logrosRef.value.checkRankAchievements(userRank.value, userLevel.value);
+    }
   }
 
   // Save to localStorage
@@ -371,6 +461,7 @@ const saveGameState = async () => {
   const gameState = {
     userXp: userXp.value,
     userLevel: userLevel.value,
+    userRank: userRank.value,
     loginStreak: loginStreak.value,
     achievements: logrosRef.value ? logrosRef.value.achievements : [],
   };
@@ -404,6 +495,7 @@ const loadGameState = async () => {
       // Si se encuentra en Firestore, usar esos datos
       userXp.value = firestoreGameState.userXp || 0;
       userLevel.value = firestoreGameState.userLevel || 1;
+      userRank.value = firestoreGameState.userRank || 1; // Usar rango 1 (Bronce) como valor predeterminado
       loginStreak.value = firestoreGameState.loginStreak || 0;
 
       // Limpiar datos potencialmente obsoletos en localStorage antes de cargar datos de Firebase
@@ -431,6 +523,7 @@ const loadGameState = async () => {
     const gameState = JSON.parse(savedState);
     userXp.value = gameState.userXp || 0;
     userLevel.value = gameState.userLevel || 1;
+    userRank.value = gameState.userRank || 1; // Usar rango 1 (Bronce) como valor predeterminado
     loginStreak.value = gameState.loginStreak || 0;
 
     // Cargar los logros en el componente Logros
@@ -548,6 +641,7 @@ const forceReloadGameState = async () => {
     if (firestoreGameState) {
       userXp.value = firestoreGameState.userXp || 0;
       userLevel.value = firestoreGameState.userLevel || 1;
+      userRank.value = firestoreGameState.userRank || 1; // Usar rango 1 (Bronce) como valor predeterminado
       loginStreak.value = firestoreGameState.loginStreak || 0;
 
       // Cargar los logros en el componente Logros

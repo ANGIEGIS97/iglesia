@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { usuarios, type UserWithId } from "../../lib/api.ts";
 
 const users = ref<UserWithId[]>([]);
@@ -31,6 +31,34 @@ const getTopThreeClass = (index: number) => {
       return "bg-amber-600 text-white"; // Bronce
     default:
       return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"; // Resto
+  }
+};
+
+// Nombres de rangos
+const rankNames = [
+  "Bronce",
+  "Plata",
+  "Oro",
+  "Diamante",
+  "Platino"
+];
+
+// Obtener el nombre del rango según el valor
+const getRankName = (rank: number) => {
+  // Ajustar el índice para acceder al array (restar 1 porque los rangos empiezan en 1 pero los arrays en 0)
+  const rankIndex = Math.max(0, rank - 1);
+  return rankNames[Math.min(rankIndex, rankNames.length - 1)];
+};
+
+// Obtener el color del rango
+const getRankColor = (rank: number) => {
+  switch (rank) {
+    case 1: return "text-amber-600 dark:text-amber-500"; // Bronce
+    case 2: return "text-gray-400 dark:text-gray-300"; // Plata
+    case 3: return "text-yellow-500 dark:text-yellow-400"; // Oro
+    case 4: return "text-blue-400 dark:text-blue-300"; // Diamante
+    case 5: return "text-purple-500 dark:text-purple-400"; // Platino
+    default: return "text-amber-600 dark:text-amber-500"; // Bronce por defecto
   }
 };
 
@@ -252,10 +280,11 @@ onMounted(() => {
               </div>
               <div class="text-center mb-3">
                 <div class="text-3xl">🥈</div>
-                <div class="font-bold truncate w-24 dark:text-white">
+                <div class="font-bold truncate w-28 mx-auto dark:text-white">
                   {{ users[1]?.displayName || "Usuario" }}
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">
+                  <span :class="getRankColor(users[1]?.userRank || 1)">{{ getRankName(users[1]?.userRank || 1) }}</span> • 
                   Nivel {{ users[1]?.userLevel }} • {{ users[1]?.userXp }} XP
                 </div>
               </div>
@@ -282,10 +311,11 @@ onMounted(() => {
               </div>
               <div class="text-center mb-3">
                 <div class="text-4xl">👑</div>
-                <div class="font-bold truncate w-28 dark:text-white">
+                <div class="font-bold truncate w-32 mx-auto dark:text-white">
                   {{ users[0]?.displayName || "Usuario" }}
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">
+                  <span :class="getRankColor(users[0]?.userRank || 1)">{{ getRankName(users[0]?.userRank || 1) }}</span> • 
                   Nivel {{ users[0]?.userLevel }} • {{ users[0]?.userXp }} XP
                 </div>
               </div>
@@ -312,10 +342,11 @@ onMounted(() => {
               </div>
               <div class="text-center mb-3">
                 <div class="text-3xl">🥉</div>
-                <div class="font-bold truncate w-24 dark:text-white">
+                <div class="font-bold truncate w-28 mx-auto dark:text-white">
                   {{ users[2]?.displayName || "Usuario" }}
                 </div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">
+                  <span :class="getRankColor(users[2]?.userRank || 1)">{{ getRankName(users[2]?.userRank || 1) }}</span> • 
                   Nivel {{ users[2]?.userLevel }} • {{ users[2]?.userXp }} XP
                 </div>
               </div>
@@ -377,6 +408,22 @@ onMounted(() => {
                       {{ user.displayName || "Usuario" }}
                     </div>
                     <div class="flex items-center space-x-2 mt-1">
+                      <!-- Rango -->
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                        :class="{
+                          'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100': user.userRank === 1,
+                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': user.userRank === 2,
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': user.userRank === 3,
+                          'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100': user.userRank === 4,
+                          'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100': user.userRank === 5,
+                        }"
+                      >
+                        <i class="fas fa-star text-xs mr-1"></i>
+                        {{ getRankName(user.userRank) }}
+                      </span>
+                      
+                      <!-- Nivel -->
                       <span
                         class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
                       >
@@ -396,6 +443,8 @@ onMounted(() => {
                         </svg>
                         Nivel {{ user.userLevel }}
                       </span>
+                      
+                      <!-- XP -->
                       <span
                         class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-800 dark:text-teal-100"
                       >

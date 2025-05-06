@@ -29,6 +29,7 @@ export interface UserProfile {
   updatedAt: Date;
   userXp?: number;
   userLevel?: number;
+  userRank?: number;
   achievements?: any[];
   loginStreak?: number;
 }
@@ -184,15 +185,22 @@ export const usuarios = {
             email: data.email ?? "",
             userXp: data.userXp ?? 0,
             userLevel: data.userLevel ?? 1,
+            userRank: data.userRank ?? 1,
             achievements: data.achievements ?? [],
             loginStreak: data.loginStreak ?? 0,
             updatedAt: data.updatedAt?.toDate() ?? new Date(),
           };
         })
         .sort((a, b) => {
+          // Primero ordenar por rango
+          if (b.userRank !== a.userRank) {
+            return b.userRank - a.userRank;
+          }
+          // Luego por nivel dentro del mismo rango
           if (b.userLevel !== a.userLevel) {
             return b.userLevel - a.userLevel;
           }
+          // Finalmente por XP si el nivel es el mismo
           return b.userXp - a.userXp;
         });
     } catch (error) {
@@ -206,6 +214,7 @@ export const usuarios = {
     gameState: {
       userXp: number;
       userLevel: number;
+      userRank: number;
       loginStreak: number;
       achievements: any[];
     }
@@ -218,6 +227,7 @@ export const usuarios = {
         {
           userXp: gameState.userXp,
           userLevel: gameState.userLevel,
+          userRank: gameState.userRank,
           loginStreak: gameState.loginStreak,
           achievements: gameState.achievements,
           updatedAt: serverTimestamp(),
@@ -235,6 +245,7 @@ export const usuarios = {
   ): Promise<{
     userXp: number;
     userLevel: number;
+    userRank: number;
     loginStreak: number;
     achievements: any[];
   } | null> => {
@@ -245,6 +256,7 @@ export const usuarios = {
         return {
           userXp: data.userXp ?? 0,
           userLevel: data.userLevel ?? 1,
+          userRank: data.userRank ?? 1, // Usar rango 1 (Bronce) como valor predeterminado
           loginStreak: data.loginStreak ?? 0,
           achievements: data.achievements ?? [],
         };
