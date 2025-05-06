@@ -892,7 +892,7 @@ export default {
           this.tipoXP = "fecha";
           this.accionXP = "modificados";
           // Notificación XP por actualizar fecha
-          this.showXpNotif(10, "¡Fecha actualizada!", "fecha", "modificados");
+          this.showXpNotif(20, "¡Fecha actualizada!", "fecha", "modificados");
         } else {
           // Estamos creando una nueva fecha (ya sea desde cero o duplicando)
           await fechas.create(fechaData);
@@ -900,7 +900,7 @@ export default {
           this.tipoXP = "fecha";
           this.accionXP = "agregados";
           // Notificación XP por crear fecha
-          this.showXpNotif(15, "¡Nueva fecha creada!", "fecha", "agregados");
+          this.showXpNotif(30, "¡Nueva fecha creada!", "fecha", "agregados");
 
           // Mostrar mensaje específico si es una duplicación
           if (fechaData.titulo && fechaData.titulo.includes("(Copia)")) {
@@ -936,7 +936,7 @@ export default {
           this.tipoXP = "fecha";
           this.accionXP = "eliminados";
           // Notificación XP por eliminar fecha
-          this.showXpNotif(5, "¡Fecha eliminada!", "fecha", "eliminados");
+          this.showXpNotif(10, "¡Fecha eliminada!", "fecha", "eliminados");
 
           // Actualizar contadores manualmente después de las operaciones
           if (window.actualizarContadorEstadisticas) {

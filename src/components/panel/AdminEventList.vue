@@ -179,7 +179,7 @@ const handleCreate = async (eventData) => {
     formMode.value = "closed";
     await loadEvents();
     // Otorgar XP al crear un nuevo anuncio
-    showXpNotif(15, "¡Nuevo anuncio creado!", "evento", "agregados");
+    showXpNotif(30, "¡Nuevo anuncio creado!", "evento", "agregados");
   } catch (err: any) {
     error.value = err.response?.data?.mensaje || "Error al crear el evento";
   }
@@ -217,7 +217,7 @@ const handleUpdate = async (eventData) => {
     editingEvent.value = null;
     await loadEvents();
     // Otorgar XP al actualizar un anuncio
-    showXpNotif(10, "¡Anuncio actualizado!", "evento", "modificados");
+    showXpNotif(20, "¡Anuncio actualizado!", "evento", "modificados");
   } catch (err: any) {
     error.value =
       err.response?.data?.mensaje || "Error al actualizar el evento";
@@ -232,7 +232,7 @@ const handleDelete = async (id) => {
     await eventos.delete(id);
     await loadEvents();
     // Otorgar XP al eliminar un anuncio
-    showXpNotif(5, "¡Anuncio eliminado!", "evento", "eliminados");
+    showXpNotif(10, "¡Anuncio eliminado!", "evento", "eliminados");
   } catch (err: any) {
     console.error("Error al eliminar evento:", err);
     error.value = err.message || "Error al eliminar el evento";

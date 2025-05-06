@@ -167,6 +167,7 @@
           <div class="text-yellow-400 text-4xl mb-2">🏆</div>
           <h3 class="text-xl font-bold mb-1">¡Nuevo Logro!</h3>
           <p class="text-gray-300 mb-1">{{ latestAchievement.name }}</p>
+          <p class="text-green-400 text-sm mb-1">+{{ latestAchievement.xp }} XP</p>
           <p class="text-amber-400 text-xs mt-1">
             📖 {{ latestAchievement.verse }}
           </p>
@@ -236,6 +237,7 @@ const achievements = ref([
     description: "Cambia tu contraseña",
     unlocked: false,
     verse: "Salmo 23:1",
+    xp: 20 // Logro básico
   },
   {
     icon: "😇",
@@ -243,6 +245,7 @@ const achievements = ref([
     description: "Personaliza tu perfil",
     unlocked: false,
     verse: "2 Corintios 5:17",
+    xp: 20 // Logro básico
   },
   {
     icon: "🎨",
@@ -250,6 +253,7 @@ const achievements = ref([
     description: "Cambia el tema de la interfaz",
     unlocked: false,
     verse: "Isaías 64:8",
+    xp: 20 // Logro básico
   },
   {
     icon: "📜",
@@ -257,6 +261,7 @@ const achievements = ref([
     description: "Agrega tu primer anuncio",
     unlocked: false,
     verse: "Isaías 52:7",
+    xp: 20 // Primer anuncio
   },
   {
     icon: "📢",
@@ -264,6 +269,7 @@ const achievements = ref([
     description: "Agrega 3 anuncios",
     unlocked: false,
     verse: "Proverbios 25:25",
+    xp: 50 // Logro intermedio
   },
   {
     icon: "📅",
@@ -271,6 +277,7 @@ const achievements = ref([
     description: "Agrega 3 fechas",
     unlocked: false,
     verse: "Eclesiastés 3:1",
+    xp: 50 // Logro intermedio
   },
   {
     icon: "📣",
@@ -278,6 +285,7 @@ const achievements = ref([
     description: "Agrega 10 anuncios",
     unlocked: false,
     verse: "Marcos 16:15",
+    xp: 100 // Logro avanzado
   },
   {
     icon: "🗓️",
@@ -285,6 +293,7 @@ const achievements = ref([
     description: "Agrega 10 fechas",
     unlocked: false,
     verse: "Proverbios 16:9",
+    xp: 100 // Logro avanzado
   },
   {
     icon: "📯",
@@ -292,6 +301,7 @@ const achievements = ref([
     description: "Agrega 25 anuncios",
     unlocked: false,
     verse: "Ezequiel 33:6",
+    xp: 200 // Logro experto
   },
   {
     icon: "📆",
@@ -299,6 +309,7 @@ const achievements = ref([
     description: "Agrega 25 fechas",
     unlocked: false,
     verse: "Salmo 90:12",
+    xp: 200 // Logro experto
   },
   {
     icon: "✏️",
@@ -306,6 +317,7 @@ const achievements = ref([
     description: "Modifica 10 anuncios",
     unlocked: false,
     verse: "Jeremías 30:2",
+    xp: 50 // Logro intermedio
   },
   {
     icon: "🔄",
@@ -313,6 +325,7 @@ const achievements = ref([
     description: "Modifica 10 fechas",
     unlocked: false,
     verse: "Colosenses 3:23",
+    xp: 50 // Logro intermedio
   },
   {
     icon: "🗑️",
@@ -320,6 +333,7 @@ const achievements = ref([
     description: "Elimina 5 anuncios",
     unlocked: false,
     verse: "Salmo 51:10",
+    xp: 20 // Logro básico
   },
   {
     icon: "❌",
@@ -327,6 +341,7 @@ const achievements = ref([
     description: "Elimina 5 fechas",
     unlocked: false,
     verse: "1 Juan 1:9",
+    xp: 20 // Logro básico
   },
   {
     icon: "🎂",
@@ -334,6 +349,7 @@ const achievements = ref([
     description: "Agrega una fecha con icono de cumpleaños",
     unlocked: false,
     verse: "Salmo 118:24",
+    xp: 50 // Logro especial
   },
   {
     icon: "👨🏻",
@@ -341,6 +357,7 @@ const achievements = ref([
     description: "Agrega una fecha con icono de reunión de varones",
     unlocked: false,
     verse: "Josué 1:9",
+    xp: 50 // Logro especial
   },
   {
     icon: "👩🏽",
@@ -348,6 +365,7 @@ const achievements = ref([
     description: "Agrega una fecha con icono de reunión de damas",
     unlocked: false,
     verse: "Proverbios 31:10",
+    xp: 50 // Logro especial
   },
   {
     icon: "⭐",
@@ -355,6 +373,7 @@ const achievements = ref([
     description: "Alcanza el nivel 5",
     unlocked: false,
     verse: "Mateo 25:21",
+    xp: 50 // Logro de progresión
   },
   {
     icon: "🌟",
@@ -362,6 +381,7 @@ const achievements = ref([
     description: "Alcanza el nivel 9",
     unlocked: false,
     verse: "1 Corintios 4:2",
+    xp: 90 // Logro de progresión avanzado
   },
   {
     icon: "🥇",
@@ -369,6 +389,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Bronce (nivel 10)",
     unlocked: false,
     verse: "1 Corintios 9:25",
+    xp: 100 // Logro de rango
   },
   {
     icon: "🥈",
@@ -376,6 +397,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Plata (nivel 10)",
     unlocked: false,
     verse: "Proverbios 25:11",
+    xp: 150 // Logro de rango
   },
   {
     icon: "🥉",
@@ -383,6 +405,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Oro (nivel 10)",
     unlocked: false,
     verse: "Job 23:10",
+    xp: 200 // Logro de rango
   },
   {
     icon: "💎",
@@ -390,6 +413,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Diamante (nivel 10)",
     unlocked: false,
     verse: "Zacarías 9:16",
+    xp: 250 // Logro de rango
   },
   {
     icon: "✨",
@@ -397,6 +421,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Platino (nivel 10)",
     unlocked: false,
     verse: "Apocalipsis 2:10",
+    xp: 300 // Logro de rango
   },
 ]);
 
@@ -464,8 +489,9 @@ const unlockAchievement = (index) => {
     // Notificar al componente padre
     emit("achievement-unlocked");
 
-    // Conceder XP por logro
-    emit("xp-awarded", 10);
+    // Conceder XP específico del logro
+    const xpToAward = achievements.value[index].xp || 10;
+    emit("xp-awarded", xpToAward);
 
     // Sincronizar inmediatamente con localStorage
     syncAchievementsToLocalStorage(achievements.value);
