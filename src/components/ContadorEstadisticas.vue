@@ -25,28 +25,25 @@
         "
       ></i>
       <span>Estadísticas</span>
-      <span class="ml-auto">
-        <svg
-          class="w-4 h-4 transition-transform"
-          :class="showEstadisticas ? 'rotate-180' : ''"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </span>
+      <i
+        class="fas ml-auto transition-transform duration-200"
+        :class="[
+          showEstadisticas ? 'fa-chevron-up' : 'fa-chevron-down',
+          showEstadisticas
+            ? isDarkMode
+              ? 'text-teal-400'
+              : 'text-teal-600'
+            : isDarkMode
+            ? 'text-gray-300'
+            : 'text-gray-700',
+        ]"
+      ></i>
     </a>
 
     <!-- Contenido de las estadísticas -->
     <div v-if="showEstadisticas" class="mt-2 mb-2">
       <div
-        class="p-3 rounded-lg border"
+        class="rounded-lg border"
         :class="
           isDarkMode
             ? 'bg-gray-700/30 border-gray-600/50'
@@ -54,37 +51,42 @@
         "
       >
         <!-- Tabs -->
-        <div
-          class="flex border-b items-center justify-between"
-          :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'"
-        >
-          <div class="flex">
+        <div class="flex items-center justify-between">
+          <div class="flex w-full">
             <button
               @click="activeTab = 'eventos'"
-              class="py-2 px-4 text-sm font-medium transition-colors duration-200"
               :class="[
+                'py-2 px-4 text-sm font-medium transition-colors duration-200 w-1/2 text-center',
                 activeTab === 'eventos'
                   ? isDarkMode
                     ? 'border-b-2 border-teal-400 text-teal-400'
                     : 'border-b-2 border-teal-600 text-teal-600'
                   : isDarkMode
-                  ? 'text-gray-400 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700',
+                  ? [
+                      'text-gray-400 hover:text-gray-300 border-b-2 border-gray-600 border-opacity-50',
+                    ]
+                  : [
+                      'text-gray-500 hover:text-gray-700 border-b-2 border-gray-200',
+                    ],
               ]"
             >
               Anuncios
             </button>
             <button
               @click="activeTab = 'fechas'"
-              class="py-2 px-4 text-sm font-medium transition-colors duration-200"
               :class="[
+                'py-2 px-4 text-sm font-medium transition-colors duration-200 w-1/2 text-center',
                 activeTab === 'fechas'
                   ? isDarkMode
                     ? 'border-b-2 border-teal-400 text-teal-400'
                     : 'border-b-2 border-teal-600 text-teal-600'
                   : isDarkMode
-                  ? 'text-gray-400 hover:text-gray-300'
-                  : 'text-gray-500 hover:text-gray-700',
+                  ? [
+                      'text-gray-400 hover:text-gray-300 border-b-2 border-gray-600 border-opacity-50',
+                    ]
+                  : [
+                      'text-gray-500 hover:text-gray-700 border-b-2 border-gray-200',
+                    ],
               ]"
             >
               Fechas
@@ -114,7 +116,7 @@
         </div>
 
         <!-- Tab Content -->
-        <div class="mt-3">
+        <div class="p-2">
           <!-- Eventos Tab -->
           <div v-if="activeTab === 'eventos'" class="space-y-1">
             <div class="grid grid-cols-3 gap-2">

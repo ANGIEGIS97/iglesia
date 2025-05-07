@@ -300,12 +300,11 @@ const deleteSelected = async () => {
     selectedEvents.value = [];
     isAllSelected.value = false;
     // Otorgar XP por eliminación masiva
-    showXpNotif(
-      5 * selectedCount, // Usar la cantidad guardada
-      `¡${selectedCount} anuncios eliminados!`, // Usar la cantidad guardada
-      "evento",
-      "eliminados"
-    );
+    const xpAmountForSelection = selectedCount === 1 ? 10 : 7 * selectedCount;
+    const message = `¡${selectedCount} anuncio${
+      selectedCount !== 1 ? "s" : ""
+    } eliminado${selectedCount !== 1 ? "s" : ""}!`;
+    showXpNotif(xpAmountForSelection, message, "evento", "eliminados");
   } catch (err: any) {
     console.error("Error al eliminar eventos:", err);
     error.value = err.message || "Error al eliminar los eventos";

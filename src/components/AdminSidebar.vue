@@ -63,7 +63,8 @@
               class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
               :style="{ backgroundColor: getUserColor(displayName) }"
             >
-              {{ getUserInitial(displayName) }}              <div
+              {{ getUserInitial(displayName) }}
+              <div
                 class="absolute -bottom-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2"
                 :class="{
                   'bg-amber-500 text-amber-950 ': userRank === 1,
@@ -72,45 +73,51 @@
                   'bg-blue-500 text-blue-950 ': userRank === 4,
                   'bg-purple-500 text-purple-950 ': userRank === 5,
                   'border-gray-800': isDarkMode,
-                  'border-white': !isDarkMode
+                  'border-white': !isDarkMode,
                 }"
               >
                 {{ userLevel }}
               </div>
-  
             </div>
             <div class="flex-1 ml-3">
               <h3 class="text-sm font-medium flex items-center">
                 {{ displayName || "Usuario" }}
-
               </h3>
-              <div
-                class="text-[10px] flex items-center gap-1 mt-1"
-              >
-                <!-- Rango en pill -->  
+              <div class="text-[10px] flex items-center gap-1 mt-1">
+                <!-- Rango en pill -->
                 <span
                   v-if="userRank > 0"
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
                   :class="{
-                    'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100': userRank === 1,
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': userRank === 2,
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': userRank === 3,
-                    'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100': userRank === 4,
-                    'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100': userRank === 5
+                    'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100':
+                      userRank === 1,
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200':
+                      userRank === 2,
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100':
+                      userRank === 3,
+                    'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100':
+                      userRank === 4,
+                    'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100':
+                      userRank === 5,
                   }"
                 >
                   <i class="fas fa-star text-[8px] mr-0.5"></i>
                   {{ currentRankName }}
                 </span>
-                  <!-- Nivel en pill -->
+                <!-- Nivel en pill -->
                 <span
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
                   :class="{
-                    'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100': userRank === 1,
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': userRank === 2,
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': userRank === 3,
-                    'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100': userRank === 4,
-                    'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100': userRank === 5
+                    'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100':
+                      userRank === 1,
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200':
+                      userRank === 2,
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100':
+                      userRank === 3,
+                    'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100':
+                      userRank === 4,
+                    'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100':
+                      userRank === 5,
                   }"
                 >
                   <svg
@@ -166,13 +173,70 @@
         <!-- Navigation Menu -->
         <div class="space-y-1 mb-2">
           <!-- Componente Logros -->
-          <Logros
-            ref="logrosRef"
-            :darkMode="isDarkMode"
-            :userRank="userRank"
-            @achievement-unlocked="handleAchievementUnlocked"
-            @xp-awarded="awardXp"
-          />
+          <!-- Botón de Logros desplegable -->
+          <div class="relative">
+            <button
+              @click="toggleLogros"
+              :class="[
+                'flex items-center w-full px-4 py-[10px] rounded-lg text-left transition-all duration-200 border-l-4',
+                showLogros
+                  ? isDarkMode
+                    ? 'bg-teal-500/20 text-teal-400 border-teal-500'
+                    : 'bg-teal-50 text-teal-600 border-teal-500'
+                  : isDarkMode
+                  ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
+              ]"
+            >
+              <i
+                class="fas fa-trophy w-5 h-5 mr-3"
+                :class="
+                  showLogros
+                    ? isDarkMode
+                      ? 'text-teal-400'
+                      : 'text-teal-600'
+                    : ''
+                "
+              ></i>
+              <span>Mis Logros</span>
+              <span
+                v-if="totalAchievementsCount > 0"
+                class="ml-1 text-sm font-medium"
+              >
+                ({{ unlockedAchievementsCount }}/{{ totalAchievementsCount }})
+              </span>
+              <i
+                class="fas ml-auto transition-transform duration-200"
+                :class="[
+                  showLogros ? 'fa-chevron-up' : 'fa-chevron-down',
+                  showLogros
+                    ? isDarkMode
+                      ? 'text-teal-400'
+                      : 'text-teal-600'
+                    : '',
+                ]"
+              ></i>
+            </button>
+
+            <!-- Contenedor desplegable para los Logros -->
+            <div
+              v-show="showLogros"
+              class="mt-1 transition-all duration-300 ease-in-out"
+              :class="[
+                showLogros
+                  ? 'max-h-96 opacity-100 overflow-visible'
+                  : 'max-h-0 opacity-0 overflow-hidden invisible',
+              ]"
+            >
+              <Logros
+                ref="logrosRef"
+                :darkMode="isDarkMode"
+                :userRank="userRank"
+                @achievement-unlocked="handleAchievementUnlocked"
+                @xp-awarded="awardXp"
+              />
+            </div>
+          </div>
 
           <a
             href="/admin/eventos"
@@ -294,10 +358,18 @@
     <!-- Notificación de Nivel Subido -->
     <div
       v-if="showLevelUp"
-      class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-3 z-50"
+      class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-10/12 max-w-md bg-gray-800 text-white p-2 rounded-full shadow-lg flex items-center space-x-3 z-50 sm:w-auto sm:pr-8 sm:py-2"
     >
       <div
-        class="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center text-gray-900 font-bold"
+        class="w-14 h-14 rounded-full flex items-center justify-center font-bold"
+        :class="{
+          'bg-amber-500 text-amber-950': userRank === 1, // Bronce
+          'bg-gray-400 text-gray-950': userRank === 2, // Plata
+          'bg-yellow-500 text-yellow-950': userRank === 3, // Oro
+          'bg-blue-500 text-blue-950': userRank === 4, // Diamante
+          'bg-purple-500 text-purple-950': userRank === 5, // Platino
+          'bg-yellow-500 text-gray-900': userRank > 5 || userRank < 1, // Fallback
+        }"
       >
         {{ userLevel }}
       </div>
@@ -306,17 +378,28 @@
         <p class="text-sm">Has alcanzado el nivel {{ userLevel }}</p>
       </div>
     </div>
-    
+
     <!-- Notificación de Rango Subido -->
     <div
       v-if="showRankUp"
-      class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-3 z-50"
+      class="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-10/12 max-w-md bg-gray-800 text-white p-2 rounded-full shadow-lg flex items-center space-x-3 z-50 sm:w-auto sm:pr-8 sm:py-2"
     >
-      <div
-        class="w-10 h-10 relative"
-      >
-        <i class="fas fa-star text-yellow-400 text-4xl absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
-        <span class="absolute inset-0 flex items-center justify-center text-base font-bold text-black">{{ userRank }}</span>
+      <div class="w-14 h-14 relative">
+        <i
+          class="fas fa-star text-4xl absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
+          :class="{
+            'text-amber-400': userRank === 1, // Bronce
+            'text-gray-400': userRank === 2, // Plata
+            'text-yellow-400': userRank === 3, // Oro
+            'text-blue-400': userRank === 4, // Diamante
+            'text-purple-400': userRank === 5, // Platino
+            'text-yellow-400': userRank > 5 || userRank < 1, // Fallback
+          }"
+        ></i>
+        <span
+          class="absolute inset-0 flex items-center justify-center text-base font-bold text-black"
+          >{{ userRank }}</span
+        >
       </div>
       <div>
         <p class="font-semibold">¡Rango Subido 🏆!</p>
@@ -351,8 +434,25 @@ const cambioContrasenaRef = ref(null);
 const displayName = ref("");
 const showProfileModal = ref(false);
 const logrosRef = ref(null);
+const showLogros = ref(false); // Estado para controlar la visibilidad de los logros
 let unsubscribeAuth = null;
 let unsubscribeProfile = null;
+
+// Nueva propiedad computada para contar logros desbloqueados
+const unlockedAchievementsCount = computed(() => {
+  if (logrosRef.value && logrosRef.value.achievements) {
+    return logrosRef.value.achievements.filter((ach) => ach.unlocked).length;
+  }
+  return 0;
+});
+
+// Nueva propiedad computada para el total de logros
+const totalAchievementsCount = computed(() => {
+  if (logrosRef.value && logrosRef.value.achievements) {
+    return logrosRef.value.achievements.length;
+  }
+  return 0;
+});
 
 // Theme state
 const isDarkMode = computed(() => props.darkMode);
@@ -361,13 +461,7 @@ const isDarkMode = computed(() => props.darkMode);
 const userXp = ref(0);
 const userLevel = ref(1);
 const userRank = ref(1); // Iniciar con rango Bronce (1)
-const rankNames = [
-  "Bronce",
-  "Plata",
-  "Oro",
-  "Diamante",
-  "Platino"
-];
+const rankNames = ["Bronce", "Plata", "Oro", "Diamante", "Platino"];
 const xpForNextLevel = computed(() => userLevel.value * 100);
 const xpPercentage = computed(() =>
   Math.min(100, Math.floor((userXp.value / xpForNextLevel.value) * 100))
@@ -417,12 +511,12 @@ const awardXp = (amount) => {
   if (userXp.value >= xpForNextLevel.value) {
     userXp.value = userXp.value - xpForNextLevel.value;
     userLevel.value++;
-    
+
     // Check if user reached level 10 to increase rank
     if (userLevel.value > 10) {
       userLevel.value = 1;
       userRank.value++;
-      
+
       if (userRank.value <= rankNames.length) {
         showRankUp.value = true;
         setTimeout(() => {
@@ -662,6 +756,11 @@ const checkStatsForAchievements = () => {
   if (logrosRef.value) {
     logrosRef.value.checkAchievementsFromStats();
   }
+};
+
+// Función para alternar la visibilidad de los logros
+const toggleLogros = () => {
+  showLogros.value = !showLogros.value;
 };
 
 onMounted(async () => {

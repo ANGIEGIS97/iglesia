@@ -565,24 +565,36 @@ export default {
       }
 
       // Verificar los iconos para los logros
-      const userId = auth_api.getCurrentUser()?.uid || 'invitado';
+      const userId = auth_api.getCurrentUser()?.uid || "invitado";
 
       // Logro "Celebrador de la Vida" - Cumpleaños
       if (this.fechaForm.tipoIcono === "Cumpleaños") {
-        localStorage.setItem(`haCreatedoCumpleanos_${userId}`, 'true');
-        window.dispatchEvent(new Event('statisticsUpdated'));
+        localStorage.setItem(`haCreado_Cumpleanos_${userId}`, "true");
+        window.dispatchEvent(new Event("statisticsUpdated"));
       }
 
       // Logro "Varón de Valor" - Reunión de varones
       if (this.fechaForm.tipoIcono === "Reunión de varones") {
-        localStorage.setItem(`haCreatedoReunionVarones_${userId}`, 'true');
-        window.dispatchEvent(new Event('statisticsUpdated'));
+        localStorage.setItem(`haCreado_ReunionVarones_${userId}`, "true");
+        window.dispatchEvent(new Event("statisticsUpdated"));
       }
 
       // Logro "Mujer Virtuosa" - Reunión de damas
       if (this.fechaForm.tipoIcono === "Reunión de damas") {
-        localStorage.setItem(`haCreatedoReunionDamas_${userId}`, 'true');
-        window.dispatchEvent(new Event('statisticsUpdated'));
+        localStorage.setItem(`haCreado_ReunionDamas_${userId}`, "true");
+        window.dispatchEvent(new Event("statisticsUpdated"));
+      }
+
+      // Logro "Dador Alegre" - Canasta de amor
+      if (this.fechaForm.tipoIcono === "Canasta de amor") {
+        localStorage.setItem(`haCreado_CanastaDeAmor_${userId}`, "true");
+        window.dispatchEvent(new Event("statisticsUpdated"));
+      }
+
+      // Logro "En Memoria de Él" - Cena del Señor
+      if (this.fechaForm.tipoIcono === "Cena del Señor") {
+        localStorage.setItem(`haCreado_CenaDelSenor_${userId}`, "true");
+        window.dispatchEvent(new Event("statisticsUpdated"));
       }
 
       this.$emit("save", this.fechaForm);

@@ -28,7 +28,8 @@
           <transition
             enter-active-class="animate__animated animate__fadeIn"
             leave-active-class="animate__animated animate__fadeOut"
-          >            <div
+          >
+            <div
               v-if="selectedFechas.length > 0"
               class="hidden md:flex items-center gap-2 order-2 sm:order-1"
             >
@@ -48,7 +49,8 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />                </svg>
+                  />
+                </svg>
                 Eliminar {{ selectedFechas.length }} seleccionados
               </button>
             </div>
@@ -1235,16 +1237,24 @@ export default {
             (fecha) => !this.selectedFechas.includes(fecha.id)
           );
 
+          const deletedCount = this.selectedFechas.length;
           this.showNotification(
-            `Se han eliminado ${this.selectedFechas.length} fechas correctamente`,
+            `Se han eliminado ${deletedCount} fecha${
+              deletedCount !== 1 ? "s" : ""
+            } correctamente`,
             false
           );
 
-          // Notificación XP por eliminar fechas (5 XP por cada fecha eliminada)
-          if (this.selectedFechas.length > 0) {
+          // Notificación XP por eliminar fechas
+          if (deletedCount > 0) {
+            const xpAmountForSelection =
+              deletedCount === 1 ? 10 : 7 * deletedCount;
+            const message = `¡${deletedCount} fecha${
+              deletedCount !== 1 ? "s" : ""
+            } eliminada${deletedCount !== 1 ? "s" : ""}!`;
             this.showXpNotif(
-              5 * this.selectedFechas.length,
-              "¡Fechas eliminadas!",
+              xpAmountForSelection,
+              message,
               "fecha",
               "eliminados"
             );

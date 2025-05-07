@@ -352,7 +352,7 @@ export default {
           : "¡Anuncio creado con éxito!";
 
         // Emitir evento para asignar XP
-        const xpAmount = isCreating ? 20 : 15; // 20 XP por crear, 15 por actualizar
+        const xpAmount = isCreating ? 40 : 20; // 40 XP por crear, 20 por actualizar
         const accion = isCreating ? "agregados" : "modificados";
         this.$emit("xp-earned", {
           amount: xpAmount,

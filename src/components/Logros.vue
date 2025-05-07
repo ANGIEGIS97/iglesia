@@ -1,157 +1,195 @@
 <template>
   <div>
-    <!-- Botón para abrir/cerrar logros en estilo de navegación -->
-    <a
-      @click.prevent="toggleAchievements"
-      :class="[
-        'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4 w-full',
-        showAchievements
-          ? isDarkMode
-            ? 'bg-teal-500/20 text-teal-400 border-teal-500'
-            : 'bg-teal-50 text-teal-600 border-teal-500'
-          : isDarkMode
-          ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
-          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
-      ]"
-    >
-      <i
-        class="fas fa-trophy w-5 h-5 mr-3"
-        :class="
-          showAchievements
-            ? isDarkMode
-              ? 'text-teal-400'
-              : 'text-teal-600'
-            : ''
-        "
-      ></i>
-      <span>Logros ({{ unlockedAchievements }}/{{ totalAchievements }})</span>
-      <span class="ml-auto">
-        <svg
-          class="w-4 h-4 transition-transform"
-          :class="showAchievements ? 'rotate-180' : ''"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </span>
-    </a>
-
-    <!-- Contenido de los logros -->
-    <div v-if="showAchievements" class="mt-2 w-full">
+    <!-- Eliminado el botón desplegable - Ahora se muestra el contenido directamente -->
+    <div class="w-full my-2">
       <div
-        class="p-3 rounded-lg border w-full"
+        class="rounded-lg border w-full"
         :class="
           isDarkMode
             ? 'bg-gray-700/30 border-gray-600/50'
             : 'bg-white border-gray-200'
         "
       >
+        <!-- Pestañas de categorías de logros -->
         <div
-          class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
-          @click.stop="closeAllTooltips"
+          class="flex border-b"
+          :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'"
         >
-          <div
-            v-for="(achievement, index) in achievements"
-            :key="index"
-            @click.stop="(event) => toggleTooltip(event, index)"
+          <button
+            v-for="(tab, tabIndex) in logrosCategories"
+            :key="tabIndex"
+            @click="activeCategory = tabIndex"
+            class="flex-1 py-[5px] px-2 font-medium text-[13px] transition-all duration-200 text-center border-b-2"
             :class="[
-              'w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300',
-              achievement.unlocked
-                ? isDarkMode
-                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg shadow-amber-700/30'
-                  : 'bg-gradient-to-br from-amber-400 to-amber-600 shadow-md shadow-amber-500/20'
+              activeCategory === tabIndex
+                ? tabIndex === 0
+                  ? isDarkMode
+                    ? 'text-blue-400 border-blue-500'
+                    : 'text-blue-600 border-blue-500'
+                  : tabIndex === 1
+                  ? isDarkMode
+                    ? 'text-purple-400 border-purple-500'
+                    : 'text-purple-600 border-purple-500'
+                  : tabIndex === 2
+                  ? isDarkMode
+                    ? 'text-amber-400 border-amber-500'
+                    : 'text-amber-600 border-amber-500'
+                  : ''
                 : isDarkMode
-                ? 'bg-gray-700/80 hover:bg-gray-700'
-                : 'bg-gray-100 hover:bg-gray-200',
-              'relative group cursor-help',
+                ? 'text-gray-300 hover:text-gray-100 border-transparent'
+                : 'text-gray-600 hover:text-gray-800 border-transparent',
             ]"
           >
+            {{ tab.name }}
             <span
+              class="block text-[12px]"
               :class="[
-                'text-xl',
-                achievement.unlocked
-                  ? 'opacity-100 scale-110 transition-transform duration-300'
+                activeCategory === tabIndex
+                  ? tabIndex === 0
+                    ? isDarkMode
+                      ? 'text-blue-400/80'
+                      : 'text-blue-500/80'
+                    : tabIndex === 1
+                    ? isDarkMode
+                      ? 'text-purple-400/80'
+                      : 'text-purple-500/80'
+                    : tabIndex === 2
+                    ? isDarkMode
+                      ? 'text-amber-400/80'
+                      : 'text-amber-500/80'
+                    : ''
                   : isDarkMode
-                  ? 'opacity-30 text-gray-400'
-                  : 'opacity-40 text-gray-500',
+                  ? 'text-gray-400/80'
+                  : 'text-gray-500/80',
               ]"
-              >{{ achievement.icon }}</span
             >
+              ({{ calculateCategoryCompletionPercentage(tabIndex) }}%)
+            </span>
+          </button>
+        </div>
 
-            <!-- Locked overlay -->
+        <div class="p-2">
+          <div
+            class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
+            @click.stop="closeAllTooltips"
+          >
             <div
-              v-if="!achievement.unlocked"
-              class="absolute inset-0 flex items-center justify-center"
+              v-for="(achievementId, loopIdx) in logrosCategories[
+                activeCategory
+              ].achievements"
+              :key="achievementId"
+              @click.stop="(event) => toggleTooltip(event, achievementId)"
+              :class="[
+                'w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300',
+                achievements[achievementId].unlocked
+                  ? isDarkMode
+                    ? `bg-gradient-to-br ${
+                        getAchievementColors(achievementId).darkFrom
+                      } ${
+                        getAchievementColors(achievementId).darkTo
+                      } shadow-lg ${
+                        getAchievementColors(achievementId).darkShadow
+                      }`
+                    : `bg-gradient-to-br ${
+                        getAchievementColors(achievementId).from
+                      } ${getAchievementColors(achievementId).to} shadow-md ${
+                        getAchievementColors(achievementId).shadow
+                      }`
+                  : isDarkMode
+                  ? 'bg-gray-700/80 hover:bg-gray-700'
+                  : 'bg-gray-100 hover:bg-gray-200',
+                'relative group cursor-help',
+              ]"
             >
+              <span
+                :class="[
+                  'text-xl',
+                  achievements[achievementId].unlocked
+                    ? 'opacity-100 scale-110 transition-transform duration-300'
+                    : isDarkMode
+                    ? 'opacity-30 text-gray-400'
+                    : 'opacity-40 text-gray-500',
+                ]"
+                >{{ achievements[achievementId].icon }}</span
+              >
+
+              <!-- Locked overlay -->
+              <div
+                v-if="!achievements[achievementId].unlocked"
+                class="absolute inset-0 flex items-center justify-center"
+              >
+                <div
+                  :class="[
+                    isDarkMode ? 'opacity-80 text-white' : ' text-gray-500',
+                  ]"
+                >
+                  <i class="fas fa-lock"></i>
+                </div>
+              </div>
+
+              <!-- Tooltip Unificado -->
               <div
                 :class="[
-                  isDarkMode ? 'opacity-80 text-white' : ' text-gray-500',
+                  'absolute bottom-full mb-2 w-40 z-10 transition-all duration-200', // Base classes
+                  loopIdx % 4 === 3
+                    ? 'right-0'
+                    : 'left-1/2 transform -translate-x-1/2', // Conditional positioning
+                  'pointer-events-none', // Deshabilitar eventos de puntero por defecto para hover
+                  // Lógica de visibilidad móvil (click) - usando === estricto y verificando explícitamente valores numéricos
+                  activeTooltipIndex === achievementId
+                    ? 'opacity-100 scale-100 md:opacity-0 md:scale-95' // Visible en móvil si activo, oculto en escritorio
+                    : 'opacity-0 scale-95', // Oculto si no está activo
+                  // Lógica de visibilidad escritorio (hover) - prevalece sobre móvil en pantallas md+
+                  'md:group-hover:opacity-100 md:group-hover:scale-100', // Visible en escritorio al hacer hover
                 ]"
+                @click.stop
               >
-                <i class="fas fa-lock"></i>
-              </div>
-            </div>
-
-            <!-- Tooltip Unificado -->
-            <div
-              :class="[
-                'absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-40 z-10 transition-all duration-200',
-                'pointer-events-none', // Deshabilitar eventos de puntero por defecto para hover
-                // Lógica de visibilidad móvil (click) - usando === estricto y verificando explícitamente valores numéricos
-                activeTooltipIndex === index
-                  ? 'opacity-100 scale-100 md:opacity-0 md:scale-95' // Visible en móvil si activo, oculto en escritorio
-                  : 'opacity-0 scale-95', // Oculto si no está activo
-                // Lógica de visibilidad escritorio (hover) - prevalece sobre móvil en pantallas md+
-                'md:group-hover:opacity-100 md:group-hover:scale-100', // Visible en escritorio al hacer hover
-              ]"
-              @click.stop
-            >
-              <div
-                class="p-3 rounded-lg shadow-xl text-xs"
-                :class="
-                  isDarkMode
-                    ? 'bg-gray-800 border border-gray-700'
-                    : 'bg-white border border-gray-200 shadow-gray-200/50'
-                "
-              >
-                <p
-                  class="font-bold mb-1"
-                  :class="isDarkMode ? 'text-white' : 'text-gray-800'"
-                >
-                  {{ achievement.name }}
-                </p>
-                <p :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
-                  {{ achievement.description }}
-                </p>
                 <div
-                  class="mt-1 text-xs"
-                  :class="isDarkMode ? 'text-amber-400' : 'text-amber-600'"
-                >
-                  {{
-                    achievement.unlocked
-                      ? "📖 " + achievement.verse
-                      : "Bloqueado"
-                  }}
-                  <i v-if="!achievement.unlocked" class="fas fa-lock ml-1"></i>
-                </div>
-                <div
-                  class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45"
+                  class="relative p-3 rounded-lg shadow-xl text-xs"
                   :class="
                     isDarkMode
-                      ? 'bg-gray-800 border-r border-b border-gray-700'
-                      : 'bg-white border-r border-b border-gray-200'
+                      ? 'bg-gray-800 border border-gray-700'
+                      : 'bg-white border border-gray-200 shadow-gray-200/50'
                   "
-                ></div>
+                >
+                  <p
+                    class="font-bold mb-1"
+                    :class="isDarkMode ? 'text-white' : 'text-gray-800'"
+                  >
+                    {{ achievements[achievementId].name }}
+                  </p>
+                  <p :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+                    {{ achievements[achievementId].description }}
+                  </p>
+                  <div
+                    class="mt-1 text-xs"
+                    :class="isDarkMode ? 'text-amber-400' : 'text-amber-600'"
+                  >
+                    {{
+                      achievements[achievementId].unlocked
+                        ? "📖 " + achievements[achievementId].verse
+                        : "Bloqueado"
+                    }}
+                    <i
+                      v-if="!achievements[achievementId].unlocked"
+                      class="fas fa-lock ml-1"
+                    ></i>
+                  </div>
+                  <div
+                    class="absolute -bottom-2 w-3 h-3 rotate-45"
+                    :class="[
+                      loopIdx % 4 === 3
+                        ? 'right-6'
+                        : 'left-1/2 transform -translate-x-1/2',
+                      isDarkMode
+                        ? 'bg-gray-800 border-r border-b border-gray-700'
+                        : 'bg-white border-r border-b border-gray-200',
+                    ]"
+                  ></div>
+                </div>
               </div>
+              <!-- Fin Tooltip Unificado -->
             </div>
-            <!-- Fin Tooltip Unificado -->
           </div>
         </div>
       </div>
@@ -161,13 +199,36 @@
     <Teleport to="body">
       <div
         v-if="showAchievement"
-        class="fixed top-1/3 left-1/2 transform -translate-x-1/2 bg-gray-800 border-2 border-yellow-500 text-white p-6 rounded-lg shadow-lg z-[100] animate-bounce"
+        class="fixed inset-0 bg-black/50 z-[99] transition-opacity duration-300"
+        @click="closeAchievementNotification"
+      ></div>
+      <div
+        v-if="showAchievement"
+        :class="[
+          'fixed top-1/3 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white p-6 rounded-lg shadow-lg z-[100] animate-bounce',
+          `border-2 ${getNotificationBorderColor()}`,
+        ]"
       >
         <div class="text-center">
-          <div class="text-yellow-400 text-4xl mb-2">🏆</div>
-          <h3 class="text-xl font-bold mb-1">¡Nuevo Logro!</h3>
+          <button
+            @click="closeAchievementNotification"
+            class="absolute top-2 right-2 text-gray-400 hover:text-white"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
+          <div
+            :class="[
+              'flex items-center justify-center mb-2 w-16 h-16 mx-auto rounded-full bg-gradient-to-br',
+              getAchievementGradientColors(latestAchievement),
+            ]"
+          >
+            <span class="text-4xl">{{ latestAchievement.icon }}</span>
+          </div>
+          <h3 class="text-base sm:text-xl font-bold mb-1">¡Nuevo Logro!</h3>
           <p class="text-gray-300 mb-1">{{ latestAchievement.name }}</p>
-          <p class="text-green-400 text-sm mb-1">+{{ latestAchievement.xp }} XP</p>
+          <p class="text-green-400 text-sm mb-1">
+            +{{ latestAchievement.xp }} XP
+          </p>
           <p class="text-amber-400 text-xs mt-1">
             📖 {{ latestAchievement.verse }}
           </p>
@@ -206,7 +267,8 @@ const emit = defineEmits(["achievement-unlocked", "xp-awarded"]);
 const isDarkMode = computed(() => props.darkMode);
 
 // Achievement UI state
-const showAchievements = ref(false);
+// Ya no necesitamos showAchievements ref porque siempre se mostrarán los logros
+// const showAchievements = ref(false);
 const showAchievement = ref(false);
 const latestAchievement = ref({});
 const hasNewAchievement = ref(false);
@@ -214,13 +276,7 @@ const hasNewAchievement = ref(false);
 const activeTooltipIndex = ref(null);
 
 // Nombres de rangos
-const rankNames = [
-  "Bronce",
-  "Plata",
-  "Oro",
-  "Diamante",
-  "Platino"
-];
+const rankNames = ["Bronce", "Plata", "Oro", "Diamante", "Platino"];
 
 // Obtener el nombre del rango actual
 const currentRankName = computed(() => {
@@ -237,7 +293,7 @@ const achievements = ref([
     description: "Cambia tu contraseña",
     unlocked: false,
     verse: "Salmo 23:1",
-    xp: 20 // Logro básico
+    xp: 20, // Logro básico
   },
   {
     icon: "😇",
@@ -245,7 +301,7 @@ const achievements = ref([
     description: "Personaliza tu perfil",
     unlocked: false,
     verse: "2 Corintios 5:17",
-    xp: 20 // Logro básico
+    xp: 20, // Logro básico
   },
   {
     icon: "🎨",
@@ -253,7 +309,7 @@ const achievements = ref([
     description: "Cambia el tema de la interfaz",
     unlocked: false,
     verse: "Isaías 64:8",
-    xp: 20 // Logro básico
+    xp: 20, // Logro básico
   },
   {
     icon: "📜",
@@ -261,7 +317,7 @@ const achievements = ref([
     description: "Agrega tu primer anuncio",
     unlocked: false,
     verse: "Isaías 52:7",
-    xp: 20 // Primer anuncio
+    xp: 20, // Primer anuncio
   },
   {
     icon: "📢",
@@ -269,7 +325,7 @@ const achievements = ref([
     description: "Agrega 3 anuncios",
     unlocked: false,
     verse: "Proverbios 25:25",
-    xp: 50 // Logro intermedio
+    xp: 50, // Logro intermedio
   },
   {
     icon: "📅",
@@ -277,7 +333,7 @@ const achievements = ref([
     description: "Agrega 3 fechas",
     unlocked: false,
     verse: "Eclesiastés 3:1",
-    xp: 50 // Logro intermedio
+    xp: 50, // Logro intermedio
   },
   {
     icon: "📣",
@@ -285,7 +341,7 @@ const achievements = ref([
     description: "Agrega 10 anuncios",
     unlocked: false,
     verse: "Marcos 16:15",
-    xp: 100 // Logro avanzado
+    xp: 100, // Logro avanzado
   },
   {
     icon: "🗓️",
@@ -293,7 +349,7 @@ const achievements = ref([
     description: "Agrega 10 fechas",
     unlocked: false,
     verse: "Proverbios 16:9",
-    xp: 100 // Logro avanzado
+    xp: 100, // Logro avanzado
   },
   {
     icon: "📯",
@@ -301,7 +357,7 @@ const achievements = ref([
     description: "Agrega 25 anuncios",
     unlocked: false,
     verse: "Ezequiel 33:6",
-    xp: 200 // Logro experto
+    xp: 200, // Logro experto
   },
   {
     icon: "📆",
@@ -309,7 +365,7 @@ const achievements = ref([
     description: "Agrega 25 fechas",
     unlocked: false,
     verse: "Salmo 90:12",
-    xp: 200 // Logro experto
+    xp: 200, // Logro experto
   },
   {
     icon: "✏️",
@@ -317,7 +373,7 @@ const achievements = ref([
     description: "Modifica 10 anuncios",
     unlocked: false,
     verse: "Jeremías 30:2",
-    xp: 50 // Logro intermedio
+    xp: 50, // Logro intermedio
   },
   {
     icon: "🔄",
@@ -325,7 +381,7 @@ const achievements = ref([
     description: "Modifica 10 fechas",
     unlocked: false,
     verse: "Colosenses 3:23",
-    xp: 50 // Logro intermedio
+    xp: 50, // Logro intermedio
   },
   {
     icon: "🗑️",
@@ -333,7 +389,7 @@ const achievements = ref([
     description: "Elimina 5 anuncios",
     unlocked: false,
     verse: "Salmo 51:10",
-    xp: 20 // Logro básico
+    xp: 20, // Logro básico
   },
   {
     icon: "❌",
@@ -341,7 +397,7 @@ const achievements = ref([
     description: "Elimina 5 fechas",
     unlocked: false,
     verse: "1 Juan 1:9",
-    xp: 20 // Logro básico
+    xp: 20, // Logro básico
   },
   {
     icon: "🎂",
@@ -349,7 +405,7 @@ const achievements = ref([
     description: "Agrega una fecha con icono de cumpleaños",
     unlocked: false,
     verse: "Salmo 118:24",
-    xp: 50 // Logro especial
+    xp: 50, // Logro especial
   },
   {
     icon: "👨🏻",
@@ -357,7 +413,7 @@ const achievements = ref([
     description: "Agrega una fecha con icono de reunión de varones",
     unlocked: false,
     verse: "Josué 1:9",
-    xp: 50 // Logro especial
+    xp: 50, // Logro especial
   },
   {
     icon: "👩🏽",
@@ -365,7 +421,31 @@ const achievements = ref([
     description: "Agrega una fecha con icono de reunión de damas",
     unlocked: false,
     verse: "Proverbios 31:10",
-    xp: 50 // Logro especial
+    xp: 50, // Logro especial
+  },
+  {
+    icon: "❤️",
+    name: "Dador Alegre",
+    description: "Agrega una fecha con icono de canasta de amor",
+    unlocked: false,
+    verse: "2 Corintios 9:7",
+    xp: 50, // Logro especial
+  },
+  {
+    icon: "🍷",
+    name: "En Memoria de Él",
+    description: "Agrega una fecha con icono de cena del Señor",
+    unlocked: false,
+    verse: "1 Corintios 11:24",
+    xp: 50, // Logro especial
+  },
+  {
+    icon: "🌱",
+    name: "Semilla de Mostaza",
+    description: "Alcanza el nivel 3",
+    unlocked: false,
+    verse: "Mateo 13:31-32",
+    xp: 30, // Logro inicial de progresión
   },
   {
     icon: "⭐",
@@ -373,7 +453,7 @@ const achievements = ref([
     description: "Alcanza el nivel 5",
     unlocked: false,
     verse: "Mateo 25:21",
-    xp: 50 // Logro de progresión
+    xp: 50, // Logro de progresión
   },
   {
     icon: "🌟",
@@ -381,7 +461,7 @@ const achievements = ref([
     description: "Alcanza el nivel 9",
     unlocked: false,
     verse: "1 Corintios 4:2",
-    xp: 90 // Logro de progresión avanzado
+    xp: 90, // Logro de progresión avanzado
   },
   {
     icon: "🥇",
@@ -389,7 +469,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Bronce (nivel 10)",
     unlocked: false,
     verse: "1 Corintios 9:25",
-    xp: 100 // Logro de rango
+    xp: 100, // Logro de rango
   },
   {
     icon: "🥈",
@@ -397,7 +477,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Plata (nivel 10)",
     unlocked: false,
     verse: "Proverbios 25:11",
-    xp: 150 // Logro de rango
+    xp: 150, // Logro de rango
   },
   {
     icon: "🥉",
@@ -405,7 +485,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Oro (nivel 10)",
     unlocked: false,
     verse: "Job 23:10",
-    xp: 200 // Logro de rango
+    xp: 200, // Logro de rango
   },
   {
     icon: "💎",
@@ -413,7 +493,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Diamante (nivel 10)",
     unlocked: false,
     verse: "Zacarías 9:16",
-    xp: 250 // Logro de rango
+    xp: 250, // Logro de rango
   },
   {
     icon: "✨",
@@ -421,7 +501,7 @@ const achievements = ref([
     description: "Alcanza el nivel máximo del rango Platino (nivel 10)",
     unlocked: false,
     verse: "Apocalipsis 2:10",
-    xp: 300 // Logro de rango
+    xp: 300, // Logro de rango
   },
 ]);
 
@@ -432,6 +512,126 @@ const unlockedAchievements = computed(() => {
 const totalAchievements = computed(() => {
   return achievements.value.length;
 });
+
+// Estado para las pestañas de categorías de logros
+const activeCategory = ref(0);
+
+// Categorías de logros
+const logrosCategories = ref([
+  {
+    name: "Contenido",
+    achievements: [3, 4, 6, 8, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], // Logros relacionados con anuncios y fechas
+    colors: {
+      from: "from-blue-400",
+      to: "to-blue-600",
+      shadow: "shadow-blue-500/20",
+      darkFrom: "from-blue-500",
+      darkTo: "to-blue-700",
+      darkShadow: "shadow-blue-700/30",
+    },
+  },
+  {
+    name: "Niveles",
+    achievements: [19, 20, 21, 22, 23, 24, 25, 26], // Logros relacionados con nivel y rangos
+    colors: {
+      from: "from-purple-400",
+      to: "to-purple-600",
+      shadow: "shadow-purple-500/20",
+      darkFrom: "from-purple-500",
+      darkTo: "to-purple-700",
+      darkShadow: "shadow-purple-700/30",
+    },
+  },
+  {
+    name: "Sistema",
+    achievements: [0, 1, 2], // Logros básicos del sistema
+    colors: {
+      from: "from-amber-400",
+      to: "to-amber-600",
+      shadow: "shadow-amber-500/20",
+      darkFrom: "from-amber-500",
+      darkTo: "to-amber-700",
+      darkShadow: "shadow-amber-700/30",
+    },
+  },
+]);
+
+// Cargar logros desde el estado del juego
+const loadAchievements = (gameState) => {
+  if (!gameState?.achievements || !Array.isArray(gameState.achievements)) {
+    console.warn("No hay logros para cargar o formato incorrecto");
+    return;
+  }
+
+  // Actualizar estado de desbloqueo para cada logro
+  gameState.achievements.forEach((achievement, index) => {
+    if (
+      index < achievements.value.length &&
+      typeof achievement === "object" &&
+      achievement.hasOwnProperty("unlocked")
+    ) {
+      achievements.value[index].unlocked = achievement.unlocked;
+    }
+  });
+
+  // Verificar si hay nuevos logros desbloqueados
+  const hasUnlocked = achievements.value.some((a) => a.unlocked);
+  hasNewAchievement.value = hasUnlocked;
+
+  // Verificar logros de rango si hay información de rango y nivel
+  if (gameState.userRank !== undefined) {
+    // Pasamos el rango y el nivel actual del usuario
+    checkRankAchievements(gameState.userRank, gameState.userLevel || 0);
+  } else {
+    // Si no hay información de rango, usamos valores por defecto
+    checkRankAchievements(1, 0);
+  }
+};
+
+// Función para limpiar datos de logros en localStorage
+const clearAchievementsLocalStorage = () => {
+  const user = auth_api.getCurrentUser();
+  if (!user?.uid) return;
+
+  const userId = user.uid;
+  try {
+    // Limpiar logros específicos
+    localStorage.removeItem(`achievements_${userId}`);
+    localStorage.removeItem(`haCreado_Cumpleanos_${userId}`);
+    localStorage.removeItem(`haCreado_ReunionVarones_${userId}`);
+    localStorage.removeItem(`haCreado_ReunionDamas_${userId}`);
+    localStorage.removeItem(`haCreado_CanastaDeAmor_${userId}`);
+    localStorage.removeItem(`haCreado_CenaDelSenor_${userId}`);
+    console.log("Datos de logros eliminados del localStorage");
+  } catch (error) {
+    console.error("Error al limpiar datos de logros del localStorage:", error);
+  }
+};
+
+// Función para sincronizar logros con localStorage
+const syncAchievementsToLocalStorage = (achievementsData) => {
+  const user = auth_api.getCurrentUser();
+  if (!user?.uid) return;
+
+  const userId = user.uid;
+  try {
+    // Asegurarnos de que todos los logros tengan sus versículos correspondientes
+    const dataToSave = achievementsData.map((achievement, index) => {
+      // Si falta el versículo, usar el de la definición original
+      if (!achievement.verse && index < achievements.value.length) {
+        return {
+          ...achievement,
+          verse: achievements.value[index].verse,
+        };
+      }
+      return achievement;
+    });
+
+    localStorage.setItem(`achievements_${userId}`, JSON.stringify(dataToSave));
+  } catch (error) {
+    console.error("Error al guardar logros en localStorage:", error);
+  }
+};
 
 // Función para desbloquear logros
 const unlockAchievement = (index) => {
@@ -482,10 +682,6 @@ const unlockAchievement = (index) => {
     showAchievement.value = true;
     hasNewAchievement.value = true;
 
-    setTimeout(() => {
-      showAchievement.value = false;
-    }, 4000);
-
     // Notificar al componente padre
     emit("achievement-unlocked");
 
@@ -512,7 +708,7 @@ const checkAchievementsFromStats = () => {
 
   // Verificar si se ha creado un evento de cumpleaños
   const haCreatedoCumpleanos = localStorage.getItem(
-    `haCreatedoCumpleanos_${userId}`
+    `haCreado_Cumpleanos_${userId}`
   );
   if (haCreatedoCumpleanos === "true") {
     console.log("Desbloqueando logro Celebrador (cumpleaños)");
@@ -521,7 +717,7 @@ const checkAchievementsFromStats = () => {
 
   // Verificar si se ha creado un evento de reunión de varones
   const haCreadoReunionVarones = localStorage.getItem(
-    `haCreatedoReunionVarones_${userId}`
+    `haCreado_ReunionVarones_${userId}`
   );
   if (haCreadoReunionVarones === "true") {
     console.log("Desbloqueando logro Varón de Valor");
@@ -530,11 +726,29 @@ const checkAchievementsFromStats = () => {
 
   // Verificar si se ha creado un evento de reunión de damas
   const haCreadoReunionDamas = localStorage.getItem(
-    `haCreatedoReunionDamas_${userId}`
+    `haCreado_ReunionDamas_${userId}`
   );
   if (haCreadoReunionDamas === "true") {
     console.log("Desbloqueando logro Mujer Virtuosa");
     unlockAchievement(16); // Logro "Mujer Virtuosa"
+  }
+
+  // Verificar si se ha creado un evento de canasta de amor
+  const haCreadoCanastaDeAmor = localStorage.getItem(
+    `haCreado_CanastaDeAmor_${userId}`
+  );
+  if (haCreadoCanastaDeAmor === "true") {
+    console.log("Desbloqueando logro Dador Alegre");
+    unlockAchievement(17); // Logro "Dador Alegre"
+  }
+
+  // Verificar si se ha creado un evento de cena del Señor
+  const haCreadoCenaDelSenor = localStorage.getItem(
+    `haCreado_CenaDelSenor_${userId}`
+  );
+  if (haCreadoCenaDelSenor === "true") {
+    console.log("Desbloqueando logro En Memoria de Él");
+    unlockAchievement(18); // Logro "En Memoria de Él"
   }
 
   if (datosGuardados) {
@@ -593,14 +807,17 @@ const checkAchievementsFromStats = () => {
 // Función para verificar logros de nivel
 const checkLevelAchievements = (level) => {
   // Logros basados en nivel
+  if (level >= 3) {
+    unlockAchievement(19); // Semilla de Mostaza - Nivel 3
+  }
   if (level >= 5) {
-    unlockAchievement(17); // Siervo Fiel
+    unlockAchievement(20); // Siervo Fiel - Nivel 5
   }
   if (level >= 9) {
-    unlockAchievement(18); // Buen Mayordomo
+    unlockAchievement(21); // Buen Mayordomo - Nivel 9
   }
   if (level >= 100) {
-    unlockAchievement(23); // Buen y Fiel Siervo
+    unlockAchievement(26); // Buen y Fiel Siervo - Nivel 100
   }
 };
 
@@ -608,85 +825,19 @@ const checkLevelAchievements = (level) => {
 const checkRankAchievements = (rank, level) => {
   // Logros basados en rango y nivel máximo (nivel 10 de cada rango)
   if (rank == 1 && level >= 10) {
-    unlockAchievement(19); // Medalla de Bronce - Nivel máximo del rango Bronce
+    unlockAchievement(22); // Medalla de Bronce - Nivel máximo del rango Bronce
   }
   if (rank == 2 && level >= 10) {
-    unlockAchievement(20); // Medalla de Plata - Nivel máximo del rango Plata
+    unlockAchievement(23); // Medalla de Plata - Nivel máximo del rango Plata
   }
   if (rank == 3 && level >= 10) {
-    unlockAchievement(21); // Medalla de Oro - Nivel máximo del rango Oro
+    unlockAchievement(24); // Medalla de Oro - Nivel máximo del rango Oro
   }
   if (rank == 4 && level >= 10) {
-    unlockAchievement(22); // Diamante Precioso - Nivel máximo del rango Diamante
+    unlockAchievement(25); // Diamante Precioso - Nivel máximo del rango Diamante
   }
   if (rank == 5 && level >= 10) {
-    unlockAchievement(23); // Platino Celestial - Nivel máximo del rango Platino
-  }
-};
-
-const toggleAchievements = () => {
-  showAchievements.value = !showAchievements.value;
-
-  // Si se cierra el panel de logros, resetear cualquier tooltip abierto
-  if (!showAchievements.value) {
-    activeTooltipIndex.value = null;
-  }
-};
-
-// Cargar logros desde el estado del juego
-const loadAchievements = (gameState) => {
-  if (!gameState?.achievements || !Array.isArray(gameState.achievements)) {
-    console.warn("No hay logros para cargar o formato incorrecto");
-    return;
-  }
-
-  // Actualizar estado de desbloqueo para cada logro
-  gameState.achievements.forEach((achievement, index) => {
-    if (
-      index < achievements.value.length &&
-      typeof achievement === "object" &&
-      achievement.hasOwnProperty("unlocked")
-    ) {
-      achievements.value[index].unlocked = achievement.unlocked;
-    }
-  });
-
-  // Verificar si hay nuevos logros desbloqueados
-  const hasUnlocked = achievements.value.some((a) => a.unlocked);
-  hasNewAchievement.value = hasUnlocked;
-  
-  // Verificar logros de rango si hay información de rango y nivel
-  if (gameState.userRank !== undefined) {
-    // Pasamos el rango y el nivel actual del usuario
-    checkRankAchievements(gameState.userRank, gameState.userLevel || 0);
-  } else {
-    // Si no hay información de rango, usamos valores por defecto
-    checkRankAchievements(1, 0);
-  }
-};
-
-// Función para sincronizar logros con localStorage
-const syncAchievementsToLocalStorage = (achievementsData) => {
-  const user = auth_api.getCurrentUser();
-  if (!user?.uid) return;
-
-  const userId = user.uid;
-  try {
-    // Asegurarnos de que todos los logros tengan sus versículos correspondientes
-    const dataToSave = achievementsData.map((achievement, index) => {
-      // Si falta el versículo, usar el de la definición original
-      if (!achievement.verse && index < achievements.value.length) {
-        return {
-          ...achievement,
-          verse: achievements.value[index].verse,
-        };
-      }
-      return achievement;
-    });
-
-    localStorage.setItem(`achievements_${userId}`, JSON.stringify(dataToSave));
-  } catch (error) {
-    console.error("Error al guardar logros en localStorage:", error);
+    unlockAchievement(26); // Platino Celestial - Nivel máximo del rango Platino
   }
 };
 
@@ -735,21 +886,20 @@ const forceFirebaseSync = async () => {
   }
 };
 
-// Función para limpiar datos de logros en localStorage
-const clearAchievementsLocalStorage = () => {
-  const user = auth_api.getCurrentUser();
-  if (!user?.uid) return;
+// Cerrar tooltip cuando se toca fuera
+const closeAllTooltips = (event) => {
+  // Si se proporciona un evento, detenemos su propagación
+  if (event) {
+    event.stopPropagation();
+  }
 
-  const userId = user.uid;
-  try {
-    // Limpiar logros específicos
-    localStorage.removeItem(`achievements_${userId}`);
-    localStorage.removeItem(`haCreatedoCumpleanos_${userId}`);
-    localStorage.removeItem(`haCreatedoReunionVarones_${userId}`);
-    localStorage.removeItem(`haCreatedoReunionDamas_${userId}`);
-    console.log("Datos de logros eliminados del localStorage");
-  } catch (error) {
-    console.error("Error al limpiar datos de logros del localStorage:", error);
+  // Solo cerramos tooltips si hay alguno abierto
+  if (activeTooltipIndex.value !== null) {
+    console.log("Cerrando todos los tooltips");
+    // Pequeño delay para evitar conflictos
+    setTimeout(() => {
+      activeTooltipIndex.value = null;
+    }, 5);
   }
 };
 
@@ -774,23 +924,6 @@ const toggleTooltip = (event, index) => {
     // Si es diferente o no hay ninguno activo, activamos este
     activeTooltipIndex.value = index;
     console.log("Abriendo tooltip para índice:", index);
-  }
-};
-
-// Cerrar tooltip cuando se toca fuera
-const closeAllTooltips = (event) => {
-  // Si se proporciona un evento, detenemos su propagación
-  if (event) {
-    event.stopPropagation();
-  }
-
-  // Solo cerramos tooltips si hay alguno abierto
-  if (activeTooltipIndex.value !== null) {
-    console.log("Cerrando todos los tooltips");
-    // Pequeño delay para evitar conflictos
-    setTimeout(() => {
-      activeTooltipIndex.value = null;
-    }, 5);
   }
 };
 
@@ -831,34 +964,118 @@ defineExpose({
   achievements,
   hasNewAchievement,
 });
+
+// Función para calcular el porcentaje de completación de una categoría
+const calculateCategoryCompletionPercentage = (categoryIndex) => {
+  const category = logrosCategories.value[categoryIndex];
+  if (
+    !category ||
+    !category.achievements ||
+    category.achievements.length === 0
+  ) {
+    return 0;
+  }
+  const unlockedInCategory = category.achievements.filter(
+    (id) => achievements.value[id]?.unlocked
+  ).length;
+  const totalInCategory = category.achievements.length;
+  return Math.round((unlockedInCategory / totalInCategory) * 100);
+};
+
+// Función para obtener los colores según la categoría
+const getAchievementColors = (index) => {
+  // Encontrar a qué categoría pertenece este logro
+  for (let i = 0; i < logrosCategories.value.length; i++) {
+    if (logrosCategories.value[i].achievements.includes(index)) {
+      return logrosCategories.value[i].colors;
+    }
+  }
+  // Si no se encuentra en ninguna categoría, devolver colores por defecto (amber)
+  return {
+    from: "from-amber-400",
+    to: "to-amber-600",
+    shadow: "shadow-amber-500/20",
+    darkFrom: "from-amber-500",
+    darkTo: "to-amber-700",
+    darkShadow: "shadow-amber-700/30",
+  };
+};
+
+// Función para obtener el color del borde de la notificación
+const getNotificationBorderColor = () => {
+  // Buscar el índice del logro desbloqueado
+  const achievementIndex = achievements.value.findIndex(
+    (a) => a.name === latestAchievement.value?.name
+  );
+  if (achievementIndex === -1) return "border-yellow-500";
+
+  // Buscar la categoría a la que pertenece
+  for (let i = 0; i < logrosCategories.value.length; i++) {
+    if (logrosCategories.value[i].achievements.includes(achievementIndex)) {
+      // Usar un color basado en la categoría
+      if (i === 0) return "border-blue-500"; // Contenido
+      if (i === 1) return "border-purple-500"; // Niveles
+      if (i === 2) return "border-amber-500"; // Sistema
+    }
+  }
+
+  return "border-yellow-500"; // Color por defecto
+};
+
+// Función para obtener los colores de gradiente para la notificación de logro
+const getAchievementGradientColors = (achievement) => {
+  if (!achievement) return "";
+
+  // Buscar el índice del logro desbloqueado
+  const achievementIndex = achievements.value.findIndex(
+    (a) => a.name === achievement.name
+  );
+
+  if (achievementIndex === -1) return "";
+
+  // Buscar la categoría a la que pertenece
+  for (let i = 0; i < logrosCategories.value.length; i++) {
+    if (logrosCategories.value[i].achievements.includes(achievementIndex)) {
+      // Devolver las clases de gradiente basadas en la categoría
+      if (i === 0) return "from-blue-500 to-blue-700"; // Contenido
+      if (i === 1) return "from-purple-500 to-purple-700"; // Niveles
+      if (i === 2) return "from-amber-500 to-amber-700"; // Sistema
+    }
+  }
+
+  return "from-yellow-500 to-yellow-700"; // Valor por defecto
+};
+
+// Función para cerrar la notificación de logro manualmente
+const closeAchievementNotification = () => {
+  showAchievement.value = false;
+};
 </script>
 
 <style scoped>
 @keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0) translateX(-50%);
+  0% {
+    transform: translateX(-50%) translateY(-30px);
   }
-  50% {
-    transform: translateY(-20px) translateX(-50%);
+  20% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(-15px);
+  }
+  60% {
+    transform: translateX(-50%) translateY(0);
+  }
+  80% {
+    transform: translateX(-50%) translateY(-5px);
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
   }
 }
 
 .animate-bounce {
-  animation: bounce 1s ease infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: bounce 2s ease forwards;
+  animation-iteration-count: 1;
 }
 </style>

@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  ref,
-  defineEmits,
-  defineProps,
-  watch,
-  onMounted,
-  onBeforeUnmount,
-} from "vue";
+import { ref, defineEmits, defineProps, watch, onBeforeUnmount } from "vue";
 import "animate.css";
 import { geminiService } from "../../../lib/gemini";
 import { unsplashService } from "../../../lib/unsplash";
@@ -449,15 +442,16 @@ watch([() => formData.value.titulo, () => formData.value.descripcion], () => {
 
 // Función para manejar la eliminación con confirmación
 const handleDelete = () => {
-  if (window.confirm("¿Estás seguro de que deseas eliminar este anuncio?")) {
-    emit("delete");
+  emit("delete");
 
-    // Emitir evento xp-earned al eliminar
-    emit("xp-earned", {
-      amount: 5,
-      message: "¡Anuncio eliminado!",
-    });
-  }
+  // Emitir evento xp-earned al eliminar
+  emit("xp-earned", {
+    amount: 10,
+    message: "¡Anuncio eliminado!",
+  });
+
+  // Emitir evento para cerrar el modal
+  emit("cancel");
 };
 
 const handleSubmit = async () => {
