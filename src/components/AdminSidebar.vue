@@ -18,7 +18,7 @@
           : 'bg-gradient-to-b from-white to-gray-100 text-gray-800',
       ]"
     >
-      <div class="p-4 h-full flex flex-col">
+      <div class="p-4 h-full flex flex-col overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold flex items-center">Administración</h2>
           <!-- Close Button -->

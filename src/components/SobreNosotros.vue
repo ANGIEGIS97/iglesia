@@ -3,11 +3,12 @@
     class="px-4 sm:px-6 2xl:px-80 py-10 sm:py-14 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
   >
     <article>
-      <h1
-        class="text-gray-800 dark:text-white text-center text-3xl md:text-4xl lg:text-5xl font-bold mb-8"
-      >
-        Sobre nosotros
-      </h1>
+      <div class="flex flex-wrap w-full mb-10 flex-col items-center text-center">
+        <h1 class="sm:text-4xl text-3xl font-bold mb-4 text-gray-800 dark:text-white relative inline-block">
+          Sobre Nosotros
+          <span class="absolute bottom-0 left-1/4 right-1/4 h-1 bg-teal-500 rounded-full"></span>
+        </h1>
+      </div>
       <p
         class="text-justify my-6 first-letter:text-7xl first-letter:text-black dark:first-letter:text-teal-400 first-letter:mr-3 first-letter:float-left text-lg text-gray-700 dark:text-gray-200 leading-relaxed font-serif"
       >

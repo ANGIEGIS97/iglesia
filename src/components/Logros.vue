@@ -78,7 +78,12 @@
                 activeCategory
               ].achievements"
               :key="achievementId"
-              @click.stop="(event) => toggleTooltip(event, achievementId)"
+              @click.stop="
+                handleAchievementClick(
+                  achievementId,
+                  achievements[achievementId]
+                )
+              "
               :class="[
                 'w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300',
                 achievements[achievementId].unlocked
@@ -89,16 +94,16 @@
                         getAchievementColors(achievementId).darkTo
                       } shadow-lg ${
                         getAchievementColors(achievementId).darkShadow
-                      }`
+                      } hover:brightness-110 cursor-pointer`
                     : `bg-gradient-to-br ${
                         getAchievementColors(achievementId).from
                       } ${getAchievementColors(achievementId).to} shadow-md ${
                         getAchievementColors(achievementId).shadow
-                      }`
+                      } hover:brightness-110 cursor-pointer`
                   : isDarkMode
-                  ? 'bg-gray-700/80 hover:bg-gray-700'
-                  : 'bg-gray-100 hover:bg-gray-200',
-                'relative group cursor-help',
+                  ? 'bg-gray-700/80 hover:bg-gray-700 cursor-help'
+                  : 'bg-gray-100 hover:bg-gray-200 cursor-help',
+                'relative group',
               ]"
             >
               <span
@@ -127,29 +132,34 @@
                 </div>
               </div>
 
-              <!-- Tooltip Unificado -->
+              <!-- Tooltip solo para logros bloqueados -->
               <div
+                v-if="!achievements[achievementId].unlocked"
                 :class="[
                   'absolute bottom-full mb-2 w-40 z-10 transition-all duration-200', // Base classes
-                  loopIdx % 4 === 3
-                    ? 'right-0'
-                    : 'left-1/2 transform -translate-x-1/2', // Conditional positioning
+                  loopIdx % 4 === 0 // Si es el primer elemento de la fila
+                    ? 'left-0' // Alinear a la izquierda
+                    : loopIdx % 4 === 3 // Si es el último elemento de la fila
+                    ? 'right-0' // Alinear a la derecha
+                    : 'left-1/2 transform -translate-x-1/2', // Centrado por defecto
                   'pointer-events-none', // Deshabilitar eventos de puntero por defecto para hover
-                  // Lógica de visibilidad móvil (click) - usando === estricto y verificando explícitamente valores numéricos
+                  // Lógica de visibilidad móvil (click) - solo para bloqueados
                   activeTooltipIndex === achievementId
                     ? 'opacity-100 scale-100 md:opacity-0 md:scale-95' // Visible en móvil si activo, oculto en escritorio
                     : 'opacity-0 scale-95', // Oculto si no está activo
-                  // Lógica de visibilidad escritorio (hover) - prevalece sobre móvil en pantallas md+
+                  // Lógica de visibilidad escritorio (hover) - solo para bloqueados
                   'md:group-hover:opacity-100 md:group-hover:scale-100', // Visible en escritorio al hacer hover
                 ]"
                 @click.stop
               >
                 <div
-                  class="relative p-3 rounded-lg shadow-xl text-xs"
+                  class="relative p-3 rounded-lg text-[13px]"
                   :class="
                     isDarkMode
-                      ? 'bg-gray-800 border border-gray-700'
-                      : 'bg-white border border-gray-200 shadow-gray-200/50'
+                      ? `bg-gray-800 border border-gray-700 shadow-md ${
+                          getAchievementColors(achievementId).darkShadow
+                        }`
+                      : 'bg-white border border-gray-200 shadow-md shadow-gray-200'
                   "
                 >
                   <p
@@ -178,9 +188,11 @@
                   <div
                     class="absolute -bottom-2 w-3 h-3 rotate-45"
                     :class="[
-                      loopIdx % 4 === 3
-                        ? 'right-6'
-                        : 'left-1/2 transform -translate-x-1/2',
+                      loopIdx % 4 === 0 // Si es el primer elemento
+                        ? 'left-4' // Ajustar la flecha para la izquierda
+                        : loopIdx % 4 === 3 // Si es el último elemento
+                        ? 'right-4' // Ajustar la flecha para la derecha
+                        : 'left-1/2 transform -translate-x-1/2', // Centrado por defecto
                       isDarkMode
                         ? 'bg-gray-800 border-r border-b border-gray-700'
                         : 'bg-white border-r border-b border-gray-200',
@@ -188,7 +200,6 @@
                   ></div>
                 </div>
               </div>
-              <!-- Fin Tooltip Unificado -->
             </div>
           </div>
         </div>
@@ -235,6 +246,16 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Modal de logros desbloqueados -->
+    <ModalLogros
+      v-if="selectedAchievement && Object.keys(selectedAchievement).length > 0"
+      :achievement="selectedAchievement"
+      :show="showModal"
+      :dark-mode="isDarkMode"
+      @close="closeModal"
+      :key="'modal-logros-' + (selectedAchievement.id || Math.random())"
+    />
   </div>
 </template>
 
@@ -247,8 +268,10 @@ import {
   defineExpose,
   onMounted,
   onUnmounted,
+  nextTick,
 } from "vue";
 import { auth_api } from "../lib/api.ts";
+import ModalLogros from "./ModalLogros.vue";
 
 const props = defineProps({
   darkMode: {
@@ -274,6 +297,10 @@ const latestAchievement = ref({});
 const hasNewAchievement = ref(false);
 // Indice del logro con tooltip activo (para dispositivos móviles)
 const activeTooltipIndex = ref(null);
+
+// Estado para el modal de logros desbloqueados
+const showModal = ref(false);
+const selectedAchievement = ref({});
 
 // Nombres de rangos
 const rankNames = ["Bronce", "Plata", "Oro", "Diamante", "Platino"];
@@ -304,7 +331,7 @@ const achievements = ref([
     xp: 20, // Logro básico
   },
   {
-    icon: "🎨",
+    icon: "🏺",
     name: "Vasija Renovada",
     description: "Cambia el tema de la interfaz",
     unlocked: false,
@@ -456,6 +483,14 @@ const achievements = ref([
     xp: 50, // Logro de progresión
   },
   {
+    icon: "🌠",
+    name: "Resplandor Divino",
+    description: "Alcanza el nivel 7",
+    unlocked: false,
+    verse: "Daniel 12:3",
+    xp: 70, // Logro de progresión intermedio
+  },
+  {
     icon: "🌟",
     name: "Buen Mayordomo",
     description: "Alcanza el nivel 9",
@@ -464,7 +499,7 @@ const achievements = ref([
     xp: 90, // Logro de progresión avanzado
   },
   {
-    icon: "🥇",
+    icon: "🥉",
     name: "Medalla de Bronce",
     description: "Alcanza el nivel máximo del rango Bronce (nivel 10)",
     unlocked: false,
@@ -480,7 +515,7 @@ const achievements = ref([
     xp: 150, // Logro de rango
   },
   {
-    icon: "🥉",
+    icon: "🥇",
     name: "Medalla de Oro",
     description: "Alcanza el nivel máximo del rango Oro (nivel 10)",
     unlocked: false,
@@ -489,19 +524,11 @@ const achievements = ref([
   },
   {
     icon: "💎",
-    name: "Diamante Precioso",
+    name: "Diamante",
     description: "Alcanza el nivel máximo del rango Diamante (nivel 10)",
     unlocked: false,
     verse: "Zacarías 9:16",
     xp: 250, // Logro de rango
-  },
-  {
-    icon: "✨",
-    name: "Platino Celestial",
-    description: "Alcanza el nivel máximo del rango Platino (nivel 10)",
-    unlocked: false,
-    verse: "Apocalipsis 2:10",
-    xp: 300, // Logro de rango
   },
 ]);
 
@@ -677,8 +704,12 @@ const unlockAchievement = (index) => {
           : "Salmo 23";
     }
 
-    achievements.value[index].unlocked = true;
-    latestAchievement.value = achievements.value[index];
+    // Crear una copia del achievement para evitar problemas de reactividad
+    const achievementCopy = JSON.parse(JSON.stringify(achievements.value[index]));
+    achievementCopy.unlocked = true;
+    achievements.value[index] = achievementCopy;
+    
+    latestAchievement.value = {...achievementCopy};
     showAchievement.value = true;
     hasNewAchievement.value = true;
 
@@ -686,7 +717,7 @@ const unlockAchievement = (index) => {
     emit("achievement-unlocked");
 
     // Conceder XP específico del logro
-    const xpToAward = achievements.value[index].xp || 10;
+    const xpToAward = achievementCopy.xp || 10;
     emit("xp-awarded", xpToAward);
 
     // Sincronizar inmediatamente con localStorage
@@ -813,11 +844,11 @@ const checkLevelAchievements = (level) => {
   if (level >= 5) {
     unlockAchievement(20); // Siervo Fiel - Nivel 5
   }
-  if (level >= 9) {
-    unlockAchievement(21); // Buen Mayordomo - Nivel 9
+  if (level >= 7) {
+    unlockAchievement(21); // Resplandor Divino - Nivel 7
   }
-  if (level >= 100) {
-    unlockAchievement(26); // Buen y Fiel Siervo - Nivel 100
+  if (level >= 9) {
+    unlockAchievement(22); // Buen Mayordomo - Nivel 9
   }
 };
 
@@ -825,19 +856,16 @@ const checkLevelAchievements = (level) => {
 const checkRankAchievements = (rank, level) => {
   // Logros basados en rango y nivel máximo (nivel 10 de cada rango)
   if (rank == 1 && level >= 10) {
-    unlockAchievement(22); // Medalla de Bronce - Nivel máximo del rango Bronce
+    unlockAchievement(23); // Medalla de Bronce - Nivel máximo del rango Bronce
   }
   if (rank == 2 && level >= 10) {
-    unlockAchievement(23); // Medalla de Plata - Nivel máximo del rango Plata
+    unlockAchievement(24); // Medalla de Plata - Nivel máximo del rango Plata
   }
   if (rank == 3 && level >= 10) {
-    unlockAchievement(24); // Medalla de Oro - Nivel máximo del rango Oro
+    unlockAchievement(25); // Medalla de Oro - Nivel máximo del rango Oro
   }
   if (rank == 4 && level >= 10) {
-    unlockAchievement(25); // Diamante Precioso - Nivel máximo del rango Diamante
-  }
-  if (rank == 5 && level >= 10) {
-    unlockAchievement(26); // Platino Celestial - Nivel máximo del rango Platino
+    unlockAchievement(26); // Diamante Precioso - Nivel máximo del rango Diamante
   }
 };
 
@@ -903,27 +931,58 @@ const closeAllTooltips = (event) => {
   }
 };
 
-// Función para alternar el tooltip en dispositivos móviles
-const toggleTooltip = (event, index) => {
-  // Detener propagación para que no llegue al evento global
-  event.stopPropagation();
+// Función para manejar el clic en un logro
+const handleAchievementClick = async (achievementId, achievement) => {
+  // Si el logro está desbloqueado, mostrar el modal con detalles completos
+  if (achievement && achievement.unlocked) {
+    // Cerramos el modal si estuviera abierto
+    showModal.value = false;
+    
+    // Esperamos a que Vue actualice el DOM
+    await nextTick();
+    
+    // Creamos una copia profunda del objeto para evitar problemas de reactividad
+    const achievementCopy = JSON.parse(JSON.stringify(achievement));
+    
+    // Preparar el objeto del logro para el modal, incluyendo su ID
+    selectedAchievement.value = {
+      ...achievementCopy,
+      id: achievementId,
+    };
+    
+    // Esperamos otro tick para asegurarnos que el objeto se ha actualizado
+    await nextTick();
+    
+    // Abrimos el modal
+    showModal.value = true;
+  } else {
+    // Si el logro está bloqueado, mostrar/ocultar el tooltip
+    toggleTooltip(null, achievementId);
+  }
+};
 
-  console.log(
-    "Toggle tooltip para índice:",
-    index,
-    "Actual:",
-    activeTooltipIndex.value
-  );
+// Función para cerrar el modal de logros desbloqueados
+const closeModal = async () => {
+  showModal.value = false;
+  await nextTick();
+  // Limpiar el achievement seleccionado después de cerrar el modal
+  selectedAchievement.value = {};
+};
+
+// Función para alternar el tooltip en dispositivos móviles (solo para logros bloqueados)
+const toggleTooltip = (event, index) => {
+  // Detener propagación si hay evento
+  if (event) {
+    event.stopPropagation();
+  }
 
   // Verificar si el índice actual es exactamente igual al índice seleccionado
   if (activeTooltipIndex.value === index) {
     // Si es el mismo que ya está activo, lo cerramos
     activeTooltipIndex.value = null;
-    console.log("Cerrando tooltip:", index);
   } else {
     // Si es diferente o no hay ninguno activo, activamos este
     activeTooltipIndex.value = index;
-    console.log("Abriendo tooltip para índice:", index);
   }
 };
 
