@@ -207,7 +207,7 @@
                     <p
                       class="text-sm font-semibold text-gray-600 mb-2 dark:text-white"
                     >
-                      <i class="fas fa-hourglass-half mr-2"></i>
+                       <i class="fas fa-hourglass-half mr-[4px]"></i>
                       {{
                         evento.diasRestantes === 0
                           ? "Hoy"

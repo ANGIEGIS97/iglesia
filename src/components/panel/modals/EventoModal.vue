@@ -9,15 +9,26 @@ import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Schema, DOMParser, DOMSerializer } from "prosemirror-model";
 import { schema } from "prosemirror-schema-basic";
-import { addListNodes } from "prosemirror-schema-list";
+import {
+  addListNodes,
+  wrapInList,
+  liftListItem,
+} from "prosemirror-schema-list";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import { history } from "prosemirror-history";
 
-// Crear un esquema extendido con soporte para listas
+// Extender el esquema para incluir marca de color de texto
 const mySchema = new Schema({
   nodes: addListNodes(schema.spec.nodes, "paragraph block*", "block"),
-  marks: schema.spec.marks,
+  marks: schema.spec.marks.addToEnd('textColor', {
+    attrs: { color: { default: '#000000' } },
+    parseDOM: [{
+      style: 'color',
+      getAttrs: (value) => ({ color: value })
+    }],
+    toDOM: (mark) => ['span', { style: `color: ${mark.attrs.color}` }, 0]
+  })
 });
 
 // Serializer para convertir el contenido de ProseMirror a HTML
@@ -97,6 +108,7 @@ const imageOptions = [
 const showModal = ref(false);
 const isGeneratingDescription = ref(false);
 const isGeneratingImage = ref(false);
+const isUpdating = ref(false);
 
 // Función para extraer el ID del video de YouTube de una URL
 const getYoutubeVideoId = (url: string): string | null => {
@@ -151,7 +163,28 @@ const initEditor = () => {
   // Crear el estado del editor con plugins básicos
   const state = EditorState.create({
     doc: DOMParser.fromSchema(mySchema).parse(tempEl),
-    plugins: [history(), keymap(baseKeymap)],
+    plugins: [
+      history(),
+      keymap({
+        ...baseKeymap,
+        // Añadir atajos de teclado para listas
+        "Shift-Ctrl-8": (state, dispatch) => {
+          // Verificar si ya está en un elemento de lista
+          const inListItem = findParentNodeOfType(
+            state.selection,
+            mySchema.nodes.list_item
+          );
+
+          if (inListItem) {
+            // Si ya está en un elemento de lista, intentar quitar la lista
+            return liftListItem(mySchema.nodes.list_item)(state, dispatch);
+          }
+
+          // Si no está en una lista, crear una nueva lista con viñetas
+          return wrapInList(mySchema.nodes.bullet_list)(state, dispatch);
+        },
+      }),
+    ],
   });
 
   // Crear la vista del editor
@@ -177,8 +210,34 @@ const initEditor = () => {
 const createToolbar = () => {
   if (!editorElement.value) return;
 
-  // En lugar de crear una barra separada, añadiremos el botón directamente en el editor
-  // Crear botón de negrita flotante
+  // Eliminar cualquier barra de herramientas existente para evitar duplicados
+  const existingToolbar = editorElement.value.parentNode.querySelector('div.toolbar-container');
+  if (existingToolbar) {
+    existingToolbar.remove();
+  }
+
+  // Crear un contenedor para la barra de herramientas
+  const toolbarContainer = document.createElement('div');
+  toolbarContainer.className = 'toolbar-container flex flex-row items-center justify-end gap-2 p-1 pr-2 bg-gray-100 dark:bg-gray-700 rounded-b-lg mt-0 border border-gray-300 dark:border-gray-600 border-t-0';
+  
+  // Crear botón de IA
+  const iaButton = document.createElement('button');
+  iaButton.type = 'button';
+  iaButton.title = 'Generar descripción con IA';
+  iaButton.className = 'p-1 px-2 rounded bg-teal-600 text-white hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 shadow-sm flex items-center gap-1 text-xs';
+  iaButton.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> IA';
+  iaButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    generateDescription();
+  });
+  
+  // Deshabilitar botón de IA si no hay título
+  if (!formData.value.titulo) {
+    iaButton.disabled = true;
+  }
+  
+  // Crear botón de negrita
   const boldButton = createFormatButton(
     "bold",
     '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.21 13c2.106 0 3.412-1.087 3.412-2.823 0-1.306-.984-2.283-2.324-2.386v-.055a2.176 2.176 0 0 0 1.852-2.14c0-1.51-1.162-2.46-3.014-2.46H3.843V13H8.21zM5.908 4.674h1.696c.963 0 1.517.451 1.517 1.244 0 .834-.629 1.32-1.73 1.32H5.908V4.673zm0 6.788V8.598h1.73c1.217 0 1.88.492 1.88 1.415 0 .943-.643 1.449-1.832 1.449H5.907z"/></svg>',
@@ -212,11 +271,148 @@ const createToolbar = () => {
     }
   );
 
-  // Añadir clase para posicionamiento
-  boldButton.className = "pm-format-btn pm-floating-btn";
+  // Crear botón de viñetas
+  const bulletListButton = createFormatButton(
+    "bullet-list",
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>',
+    "Viñetas",
+    (e) => {
+      e.preventDefault();
+      const { state, dispatch } = editorView;
 
-  // Añadir directamente al editor container
-  editorElement.value.appendChild(boldButton);
+      // Verificar si la selección actual ya está dentro de un elemento de lista
+      const inListItem = findParentNodeOfType(
+        state.selection,
+        mySchema.nodes.list_item
+      );
+
+      if (inListItem) {
+        // Si ya está en un elemento de lista, intentar quitar la lista
+        if (liftListItem(mySchema.nodes.list_item)(state, dispatch)) {
+          return;
+        }
+      }
+
+      // Si no está en una lista o no se pudo quitar, crear una nueva lista con viñetas
+      wrapInList(mySchema.nodes.bullet_list)(state, dispatch);
+    }
+  );
+
+  // Añadir clase para los botones
+  boldButton.className = "p-1 rounded bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 shadow-sm";
+  bulletListButton.className = "p-1 rounded bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 shadow-sm";
+
+  // Crear el panel de colores
+  const colorPanel = document.createElement('div');
+  colorPanel.className = 'color-panel hidden absolute bottom-full left-0 p-2 bg-white dark:bg-gray-700 rounded shadow-lg border border-gray-300 dark:border-gray-600 grid grid-cols-4 gap-1';
+  colorPanel.style.minWidth = '120px';
+  
+  // Definir colores para el panel
+  const colors = [
+    '#22d3ee', // cyan-400
+    '#FFA500', // naranja
+    '#FF0080', // rosa
+    '#FFFF00'  // amarillo
+  ];
+  
+  // Crear botones de colores
+  colors.forEach(color => {
+    const colorBtn = document.createElement('button');
+    colorBtn.className = 'w-6 h-6 rounded border border-gray-300 dark:border-gray-500';
+    colorBtn.style.backgroundColor = color;
+    colorBtn.title = `Color: ${color}`;
+    colorBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      applyTextColor(color);
+      colorPanel.classList.add('hidden');
+    });
+    colorPanel.appendChild(colorBtn);
+  });
+  
+  // Crear botón para quitar colores
+  const removeColorBtn = document.createElement('button');
+  removeColorBtn.className = 'w-6 h-6 rounded border border-gray-300 dark:border-gray-500 relative';
+  removeColorBtn.style.backgroundColor = '#ffffff';
+  removeColorBtn.style.position = 'relative';
+  removeColorBtn.title = 'Quitar color';
+  
+  // Añadir línea diagonal para indicar "quitar color"
+  const diagonalLine = document.createElement('div');
+  diagonalLine.style.position = 'absolute';
+  diagonalLine.style.width = '100%';
+  diagonalLine.style.height = '2px';
+  diagonalLine.style.backgroundColor = '#FF0000';
+  diagonalLine.style.top = '50%';
+  diagonalLine.style.left = '0';
+  diagonalLine.style.transform = 'rotate(45deg)';
+  removeColorBtn.appendChild(diagonalLine);
+  
+  // Evento para quitar el color
+  removeColorBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Obtener la selección actual
+    const { from, to } = editorView.state.selection;
+    
+    // Si no hay selección, no hacer nada
+    if (from === to) return;
+    
+    // Crear una transacción para quitar la marca de color
+    const tr = editorView.state.tr;
+    tr.removeMark(from, to, mySchema.marks.textColor);
+    editorView.dispatch(tr);
+    
+    // Ocultar el panel
+    colorPanel.classList.add('hidden');
+  });
+  
+  // Añadir el botón al panel
+  colorPanel.appendChild(removeColorBtn);
+  
+  // Crear botón para mostrar/ocultar el panel de colores
+  const colorButton = createFormatButton(
+    "text-color",
+    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.354.646a1.207 1.207 0 0 0-1.708 0L8.5 3.793l-.646-.647a.5.5 0 1 0-.708.708L8.293 5l-7.147 7.146A.5.5 0 0 0 1 12.5v1.793l-.854.853a.5.5 0 1 0 .708.707L1.707 15H3.5a.5.5 0 0 0 .354-.146L11 7.707l1.146 1.147a.5.5 0 0 0 .708-.708l-.647-.646 3.147-3.146a1.207 1.207 0 0 0 0-1.708l-2-2zM2 12.707l7-7L10.293 7l-7 7H2v-1.293z"></path></svg>',
+    "Color de texto",
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      colorPanel.classList.toggle('hidden');
+    }
+  );
+  colorButton.className = "p-1 rounded bg-white dark:bg-gray-600 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors duration-200 shadow-sm";
+  
+  // Crear un contenedor para el botón de color y el panel
+  const colorContainer = document.createElement('div');
+  colorContainer.className = 'relative';
+  colorContainer.appendChild(colorButton);
+  colorContainer.appendChild(colorPanel);
+  
+  // Añadir los botones a la barra de herramientas
+  toolbarContainer.appendChild(bulletListButton);
+  toolbarContainer.appendChild(boldButton);
+  toolbarContainer.appendChild(colorContainer);
+  toolbarContainer.appendChild(iaButton);
+  
+  // Añadir la barra de herramientas después del editor
+  editorElement.value.parentNode.appendChild(toolbarContainer);
+  
+  // Actualizar el estado del botón de IA cuando cambia el título
+  watch(() => formData.value.titulo, (newTitle) => {
+    iaButton.disabled = !newTitle || isGeneratingDescription.value;
+  });
+  
+  // Actualizar el estado del botón de IA cuando cambia el estado de generación
+  watch(() => isGeneratingDescription.value, (isGenerating) => {
+    iaButton.disabled = isGenerating || !formData.value.titulo;
+    if (isGenerating) {
+      iaButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+    } else {
+      iaButton.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> IA';
+    }
+  });
 };
 
 // Limpiar el editor al desmontar el componente
@@ -456,6 +652,9 @@ const handleDelete = () => {
 
 const handleSubmit = async () => {
   try {
+    // Activar el estado de actualización
+    isUpdating.value = true;
+    
     // Asegurarse de que la imagen tenga un valor válido
     if (!formData.value.image || formData.value.image === "") {
       formData.value.image = defaultImageUrl;
@@ -471,6 +670,7 @@ const handleSubmit = async () => {
           new URL(customImageUrl.value);
         }
       } catch (e) {
+        console.error("Error de validación de URL:", e);
         alert("La URL de la imagen no es válida");
         return;
       }
@@ -486,6 +686,9 @@ const handleSubmit = async () => {
       fecha: new Date().toISOString(),
     };
 
+    // Añadir un pequeño retraso para que se vea el texto "Actualizando..."
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
     emit("submit", dataToSubmit);
 
     // Emitir evento xp-earned
@@ -500,9 +703,17 @@ const handleSubmit = async () => {
         message: "¡Nuevo anuncio creado!",
       });
     }
+    
+    // Desactivar el estado de actualización
+    isUpdating.value = false;
+    
+    // Cerrar el modal automáticamente
+    emit("cancel");
   } catch (error: any) {
     console.error("Error al procesar el formulario:", error);
     alert(error.message || "Error al procesar el formulario");
+    // Desactivar el estado de actualización en caso de error
+    isUpdating.value = false;
   }
 };
 
@@ -519,6 +730,60 @@ const createFormatButton = (name, icon, title, onClick) => {
     e.stopPropagation();
   });
   return button;
+};
+
+// Función para aplicar color al texto seleccionado
+const applyTextColor = (color) => {
+  const { from, to } = editorView.state.selection;
+  
+  // Si no hay selección, no hacer nada
+  if (from === to) return;
+  
+  const tr = editorView.state.tr;
+  
+  // Verificar si la selección ya tiene la marca de color
+  let hasTextColor = false;
+  let currentColor = null;
+  
+  editorView.state.doc.nodesBetween(from, to, (node) => {
+    node.marks.forEach(mark => {
+      if (mark.type.name === 'textColor') {
+        hasTextColor = true;
+        currentColor = mark.attrs.color;
+      }
+    });
+  });
+  
+  // Si ya tiene color y es el mismo que se está aplicando, quitarlo
+  if (hasTextColor && currentColor === color) {
+    tr.removeMark(from, to, mySchema.marks.textColor);
+  } else {
+    // Quitar cualquier marca de color existente y aplicar la nueva
+    tr.removeMark(from, to, mySchema.marks.textColor);
+    tr.addMark(from, to, mySchema.marks.textColor.create({ color }));
+  }
+  
+  editorView.dispatch(tr);
+};
+
+// Función auxiliar para encontrar el nodo padre de un tipo específico
+const findParentNodeOfType = (selection, nodeType) => {
+  const { $from } = selection;
+  let depth = $from.depth;
+
+  while (depth > 0) {
+    const node = $from.node(depth);
+    if (node.type === nodeType) {
+      return {
+        node,
+        pos: $from.before(depth),
+        depth,
+      };
+    }
+    depth--;
+  }
+
+  return null;
 };
 </script>
 
@@ -582,31 +847,19 @@ const createFormatButton = (name, icon, title, onClick) => {
             <div>
               <div class="relative">
                 <!-- Editor ProseMirror -->
-                <div class="editor-container">
+                <div class="editor-container relative">
                   <div
                     ref="editorElement"
+                    id="prosemirror-editor"
                     class="prosemirror-editor block px-2.5 pb-2.5 pt-4 w-full min-h-[100px] text-sm bg-transparent rounded-lg border border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-teal-500 focus:outline-none focus:ring-0 focus:border-teal-500"
                   ></div>
                   <label
+                    for="prosemirror-editor"
                     class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 left-1"
                   >
                     Descripción (Opcional)
                   </label>
-                  <button
-                    type="button"
-                    @click="generateDescription"
-                    :disabled="isGeneratingDescription || !formData.titulo"
-                    class="absolute right-2 top-2 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-teal-600 text-white rounded-md hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-300"
-                  >
-                    <i
-                      :class="
-                        isGeneratingDescription
-                          ? 'fas fa-spinner fa-spin'
-                          : 'fas fa-wand-magic-sparkles'
-                      "
-                    ></i>
-                    {{ isGeneratingDescription ? "Generando..." : "IA" }}
-                  </button>
+                  <!-- El botón de IA ahora está en la barra de herramientas -->
                 </div>
               </div>
             </div>
@@ -740,7 +993,7 @@ const createFormatButton = (name, icon, title, onClick) => {
 
             <div class="flex justify-end space-x-3">
               <button
-                v-if="isEdit"
+                v-if="props.isEdit"
                 type="button"
                 @click="handleDelete"
                 class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-300"
@@ -751,7 +1004,7 @@ const createFormatButton = (name, icon, title, onClick) => {
                 type="submit"
                 class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-300"
               >
-                {{ isEdit ? "Actualizar" : "Crear" }}
+                {{ isUpdating ? "Actualizando..." : (props.isEdit ? "Actualizar" : "Crear") }}
               </button>
             </div>
           </form>
@@ -764,6 +1017,11 @@ const createFormatButton = (name, icon, title, onClick) => {
 <style>
 :root {
   height: 100%;
+}
+
+/* Estilos para el panel de colores */
+.color-panel {
+  z-index: 100;
 }
 
 body.modal-open {
@@ -806,6 +1064,8 @@ body.modal-open {
   overflow-y: auto;
   padding: 0.75rem;
   min-height: 100px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
 .prosemirror-editor:focus {
@@ -827,52 +1087,18 @@ body.modal-open {
   @apply font-bold text-teal-600 dark:text-teal-400 underline decoration-2 underline-offset-2 decoration-teal-500/60;
 }
 
-/* Estilos para la barra de herramientas */
-.pm-toolbar {
-  display: none; /* Ya no necesitamos esta barra */
+/* Estilos para listas */
+.ProseMirror ul {
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+  list-style-type: disc;
 }
 
-/* Estilos para botones flotantes */
-.pm-floating-btn {
-  position: absolute;
-  bottom: 8px;
-  right: 8px; /* Posicionado en la esquina inferior derecha */
-  z-index: 10;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  border-radius: 0.25rem;
-  padding: 0.25rem 0.5rem;
+.ProseMirror li {
+  margin-bottom: 0.25rem;
 }
 
-.dark .pm-floating-btn {
-  background-color: #374151;
-  color: #e5e7eb;
-}
-
-/* Botones de formato */
-.pm-format-btn {
-  padding: 0.25rem 0.5rem;
-  border: none;
-  border-radius: 0.25rem;
-  color: #4b5563;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  line-height: 1;
-}
-
-.pm-format-btn svg {
-  width: 14px;
-  height: 14px;
-}
-
-.pm-format-btn:hover {
-  background-color: #e5e7eb;
-}
-
-.dark .pm-format-btn:hover {
-  background-color: #4b5563;
+.ProseMirror li p {
+  margin: 0;
 }
 </style>

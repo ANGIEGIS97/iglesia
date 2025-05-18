@@ -1,3 +1,6 @@
+carrusel
+
+
 <template>
   <section class="bg-gris">
     <div
@@ -50,7 +53,7 @@
             <!-- Sin overlay ni textos -->
           </div>
 
-          <!-- Plantilla 1: Estilo clásico -->
+          <!-- Plantilla 1: Estilo clásico (estilo con fondo oscuro y texto centrado) -->
           <div v-else-if="slide.estilo === 'clasico'" class="relative">
             <img
               :src="slide.image"
@@ -99,7 +102,7 @@
             </div>
           </div>
 
-          <!-- Plantilla 2: Estilo enmarcado (como la primera imagen) -->
+          <!-- Plantilla 2: Estilo enmarcado (estilo con borde blanco alrededor del contenido) -->
           <div v-else-if="slide.estilo === 'enmarcado'" class="relative">
             <img
               :src="slide.image"
@@ -119,19 +122,32 @@
                   {{ slide.titulo }}
                 </p>
                 <h3
-                  v-if="slide.descripcion"
+                  v-if="slide.descripcion && !hasLists(slide.descripcion)"
                   class="estilo-enmarcado text-white font-asap text-base sm:text-3xl md:text-3xl lg:text-5xl mb-2 sm:mb-6 animate-fade-in-up px-2 font-normal line-clamp-7 sm:line-clamp-none"
-                  v-html="slide.descripcion"
+                  v-html="processHtml(slide.descripcion).text"
                 ></h3>
+                <div 
+                  v-if="slide.descripcion && hasLists(slide.descripcion)" 
+                  class="estilo-enmarcado px-4 sm:px-12 text-left text-white animate-fade-in-up max-w-2xl mx-auto">
+                  <!-- Renderizar el texto antes de las listas -->
+                  <p v-if="processHtml(slide.descripcion).text" class="text-base sm:text-2xl mb-2 sm:mb-4 text-center" v-html="processHtml(slide.descripcion).text"></p>
+                  <!-- Renderizar las listas personalizadas -->
+                  <div v-for="(list, listIndex) in processHtml(slide.descripcion).lists" :key="listIndex" class="custom-bullet-list text-sm sm:text-xl mb-4">
+                    <div v-for="(item, itemIndex) in list.items" :key="itemIndex" class="custom-bullet-item">
+                      <div class="custom-bullet "></div>
+                      <div class="custom-bullet-content" v-html="item"></div>
+                    </div>
+                  </div>
+                </div>
                 <p
                   v-if="slide.eslogan"
-                  class="text-white text-sm sm:text-xl md:text-xl lg:text-2xl uppercase tracking-widest animate-fade-in-up delay-100 px-2"
+                  class="text-white text-sm sm:text-xl md:text-xl lg:text-2xl uppercase tracking-wider animate-fade-in-up delay-100 px-2"
                 >
                   {{ slide.eslogan }}
                 </p>
                 <p
                   v-if="slide.referencia"
-                  class="text-white text-xs sm:text-xl md:text-xl lg:text-2xl mt-2 sm:mt-8 tracking-widest animate-fade-in-up delay-200"
+                  class="text-white text-xs sm:text-xl md:text-xl lg:text-2xl mt-2 sm:mt-8 tracking-wider animate-fade-in-up delay-200"
                 >
                   {{ slide.referencia }}
                 </p>
@@ -139,7 +155,7 @@
             </div>
           </div>
 
-          <!-- Plantilla 3: Estilo natural (como la segunda imagen) -->
+          <!-- Plantilla 3: Estilo natural (estilo con texto alineado a la derecha) -->
           <div v-else-if="slide.estilo === 'natural'" class="relative">
             <img
               :src="slide.image"
@@ -181,8 +197,8 @@
             </div>
           </div>
 
-          <!-- Plantilla 4: Estilo luminoso (como la tercera imagen) -->
-          <div v-else-if="slide.estilo === 'luminoso'" class="relative">
+          <!-- Plantilla 4: Estilo luminoso (estilo con texto centrado y efectos de luz) -->
+              <div v-else-if="slide.estilo === 'luminoso'" class="relative">
             <img
               :src="slide.image"
               :alt="`Slide ${index + 1}`"
@@ -219,7 +235,7 @@
             </div>
           </div>
 
-          <!-- Plantilla 5: Estilo Espíritu (como la primera imagen compartida) -->
+          <!-- Plantilla 5: Estilo Espíritu (estilo con recuadro oscuro en el centro) -->
           <div v-else-if="slide.estilo === 'espiritu'" class="relative">
             <img
               :src="slide.image"
@@ -297,28 +313,97 @@ import "swiper/css/effect-fade";
 import { eventos } from "../../lib/api";
 import anunciosData from "./anuncios.json"; // Importamos el JSON
 
-// Función mejorada para sanitizar HTML
-const sanitizeHtml = (html) => {
-  if (!html) return "";
+// Función mejorada para procesar HTML y convertir listas en componentes Vue
+const processHtmlContent = (html) => {
+  if (!html) return { text: "", lists: [] };
 
-  // Paso 1: Reemplazar todas las etiquetas HTML por espacio vacío excepto <strong>
-  let sanitized = html.replace(/<(?!\/?(strong)\b)[^>]*>/gi, "");
+  // Paso 1: Extraer las listas del HTML
+  const listRegex = /<ul[^>]*>([\s\S]*?)<\/ul>/gi;
+  const lists = [];
+  let listMatch;
+  let processedHtml = html;
+  let listCounter = 0;
 
-  // Paso 2: Asegurarnos de que todas las etiquetas <strong> estén correctamente cerradas
-  let openTags = (sanitized.match(/<strong>/g) || []).length;
-  let closeTags = (sanitized.match(/<\/strong>/g) || []).length;
-
-  // Añadir etiquetas de cierre faltantes
-  if (openTags > closeTags) {
-    for (let i = 0; i < openTags - closeTags; i++) {
-      sanitized += "</strong>";
+  // Reemplazar cada lista con un marcador
+  while ((listMatch = listRegex.exec(html)) !== null) {
+    const listId = `list-placeholder-${listCounter}`;
+    const fullListTag = listMatch[0];
+    const listContent = listMatch[1];
+    
+    // Extraer los elementos de la lista
+    const itemRegex = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+    const items = [];
+    let itemMatch;
+    
+    while ((itemMatch = itemRegex.exec(listContent)) !== null) {
+      items.push(itemMatch[1].trim());
+    }
+    
+    if (items.length > 0) {
+      lists.push({
+        id: listId,
+        items: items
+      });
+      
+      // Reemplazar la lista con un marcador
+      processedHtml = processedHtml.replace(fullListTag, `<div id="${listId}"></div>`);
+      listCounter++;
     }
   }
 
-  // Paso 3: Reemplazar múltiples etiquetas <strong> seguidas
-  sanitized = sanitized.replace(/<\/strong>\s*<strong>/g, " ");
+  // Paso 2: Sanitizar el resto del HTML (sin listas)
+  // Permitir etiquetas strong, p, br y span con atributos de estilo para colores
+  let sanitized = processedHtml.replace(/<(?!\/?(strong|p|br|span)\b)[^>]*>/gi, "");
+  
+  // Filtrar los atributos de span para permitir solo estilos de color
+  const spanRegex = /<span\s+([^>]*)>/gi;
+  sanitized = sanitized.replace(spanRegex, (match, attrs) => {
+    // Si contiene style="color: ...", mantenerlo
+    if (attrs.includes('style') && attrs.includes('color')) {
+      // Extraer solo el atributo de estilo de color
+      const styleRegex = /style\s*=\s*['"]\s*color\s*:\s*([^;'"]+)['"]*/i;
+      const styleMatch = attrs.match(styleRegex);
+      if (styleMatch) {
+        return `<span style="color: ${styleMatch[1]}">`;
+      }
+    }
+    // Si no tiene estilo de color, eliminar la etiqueta span
+    return '';
+  });
 
-  return sanitized;
+  // Función auxiliar para cerrar etiquetas faltantes
+  const closeMissingTags = (text, tagName) => {
+    if (tagName.toLowerCase() === "br") return text;
+
+    const openTagRegex = new RegExp(`<${tagName}\\b[^>]*>`, "gi");
+    const closeTagRegex = new RegExp(`<\/${tagName}>`, "gi");
+    let openTags = (text.match(openTagRegex) || []).length;
+    let closeTags = (text.match(closeTagRegex) || []).length;
+    let result = text;
+    if (openTags > closeTags) {
+      for (let i = 0; i < openTags - closeTags; i++) {
+        result += `</${tagName}>`;
+      }
+    }
+    return result;
+  };
+
+  sanitized = closeMissingTags(sanitized, "strong");
+  sanitized = closeMissingTags(sanitized, "p");
+  sanitized = closeMissingTags(sanitized, "span");
+
+  // Limpieza de etiquetas adyacentes
+  sanitized = sanitized.replace(/<\/strong>\s*<strong>/g, " "); // Combina strongs adyacentes
+  sanitized = sanitized.replace(/<\/p>\s*<p>/g, "</p><p>"); // Mantiene <p> juntos
+  sanitized = sanitized.replace(/<\/span>\s*<span\s+style="color:\s*([^"]+)">/g, (match, color) => ` </span><span style="color: ${color}">`); // Mantiene spans de color separados
+
+  // Eliminar párrafos vacíos
+  sanitized = sanitized.replace(/<p>\s*<\/p>/gi, "");
+
+  return {
+    text: sanitized,
+    lists: lists
+  };
 };
 
 export default {
@@ -350,6 +435,17 @@ export default {
         !slide.referencia
       );
     };
+    
+    // Función para verificar si el contenido tiene listas
+    const hasLists = (content) => {
+      if (!content) return false;
+      return content.includes('<ul') && content.includes('<li');
+    };
+    
+    // Función para procesar el HTML y extraer listas
+    const processHtml = (html) => {
+      return processHtmlContent(html);
+    };
 
     // Función para obtener un estilo aleatorio o forzar el estilo clásico si hay un link
     const getRandomStyle = (hasLink) => {
@@ -377,7 +473,7 @@ export default {
           return {
             image: anuncio.image,
             titulo: anuncio.titulo,
-            descripcion: sanitizeHtml(anuncio.descripcion), // Sanitizar HTML
+            descripcion: anuncio.descripcion, // Mantener descripción original para procesamiento
             eslogan: anuncio.textoBoton || anuncio.eslogan,
             linkBoton: anuncio.linkBoton || "#",
             referencia: anuncio.referencia || "",
@@ -385,7 +481,8 @@ export default {
               isOnlyImage,
               hasLink,
               anuncio.estilo,
-              anuncio.linkBoton
+              anuncio.linkBoton,
+              anuncio.descripcion
             ),
             source: "local",
           };
@@ -396,10 +493,13 @@ export default {
           esSoloImagen,
           tieneEnlace,
           estiloDefinido,
-          linkBoton
+          linkBoton,
+          descripcion
         ) {
           if (esSoloImagen) return "none";
           if (tieneEnlace) return "clasico";
+          // Si hay listas (viñetas) en la descripción, usar siempre el estilo enmarcado
+          if (descripcion && hasLists(descripcion)) return "enmarcado";
           return estiloDefinido || getRandomStyle(linkBoton);
         }
 
@@ -417,7 +517,7 @@ export default {
             return {
               image: evento.image,
               titulo: evento.titulo,
-              descripcion: sanitizeHtml(evento.descripcion), // Sanitizar HTML
+              descripcion: evento.descripcion, // Mantener descripción original para procesamiento
               eslogan: evento.textoBoton || evento.eslogan,
               linkBoton: evento.linkBoton || "#",
               referencia: evento.referencia || "",
@@ -425,7 +525,8 @@ export default {
                 isOnlyImage,
                 hasLink,
                 evento.estilo,
-                evento.linkBoton
+                evento.linkBoton,
+                evento.descripcion
               ),
               source: "api",
             };
@@ -463,6 +564,8 @@ export default {
       modules,
       handleButtonClick,
       isImageOnly,
+      hasLists,
+      processHtml,
     };
   },
 };
@@ -615,5 +718,23 @@ export default {
 /* Para el estilo "luminoso" */
 .estilo-luminoso :deep(strong) {
   @apply text-teal-200 font-extrabold animate-pulse-soft no-underline;
+}
+
+
+/* Estilos para listas personalizadas en las descripciones de anuncios */
+.custom-bullet-list {
+  @apply pl-0 mb-2 text-left space-y-2;
+}
+
+.custom-bullet-item {
+  @apply flex items-start mb-1 text-left;
+}
+
+.custom-bullet {
+  @apply w-2 h-2 rounded-full bg-white mt-2 mr-2 flex-shrink-0;
+}
+
+.custom-bullet-content {
+  @apply flex-1;
 }
 </style>

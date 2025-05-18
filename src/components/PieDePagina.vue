@@ -33,7 +33,7 @@
               class="inline-flex mt-6 w-full justify-center md:justify-start md:w-auto"
             >
               <a
-                href="https://www.facebook.com/profile.php?id=100093713355114"
+                href="https://www.facebook.com/iglesiabautistabosa/"
                 class="text-gray-200 hover:text-teal-400 transition duration-300"
               >
                 <span class="sr-only">Facebook</span>
