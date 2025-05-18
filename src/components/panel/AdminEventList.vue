@@ -1,4 +1,3 @@
-AdminEventList con checked
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import {
@@ -496,10 +495,10 @@ onMounted(() => {
               <h3 class="sm:text-xl text-[16px] font-bold mb-1">
                 {{ evento.titulo }}
               </h3>
-              <p
+              <div
                 class="text-sm mb-2 admin-event-description"
                 v-html="evento.descripcion"
-              ></p>
+              ></div>
               <div v-if="evento.eslogan || evento.linkBoton" class="text-sm">
                 <a
                   v-if="evento.linkBoton"
@@ -524,10 +523,10 @@ onMounted(() => {
             <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               {{ evento.titulo }}
             </h3>
-            <p
+            <div
               class="text-gray-600 dark:text-gray-400 mb-3 admin-event-description"
               v-html="evento.descripcion"
-            ></p>
+            ></div>
 
             <div
               v-if="evento.eslogan || evento.linkBoton"
@@ -612,5 +611,36 @@ onMounted(() => {
 /* Para descripciones sobre imagen (fondo oscuro) */
 .bg-black .admin-event-description :deep(strong) {
   @apply text-yellow-300 font-extrabold;
+}
+
+/* Estilos para listas en las descripciones de eventos */
+.admin-event-description :deep(ul) {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin-bottom: 0.5rem !important;
+  display: block !important;
+}
+
+.admin-event-description :deep(li) {
+  margin-bottom: 0.25rem !important;
+  display: list-item !important;
+  list-style: disc outside !important;
+}
+
+/* Estilos específicos para listas sobre fondo oscuro */
+.bg-black .admin-event-description :deep(ul),
+.bg-opacity-50 .admin-event-description :deep(ul) {
+  color: white;
+}
+
+/* Asegurar que las viñetas son visibles */
+[class*="admin-event-description"] ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+}
+
+[class*="admin-event-description"] li {
+  display: list-item !important;
+  list-style: disc outside !important;
 }
 </style>
