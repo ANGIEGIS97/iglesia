@@ -1,23 +1,14 @@
 <template>
   <div class="px-4 sm:px-14 2xl:px-80 py-10 mt-20">
     <h1
-      class="text-3xl text-center sm:text-left sm:text-4xl font-serif mb-4 dark:text-white"
-    >
-      Preguntas frecuentes
-    </h1>
-    <p class="text-lg mb-4 dark:text-white">
-      Descubra qué esperar al visitarnos
-    </p>
-    <p class="text-gray-600 mb-4 dark:text-white">
-      Conozca más sobre nuestros valores y nuestra historia como iglesia
-      visitando la página sobre nosotros.
-    </p>
-    <a
-      href="/#inicio"
-      class="bg-teal-500 text-white hover:bg-teal-400 px-6 py-2 rounded mb-8 transition duration-300 ease-in-out transform hover:scale-105 inline-block"
-    >
-      Sobre nosotros
-    </a>
+  class="text-3xl text-center sm:text-left sm:text-4xl font-serif mb-4 dark:text-white"
+>
+  Preguntas frecuentes
+</h1>
+<p class="text-lg mb-4 dark:text-white">
+  Encuentre respuestas claras sobre la Biblia y lo que creemos como iglesia
+</p>
+
     <div class="space-y-6">
       <div
         v-for="(item, index) in preguntas"

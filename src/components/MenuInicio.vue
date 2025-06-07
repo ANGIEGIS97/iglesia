@@ -325,6 +325,7 @@ export default {
       isClosing: false,
       isConocenosOpen: false,
       isDarkMode: true,
+      scrollTimeout: null, // Para debounce del scroll
       menuItems: [
         { href: "/#inicio", text: "Inicio" },
         { href: "/#anuncios", text: "Anuncios y Eventos" },
@@ -419,36 +420,54 @@ export default {
     handleScroll() {
       if (this.currentPath !== "/") return;
 
-      const sections = [
-        "inicio",
-        "anuncios",
-        "pastor",
-        "servicio",
-        "ministerios",
-      ];
-      const navLinks = document.querySelectorAll('.nav-menu a[href^="/#"]');
-      const scrollPosition = window.scrollY + 100;
+      // Debounce para mejor rendimiento
+      if (this.scrollTimeout) {
+        clearTimeout(this.scrollTimeout);
+      }
 
-      sections.forEach((sectionId) => {
-        const section = document.getElementById(sectionId);
-        if (!section) return;
+      this.scrollTimeout = setTimeout(() => {
+        const sections = [
+          "inicio",
+          "anuncios",
+          "pastor",
+          "servicio",
+          "ministerios",
+        ];
+        const scrollPosition = window.scrollY + 100;
+        let currentActiveSection = "";
 
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.offsetHeight;
+        // Encontrar la sección activa basada en el scroll
+        sections.forEach((sectionId) => {
+          const section = document.getElementById(sectionId);
+          if (!section) return;
 
-        if (
-          scrollPosition >= sectionTop &&
-          scrollPosition < sectionTop + sectionHeight
-        ) {
-          this.activeSection = sectionId;
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.offsetHeight;
 
-          navLinks.forEach((link) => {
-            const href = link.getAttribute("href").substring(2);
-            const isActive = href === sectionId;
-            link.classList.toggle("text-teal-400", isActive);
-            link.classList.toggle("text-white", !isActive);
-          });
+          if (
+            scrollPosition >= sectionTop &&
+            scrollPosition < sectionTop + sectionHeight
+          ) {
+            currentActiveSection = sectionId;
+          }
+        });
+
+        // Solo actualizar si hay cambio de sección
+        if (currentActiveSection && currentActiveSection !== this.activeSection) {
+          this.activeSection = currentActiveSection;
+          this.updateScrollBasedLinks();
         }
+      }, 16); // ~60fps
+    },
+    updateScrollBasedLinks() {
+      // Solo actualizar links de secciones (que empiezan con /#)
+      const navLinks = document.querySelectorAll('.nav-menu a[href^="/#"]');
+      
+      navLinks.forEach((link) => {
+        const href = link.getAttribute("href").substring(2); // Remover /#
+        const isActive = href === this.activeSection;
+        link.classList.toggle("text-teal-400", isActive);
+        link.classList.toggle("text-white", !isActive);
       });
     },
     updateActiveLink() {
@@ -456,19 +475,54 @@ export default {
 
       allLinks.forEach((link) => {
         const href = link.getAttribute("href");
-        const isActive =
-          href === this.currentPath ||
-          (this.currentPath === "/" && href === "/");
+        let isActive = false;
 
-        if (isActive || !href.startsWith("/#")) {
-          link.classList.toggle("text-teal-400", isActive);
-          link.classList.toggle("text-white", !isActive);
+        // Para rutas normales (no hash)
+        if (!href.startsWith("/#")) {
+          // Normalizar las rutas para comparación
+          const normalizedHref = href.endsWith("/") ? href.slice(0, -1) : href;
+          const normalizedPath = this.currentPath.endsWith("/") ? this.currentPath.slice(0, -1) : this.currentPath;
+          
+          isActive = normalizedHref === normalizedPath || 
+                    href === this.currentPath || 
+                    (href + "/") === this.currentPath ||
+                    href === (this.currentPath + "/");
+                    
+
+        } 
+        // Para la página principal, verificar si estamos en home
+        else if (href === "/" || href === "/#inicio") {
+          isActive = this.currentPath === "/";
         }
+
+        link.classList.toggle("text-teal-400", isActive);
+        link.classList.toggle("text-white", !isActive);
       });
+
+      // Si estamos en la página principal, usar la lógica de scroll
+      if (this.currentPath === "/") {
+        this.$nextTick(() => {
+          this.handleScroll();
+        });
+      }
     },
     updateCurrentPath() {
-      this.currentPath = window.location.pathname;
-      this.updateActiveLink();
+      const newPath = window.location.pathname;
+      const hashChanged = this.$route && this.$route.hash !== window.location.hash;
+      
+      // Solo actualizar si realmente cambió la ruta
+      if (newPath !== this.currentPath || hashChanged) {
+        this.currentPath = newPath;
+        
+
+        
+        // Resetear sección activa si salimos de la página principal
+        if (this.currentPath !== "/") {
+          this.activeSection = "";
+        }
+        
+        this.updateActiveLink();
+      }
     },
     handleLoginSuccess() {
       this.checkAuthStatus();
@@ -496,18 +550,25 @@ export default {
     document.body.addEventListener("click", this.handleDocumentClick);
     this.updateCurrentPath();
 
+    // Siempre agregar el listener, pero la lógica interna se encarga de verificar la ruta
+    window.addEventListener("scroll", this.handleScroll);
+    window.addEventListener("popstate", this.updateCurrentPath);
+    
+    // Ejecutar scroll handler inicial si estamos en la página principal
     if (this.currentPath === "/") {
-      window.addEventListener("scroll", this.handleScroll);
       this.$nextTick(this.handleScroll);
     }
-
-    window.addEventListener("popstate", this.updateCurrentPath);
   },
   beforeUnmount() {
     document.body.removeEventListener("click", this.handleDocumentClick);
     window.removeEventListener("scroll", this.handleScroll);
     window.removeEventListener("popstate", this.updateCurrentPath);
     document.body.style.overflow = "";
+    
+    // Limpiar timeout si existe
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
   },
 };
 </script>
