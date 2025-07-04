@@ -268,6 +268,8 @@ watch(
           '"No temas en nada lo que vas a padecer. He aquí, el diablo echará a algunos de vosotros en la cárcel, para que seáis probados, y tendréis tribulación por diez días. Sé fiel hasta la muerte, y yo te daré la corona de la vida."',
         "Daniel 12:3":
           '"Los entendidos resplandecerán como el resplandor del firmamento; y los que enseñan la justicia a la multitud, como las estrellas a perpetua eternidad."',
+        "1 Corintios 9:24":
+          '"¿No sabéis que los que corren en el estadio, todos a la verdad corren, pero uno solo se lleva el premio? Corred de tal manera que lo obtengáis."',
       };
 
       verseText.value = versiculos[newVerse] || "Versículo no disponible.";
@@ -314,7 +316,7 @@ const getModalColors = () => {
     },
     // Categoria Sistema (Amber)
     {
-      indices: [0, 1, 2],
+      indices: [0, 1, 2, 27],
       colors: {
         from: "from-amber-400",
         to: "to-amber-600",
@@ -351,7 +353,7 @@ const getAchievementNumber = () => {
 
   // Definir las categorías con sus índices
   const categories = [
-    { name: "Sistema", indices: [0, 1, 2] },
+    { name: "Sistema", indices: [0, 1, 2, 27] },
     {
       name: "Contenido",
       indices: [3, 4, 6, 8, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],

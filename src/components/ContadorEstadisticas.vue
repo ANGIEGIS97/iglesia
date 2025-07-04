@@ -4,7 +4,7 @@
     <a
       @click.prevent="toggleEstadisticas"
       :class="[
-        'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4 w-full',
+        'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4 w-full',
         showEstadisticas
           ? isDarkMode
             ? 'bg-teal-500/20 text-teal-400 border-teal-500'
@@ -42,54 +42,60 @@
 
     <!-- Contenido de las estadísticas -->
     <div v-if="showEstadisticas" class="mt-2 mb-2">
-      <div
-        class="rounded-lg border"
-        :class="
-          isDarkMode
-            ? 'bg-gray-700/30 border-gray-600/50'
-            : 'bg-white border-gray-200'
-        "
-      >
+      <div class="w-full">
         <!-- Tabs -->
-        <div class="flex items-center justify-between">
-          <div class="flex w-full">
+        <div 
+          class="flex items-center justify-between border-b relative"
+          :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'"
+        >
+          <div class="flex w-full relative">
+            <!-- Indicador de tab activo animado -->
+            <div
+              class="absolute bottom-0 h-0.5 transition-all duration-300 ease-out"
+              :class="[
+                activeTab === 'eventos'
+                  ? isDarkMode
+                    ? 'bg-teal-500'
+                    : 'bg-teal-600'
+                  : isDarkMode
+                  ? 'bg-purple-500'
+                  : 'bg-purple-600'
+              ]"
+              :style="{
+                width: '50%',
+                left: activeTab === 'eventos' ? '0%' : '50%'
+              }"
+            ></div>
+            
             <button
               @click="activeTab = 'eventos'"
               :class="[
-                'py-2 px-4 text-sm font-medium transition-colors duration-200 w-1/2 text-center',
+                'py-2 px-4 text-sm font-medium transition-all duration-300 w-1/2 text-center border-b-2 relative',
                 activeTab === 'eventos'
                   ? isDarkMode
-                    ? 'border-b-2 border-teal-400 text-teal-400'
-                    : 'border-b-2 border-teal-600 text-teal-600'
+                    ? 'text-teal-400 border-transparent bg-gradient-to-t from-teal-500/30 to-transparent'
+                    : 'text-teal-600 border-transparent bg-gradient-to-t from-teal-200/40 to-transparent'
                   : isDarkMode
-                  ? [
-                      'text-gray-400 hover:text-gray-300 border-b-2 border-gray-600 border-opacity-50',
-                    ]
-                  : [
-                      'text-gray-500 hover:text-gray-700 border-b-2 border-gray-200',
-                    ],
+                  ? 'text-gray-400 hover:text-gray-300 border-transparent hover:bg-gray-700/30'
+                  : 'text-gray-500 hover:text-gray-700 border-transparent hover:bg-gray-50',
               ]"
             >
-              Anuncios
+              <span class="relative z-10">Anuncios</span>
             </button>
             <button
               @click="activeTab = 'fechas'"
               :class="[
-                'py-2 px-4 text-sm font-medium transition-colors duration-200 w-1/2 text-center',
+                'py-2 px-4 text-sm font-medium transition-all duration-300 w-1/2 text-center border-b-2 relative',
                 activeTab === 'fechas'
                   ? isDarkMode
-                    ? 'border-b-2 border-teal-400 text-teal-400'
-                    : 'border-b-2 border-teal-600 text-teal-600'
+                    ? 'text-purple-400 border-transparent bg-gradient-to-t from-purple-500/30 to-transparent'
+                    : 'text-purple-600 border-transparent bg-gradient-to-t from-purple-200/40 to-transparent'
                   : isDarkMode
-                  ? [
-                      'text-gray-400 hover:text-gray-300 border-b-2 border-gray-600 border-opacity-50',
-                    ]
-                  : [
-                      'text-gray-500 hover:text-gray-700 border-b-2 border-gray-200',
-                    ],
+                  ? 'text-gray-400 hover:text-gray-300 border-transparent hover:bg-gray-700/30'
+                  : 'text-gray-500 hover:text-gray-700 border-transparent hover:bg-gray-50',
               ]"
             >
-              Fechas
+              <span class="relative z-10">Fechas</span>
             </button>
           </div>
           <button
@@ -116,9 +122,16 @@
         </div>
 
         <!-- Tab Content -->
-        <div class="p-2">
+        <div 
+          class="p-2"
+          :class="
+            isDarkMode
+              ? 'bg-gray-700/30'
+              : 'bg-white'
+          "
+        >
           <!-- Eventos Tab -->
-          <div v-if="activeTab === 'eventos'" class="space-y-1">
+          <div v-if="activeTab === 'eventos'" class="space-y-1 animate-fadeIn">
             <div class="grid grid-cols-3 gap-2">
               <div
                 class="p-2 rounded-lg text-center cursor-pointer"
@@ -178,7 +191,7 @@
           </div>
 
           <!-- Fechas Tab -->
-          <div v-if="activeTab === 'fechas'" class="space-y-1">
+          <div v-if="activeTab === 'fechas'" class="space-y-1 animate-fadeIn">
             <div class="grid grid-cols-3 gap-2">
               <div
                 class="p-2 rounded-lg text-center"
@@ -460,3 +473,20 @@ onMounted(() => {
   });
 });
 </script>
+
+<style scoped>
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+</style>

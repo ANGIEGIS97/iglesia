@@ -1,48 +1,72 @@
 <template>
   <div>
     <!-- Eliminado el botón desplegable - Ahora se muestra el contenido directamente -->
-    <div class="w-full my-2">
+    <div class="w-full">
       <div
-        class="rounded-lg border w-full"
+        class="w-full"
         :class="
           isDarkMode
-            ? 'bg-gray-700/30 border-gray-600/50'
+            ? 'border-gray-600/50'
             : 'bg-white border-gray-200'
         "
       >
         <!-- Pestañas de categorías de logros -->
         <div
-          class="flex border-b"
+          class="flex border-b relative"
           :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'"
         >
+          <!-- Indicador de tab activo animado -->
+          <div
+            class="absolute bottom-0 h-0.5 transition-all duration-300 ease-out"
+            :class="[
+              activeCategory === 0
+                ? isDarkMode
+                  ? 'bg-blue-500'
+                  : 'bg-blue-600'
+                : activeCategory === 1
+                ? isDarkMode
+                  ? 'bg-purple-500'
+                  : 'bg-purple-600'
+                : activeCategory === 2
+                ? isDarkMode
+                  ? 'bg-amber-500'
+                  : 'bg-amber-600'
+                : ''
+            ]"
+            :style="{
+              width: `${100 / logrosCategories.length}%`,
+              left: `${(activeCategory * 100) / logrosCategories.length}%`
+            }"
+          ></div>
+          
           <button
             v-for="(tab, tabIndex) in logrosCategories"
             :key="tabIndex"
             @click="activeCategory = tabIndex"
-            class="flex-1 py-[5px] px-2 font-medium text-[13px] transition-all duration-200 text-center border-b-2"
+            class="flex-1 py-[5px] px-2 font-medium text-[13px] transition-all duration-300 text-center border-b-2 relative"
             :class="[
               activeCategory === tabIndex
                 ? tabIndex === 0
                   ? isDarkMode
-                    ? 'text-blue-400 border-blue-500'
-                    : 'text-blue-600 border-blue-500'
+                    ? 'text-blue-400 border-transparent bg-gradient-to-t from-blue-500/30 to-transparent'
+                    : 'text-blue-600 border-transparent bg-gradient-to-t from-blue-200/40 to-transparent'
                   : tabIndex === 1
                   ? isDarkMode
-                    ? 'text-purple-400 border-purple-500'
-                    : 'text-purple-600 border-purple-500'
+                    ? 'text-purple-400 border-transparent bg-gradient-to-t from-purple-500/30 to-transparent'
+                    : 'text-purple-600 border-transparent bg-gradient-to-t from-purple-200/40 to-transparent'
                   : tabIndex === 2
                   ? isDarkMode
-                    ? 'text-amber-400 border-amber-500'
-                    : 'text-amber-600 border-amber-500'
+                    ? 'text-amber-400 border-transparent bg-gradient-to-t from-amber-500/30 to-transparent'
+                    : 'text-amber-600 border-transparent bg-gradient-to-t from-amber-200/40 to-transparent'
                   : ''
                 : isDarkMode
-                ? 'text-gray-300 hover:text-gray-100 border-transparent'
-                : 'text-gray-600 hover:text-gray-800 border-transparent',
+                ? 'text-gray-300 hover:text-gray-100 hover:bg-gray-700/30 border-transparent'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-transparent',
             ]"
           >
-            {{ tab.name }}
+            <span class="relative z-10">{{ tab.name }}</span>
             <span
-              class="block text-[12px]"
+              class="block text-[12px] relative z-10"
               :class="[
                 activeCategory === tabIndex
                   ? tabIndex === 0
@@ -68,10 +92,18 @@
           </button>
         </div>
 
-        <div class="p-2">
+        <div 
+          class="p-4"
+          :class="
+            isDarkMode
+              ? 'bg-gray-700/30'
+              : ''
+          "
+        >
           <div
-            class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out"
+            class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out animate-fadeIn"
             @click.stop="closeAllTooltips"
+            :key="activeCategory"
           >
             <div
               v-for="(achievementId, loopIdx) in logrosCategories[
@@ -136,7 +168,7 @@
               <div
                 v-if="!achievements[achievementId].unlocked"
                 :class="[
-                  'absolute bottom-full mb-2 w-40 z-10 transition-all duration-200', // Base classes
+                  'absolute bottom-full mb-2 w-40 z-[60] transition-all duration-200', // Base classes
                   loopIdx % 4 === 0 // Si es el primer elemento de la fila
                     ? 'left-0' // Alinear a la izquierda
                     : loopIdx % 4 === 3 // Si es el último elemento de la fila
@@ -530,6 +562,14 @@ const achievements = ref([
     verse: "Zacarías 9:16",
     xp: 250, // Logro de rango
   },
+  {
+    icon: "👑",
+    name: "Corredor por la Corona",
+    description: "Visita la página de ranking global",
+    unlocked: false,
+    verse: "1 Corintios 9:24",
+    xp: 30, // Logro de sistema
+  },
 ]);
 
 const unlockedAchievements = computed(() => {
@@ -571,7 +611,7 @@ const logrosCategories = ref([
   },
   {
     name: "Sistema",
-    achievements: [0, 1, 2], // Logros básicos del sistema
+    achievements: [0, 1, 2, 27], // Logros básicos del sistema
     colors: {
       from: "from-amber-400",
       to: "to-amber-600",
@@ -869,6 +909,54 @@ const checkRankAchievements = (rank, level) => {
   }
 };
 
+// Función para verificar el logro de visitar ranking
+const checkRankingVisitAchievement = () => {
+  console.log("Logros.vue - checkRankingVisitAchievement llamado");
+  console.log("Estado del logro 27 (Explorador de Rangos):", achievements.value[27]);
+  
+  // Verificar que el usuario esté autenticado
+  const user = auth_api.getCurrentUser();
+  if (!user?.uid) {
+    console.log("Usuario no autenticado, no se puede verificar el logro");
+    return;
+  }
+  
+  // Verificar que el estado de los logros esté cargado (buscar si hay al menos un logro definido)
+  if (!achievements.value || achievements.value.length === 0) {
+    console.log("Estado de logros no cargado aún, omitiendo verificación");
+    return;
+  }
+  
+  // Verificar que el logro específico existe
+  if (!achievements.value[27]) {
+    console.warn("No se encontró el logro con índice 27");
+    return;
+  }
+  
+  // Verificar que el logro no esté ya desbloqueado
+  if (achievements.value[27].unlocked) {
+    console.log("El logro 'Explorador de Rangos' ya está desbloqueado");
+    return;
+  }
+  
+  // Verificar en localStorage si ya se ha desbloqueado previamente
+  const savedAchievements = localStorage.getItem(`achievements_${user.uid}`);
+  if (savedAchievements) {
+    try {
+      const parsedAchievements = JSON.parse(savedAchievements);
+      if (parsedAchievements[27] && parsedAchievements[27].unlocked) {
+        console.log("El logro 'Explorador de Rangos' ya está desbloqueado según localStorage");
+        return;
+      }
+    } catch (error) {
+      console.error("Error al parsear logros desde localStorage:", error);
+    }
+  }
+  
+  console.log("Desbloqueando logro 'Explorador de Rangos'");
+  unlockAchievement(27); // Explorador de Rangos - Visita la página de ranking
+};
+
 // Función para forzar la sincronización desde Firebase (ignorando localStorage)
 const forceFirebaseSync = async () => {
   const user = auth_api.getCurrentUser();
@@ -1016,6 +1104,7 @@ defineExpose({
   checkAchievementsFromStats,
   checkLevelAchievements,
   checkRankAchievements,
+  checkRankingVisitAchievement,
   loadAchievements,
   clearAchievementsLocalStorage,
   syncAchievementsToLocalStorage,
@@ -1133,8 +1222,23 @@ const closeAchievementNotification = () => {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-bounce {
   animation: bounce 2s ease forwards;
   animation-iteration-count: 1;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
 }
 </style>

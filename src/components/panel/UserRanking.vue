@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { usuarios, type UserWithId } from "../../lib/api.ts";
 
 const users = ref<UserWithId[]>([]);
@@ -105,8 +105,61 @@ const getAchievementPercentage = (user: UserWithId) => {
   return Math.round((unlockedCount / user.achievements.length) * 100);
 };
 
+// Variables para manejar el listener del estado del juego
+let gameStateLoadedListener = null;
+let timeoutId = null;
+
+const handleGameStateLoaded = () => {
+  console.log("UserRanking: Estado del juego cargado, emitiendo evento rankingPageVisited");
+  window.dispatchEvent(new CustomEvent("rankingPageVisited"));
+  
+  // Limpiar el listener después de usarlo
+  if (gameStateLoadedListener) {
+    window.removeEventListener("gameStateLoaded", gameStateLoadedListener);
+    gameStateLoadedListener = null;
+  }
+  
+  // Limpiar el timeout si existe
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+    timeoutId = null;
+  }
+};
+
 onMounted(() => {
   loadRanking();
+  
+  // Configurar el listener para el evento de carga del estado del juego
+  gameStateLoadedListener = handleGameStateLoaded;
+  window.addEventListener("gameStateLoaded", gameStateLoadedListener);
+  
+  // Timeout de respaldo en caso de que el evento no se dispare
+  timeoutId = setTimeout(() => {
+    console.log("UserRanking: Timeout de respaldo - emitiendo evento rankingPageVisited");
+    window.dispatchEvent(new CustomEvent("rankingPageVisited"));
+    
+    // Limpiar el listener si el timeout se ejecuta
+    if (gameStateLoadedListener) {
+      window.removeEventListener("gameStateLoaded", gameStateLoadedListener);
+      gameStateLoadedListener = null;
+    }
+    timeoutId = null;
+  }, 5000); // Timeout de respaldo de 5 segundos
+});
+
+// Limpiar listeners cuando el componente se desmonte
+onUnmounted(() => {
+  // Limpiar cualquier listener que pueda quedar
+  if (typeof window !== 'undefined' && gameStateLoadedListener) {
+    window.removeEventListener("gameStateLoaded", gameStateLoadedListener);
+    gameStateLoadedListener = null;
+  }
+  
+  // Limpiar timeout si existe
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+    timeoutId = null;
+  }
 });
 </script>
 
@@ -365,15 +418,29 @@ onMounted(() => {
         <div
           v-for="(user, index) in users"
           :key="user.id"
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 relative"
           :class="{
             'md:hidden': index < 3 && users.length > 3,
-            'border-2 border-yellow-400 dark:border-yellow-500': index === 0,
-            'border-2 border-gray-300 dark:border-gray-400': index === 1,
-            'border-2 border-amber-600 dark:border-amber-700': index === 2,
+            'border-[0.5px] border-yellow-400 dark:border-yellow-500': index === 0,
+            'border-[0.5px] border-gray-300 dark:border-gray-400': index === 1,
+            'border-[0.5px] border-amber-600 dark:border-amber-700': index === 2,
           }"
         >
-          <div class="p-5">
+          <!-- Fondo degradado superpuesto -->
+          <div
+            class="absolute inset-0 opacity-20"
+            :class="[
+              index === 0
+                ? 'bg-gradient-to-br from-yellow-400/70 to-yellow-600/20 dark:from-yellow-500/70 dark:to-yellow-700/20'
+                : index === 1
+                ? 'bg-gradient-to-br from-gray-300/70 to-gray-500/20 dark:from-gray-400/70 dark:to-gray-600/20'
+                : index === 2
+                ? 'bg-gradient-to-br from-amber-600/70 to-amber-800/20 dark:from-amber-700/70 dark:to-amber-900/20'
+                : 'bg-gradient-to-br from-teal-600/30 to-teal-800/20 dark:from-teal-600/70 dark:to-teal-800/20'
+            ]"
+          ></div>
+          
+          <div class="p-5 relative z-10">
             <div class="flex items-center">
               <!-- Posición -->
               <div
@@ -385,7 +452,7 @@ onMounted(() => {
                     ? 'bg-gray-300 text-gray-800 dark:bg-gray-400 dark:text-gray-100'
                     : index === 2
                     ? 'bg-amber-600 text-white dark:bg-amber-700'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+                    : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
                 ]"
               >
                 <span v-if="index < 3">{{ getEmojiForRank(index) }}</span>

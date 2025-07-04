@@ -18,9 +18,9 @@
           : 'bg-gradient-to-b from-white to-gray-100 text-gray-800',
       ]"
     >
-      <div class="p-4 h-full flex flex-col overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold flex items-center">Administración</h2>
+      <div class="py-4 h-full flex flex-col overflow-y-auto">
+        <div class="flex justify-between items-center mb-3 px-2">
+          <h2 class="text-xl font-bold flex items-center px-3">Administración</h2>
           <!-- Close Button -->
           <button
             @click="$emit('close')"
@@ -37,7 +37,7 @@
 
         <!-- Perfil del Usuario con Nivel y XP -->
         <div
-          class="mb-2 p-2 rounded-lg border backdrop-blur-sm"
+          class="mb-2 p-4  border backdrop-blur-sm"
           :class="
             isDarkMode
               ? 'bg-gray-700/50 border-gray-600/50'
@@ -171,15 +171,81 @@
         </div>
 
         <!-- Navigation Menu -->
-        <div class="space-y-1 mb-2">
-          <!-- Componente Logros -->
-          <!-- Botón de Logros desplegable -->
+        <div>
+          <!-- Tabs Header -->
           <div class="relative">
-            <button
-              @click="toggleLogros"
+            <div 
+              class="flex border-b-2 border-transparent relative"
+              :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'"
+            >
+              <!-- Indicador de tab activo animado -->
+              <div
+                class="absolute bottom-0 h-0.5 transition-all duration-300 ease-out"
+                :class="[
+                  activeTab === 'admin'
+                    ? isDarkMode
+                      ? 'bg-teal-500'
+                      : 'bg-teal-600'
+                    : activeTab === 'profile'
+                    ? isDarkMode
+                      ? 'bg-teal-500'
+                      : 'bg-teal-600'
+                    : ''
+                ]"
+                :style="{
+                  width: '50%',
+                  left: activeTab === 'admin' ? '0%' : '50%'
+                }"
+              ></div>
+              
+              <button
+                @click="activeTab = 'admin'"
+                :class="[
+                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2',
+                  activeTab === 'admin'
+                    ? isDarkMode
+                      ? 'text-teal-400 border-transparent bg-gradient-to-t from-teal-500/30 to-transparent'
+                      : 'text-teal-600 border-transparent bg-gradient-to-t from-teal-200/40 to-transparent'
+                    : isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30 border-transparent'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'
+                ]"
+              >
+                <span class="relative">Gestión</span>
+              </button>
+              <button
+                @click="activeTab = 'profile'"
+                :class="[
+                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2',
+                  activeTab === 'profile'
+                    ? isDarkMode
+                      ? 'text-teal-400 border-transparent bg-gradient-to-t from-teal-500/30 to-transparent'
+                      : 'text-teal-600 border-transparent bg-gradient-to-t from-teal-200/40 to-transparent'
+                    : isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30 border-transparent'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'
+                ]"
+              >
+                <span class="relative">Logros ({{ unlockedAchievementsCount }}/{{ totalAchievementsCount }})</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab Content Container -->
+          <div 
+            class="border-t-0 backdrop-blur-sm mt-0 pt-1"
+            :class="isDarkMode 
+              ? 'border-gray-600/50' 
+              : 'bg-white/50 border-gray-200/50'"
+          >
+            <!-- Tab Content: Administración -->
+            <div v-show="activeTab === 'admin'" class="space-y-1">
+            <a
+              href="/admin/eventos"
+              @click.prevent="handleNavigation('/admin/eventos')"
               :class="[
-                'flex items-center w-full px-4 py-[10px] rounded-lg text-left transition-all duration-200 border-l-4',
-                showLogros
+                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4',
+                currentPath === '/admin/eventos'
                   ? isDarkMode
                     ? 'bg-teal-500/20 text-teal-400 border-teal-500'
                     : 'bg-teal-50 text-teal-600 border-teal-500'
@@ -189,45 +255,93 @@
               ]"
             >
               <i
-                class="fas fa-trophy w-5 h-5 mr-3"
+                class="fas fa-calendar-alt w-5 h-5 mr-3"
                 :class="
-                  showLogros
+                  currentPath === '/admin/eventos'
                     ? isDarkMode
                       ? 'text-teal-400'
                       : 'text-teal-600'
                     : ''
                 "
               ></i>
-              <span>Mis Logros</span>
-              <span
-                v-if="totalAchievementsCount > 0"
-                class="ml-1 text-sm font-medium"
-              >
-                ({{ unlockedAchievementsCount }}/{{ totalAchievementsCount }})
-              </span>
+              <span>Administrar Anuncios</span>
+            </a>
+
+            <a
+              href="/admin/fechas"
+              @click.prevent="handleNavigation('/admin/fechas')"
+              :class="[
+                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4',
+                currentPath === '/admin/fechas'
+                  ? isDarkMode
+                    ? 'bg-teal-500/20 text-teal-400 border-teal-500'
+                    : 'bg-teal-50 text-teal-600 border-teal-500'
+                  : isDarkMode
+                  ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
+              ]"
+            >
               <i
-                class="fas ml-auto transition-transform duration-200"
-                :class="[
-                  showLogros ? 'fa-chevron-up' : 'fa-chevron-down',
-                  showLogros
+                class="fas fa-clock w-5 h-5 mr-3"
+                :class="
+                  currentPath === '/admin/fechas'
                     ? isDarkMode
                       ? 'text-teal-400'
                       : 'text-teal-600'
-                    : '',
-                ]"
+                    : ''
+                "
               ></i>
-            </button>
+              <span>Administrar Fechas</span>
+            </a>
 
-            <!-- Contenedor desplegable para los Logros -->
-            <div
-              v-show="showLogros"
-              class="mt-1 transition-all duration-300 ease-in-out"
+            <!-- Ranking button -->
+            <a
+              href="/admin/ranking"
+              @click.prevent="handleNavigation('/admin/ranking')"
               :class="[
-                showLogros
-                  ? 'max-h-96 opacity-100 overflow-visible'
-                  : 'max-h-0 opacity-0 overflow-hidden invisible',
+                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4',
+                currentPath === '/admin/ranking'
+                  ? isDarkMode
+                    ? 'bg-teal-500/20 text-teal-400 border-teal-500'
+                    : 'bg-teal-50 text-teal-600 border-teal-500'
+                  : isDarkMode
+                  ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
               ]"
             >
+              <i
+                class="fas fa-crown w-5 h-5 mr-3"
+                :class="
+                  currentPath === '/admin/ranking'
+                    ? isDarkMode
+                      ? 'text-teal-400'
+                      : 'text-teal-600'
+                    : ''
+                "
+              ></i>
+              <span>Ranking Global</span>
+            </a>
+
+            <button
+              @click="openChangePassword"
+              :class="[
+                'flex items-center w-full px-6 py-[10px] text-left transition-all duration-200 border-l-4 border-transparent',
+                isDarkMode
+                  ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
+              ]"
+            >
+              <i class="fas fa-key w-5 h-5 mr-3"></i>
+              <span>Cambiar Contraseña</span>
+            </button>
+
+            <!-- Contador de Estadísticas -->
+            <ContadorEstadisticas :darkMode="isDarkMode" />
+            </div>
+
+            <!-- Tab Content: Perfil -->
+            <div v-show="activeTab === 'profile'" class="space-y-1">
+              <!-- Componente Logros -->
               <Logros
                 ref="logrosRef"
                 :darkMode="isDarkMode"
@@ -237,104 +351,6 @@
               />
             </div>
           </div>
-
-          <a
-            href="/admin/eventos"
-            @click.prevent="handleNavigation('/admin/eventos')"
-            :class="[
-              'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4',
-              currentPath === '/admin/eventos'
-                ? isDarkMode
-                  ? 'bg-teal-500/20 text-teal-400 border-teal-500'
-                  : 'bg-teal-50 text-teal-600 border-teal-500'
-                : isDarkMode
-                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
-            ]"
-          >
-            <i
-              class="fas fa-calendar-alt w-5 h-5 mr-3"
-              :class="
-                currentPath === '/admin/eventos'
-                  ? isDarkMode
-                    ? 'text-teal-400'
-                    : 'text-teal-600'
-                  : ''
-              "
-            ></i>
-            <span>Administrar Anuncios</span>
-          </a>
-
-          <a
-            href="/admin/fechas"
-            @click.prevent="handleNavigation('/admin/fechas')"
-            :class="[
-              'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4',
-              currentPath === '/admin/fechas'
-                ? isDarkMode
-                  ? 'bg-teal-500/20 text-teal-400 border-teal-500'
-                  : 'bg-teal-50 text-teal-600 border-teal-500'
-                : isDarkMode
-                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
-            ]"
-          >
-            <i
-              class="fas fa-clock w-5 h-5 mr-3"
-              :class="
-                currentPath === '/admin/fechas'
-                  ? isDarkMode
-                    ? 'text-teal-400'
-                    : 'text-teal-600'
-                  : ''
-              "
-            ></i>
-            <span>Administrar Fechas</span>
-          </a>
-
-          <button
-            @click="openChangePassword"
-            :class="[
-              'flex items-center w-full px-4 py-[10px] rounded-lg text-left transition-all duration-200 border-l-4 border-transparent',
-              isDarkMode
-                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
-            ]"
-          >
-            <i class="fas fa-key w-5 h-5 mr-3"></i>
-            <span>Cambiar Contraseña</span>
-          </button>
-
-          <!-- Ranking button -->
-          <a
-            href="/admin/ranking"
-            @click.prevent="handleNavigation('/admin/ranking')"
-            :class="[
-              'flex items-center px-4 py-[10px] rounded-lg transition-all duration-200 border-l-4',
-              currentPath === '/admin/ranking'
-                ? isDarkMode
-                  ? 'bg-teal-500/20 text-teal-400 border-teal-500'
-                  : 'bg-teal-50 text-teal-600 border-teal-500'
-                : isDarkMode
-                ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
-            ]"
-          >
-            <i
-              class="fas fa-crown w-5 h-5 mr-3"
-              :class="
-                currentPath === '/admin/ranking'
-                  ? isDarkMode
-                    ? 'text-teal-400'
-                    : 'text-teal-600'
-                  : ''
-              "
-            ></i>
-            <span>Ranking Global</span>
-          </a>
-
-          <!-- Contador de Estadísticas -->
-          <ContadorEstadisticas :darkMode="isDarkMode" />
         </div>
 
         <div class="flex-grow"></div>
@@ -434,7 +450,7 @@ const cambioContrasenaRef = ref(null);
 const displayName = ref("");
 const showProfileModal = ref(false);
 const logrosRef = ref(null);
-const showLogros = ref(false); // Estado para controlar la visibilidad de los logros
+const activeTab = ref('admin'); // Estado para controlar qué tab está activo
 let unsubscribeAuth = null;
 let unsubscribeProfile = null;
 
@@ -604,6 +620,9 @@ const loadGameState = async () => {
 
       // Guardar una copia local
       saveGameState();
+      
+      // Emitir evento indicando que el estado del juego ha sido cargado completamente
+      window.dispatchEvent(new CustomEvent("gameStateLoaded"));
       return;
     }
   } catch (error) {
@@ -627,9 +646,15 @@ const loadGameState = async () => {
 
     // Sincronizar con Firestore
     saveGameState();
+    
+    // Emitir evento indicando que el estado del juego ha sido cargado completamente
+    window.dispatchEvent(new CustomEvent("gameStateLoaded"));
   } else {
     // First time - initialize
     saveGameState();
+    
+    // Emitir evento indicando que el estado del juego ha sido inicializado
+    window.dispatchEvent(new CustomEvent("gameStateLoaded"));
   }
 };
 
@@ -720,6 +745,15 @@ const setupStatsListener = () => {
   // Agregar listener para forzar recarga de estado desde Firebase
   window.removeEventListener("forceGameStateReload", forceReloadGameState);
   window.addEventListener("forceGameStateReload", forceReloadGameState);
+
+  // Agregar listener para visita al ranking
+  window.removeEventListener("rankingPageVisited", checkRankingVisitForAchievement);
+  window.addEventListener("rankingPageVisited", checkRankingVisitForAchievement);
+  
+  console.log("AdminSidebar - Event listeners configurados correctamente");
+  console.log("- statisticsUpdated listener: configurado");
+  console.log("- forceGameStateReload listener: configurado");
+  console.log("- rankingPageVisited listener: configurado");
 };
 
 // Función para forzar recarga del estado desde Firebase
@@ -758,9 +792,17 @@ const checkStatsForAchievements = () => {
   }
 };
 
-// Función para alternar la visibilidad de los logros
-const toggleLogros = () => {
-  showLogros.value = !showLogros.value;
+// Función para verificar logros cuando se visita el ranking
+const checkRankingVisitForAchievement = () => {
+  console.log("Evento rankingPageVisited recibido - verificando logro de ranking");
+  console.log("logrosRef.value:", logrosRef.value);
+  
+  if (logrosRef.value) {
+    console.log("Llamando a checkRankingVisitAchievement...");
+    logrosRef.value.checkRankingVisitAchievement();
+  } else {
+    console.warn("logrosRef.value no está disponible");
+  }
 };
 
 onMounted(async () => {
@@ -798,6 +840,12 @@ onMounted(async () => {
       }
     }
   });
+
+  // Asegurar que los event listeners se configuren después del montaje completo
+  setTimeout(() => {
+    setupStatsListener();
+    console.log("AdminSidebar - Event listeners reconfigurados después del montaje");
+  }, 500);
 
   // Registrar el componente como un elemento customizado para poder acceder desde otros componentes
   if (
@@ -838,6 +886,7 @@ watch(
 onBeforeUnmount(() => {
   window.removeEventListener("popstate", updateCurrentPath);
   window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
+  window.removeEventListener("rankingPageVisited", checkRankingVisitForAchievement);
 
   // Limpiar todas las suscripciones
   if (unsubscribeAuth) {
