@@ -59,8 +59,46 @@
               <i class="fas fa-power-off w-5 h-5"></i>
             </button>
 
-            <div
-              class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
+            <!-- Avatar con barra de progreso circular -->
+            <div class="relative">
+              <!-- SVG para la barra de progreso circular -->
+              <svg class="w-16 h-16 transform rotate-[60deg]" viewBox="0 0 64 64">
+                <!-- Círculo de fondo -->
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="25"
+                  stroke="currentColor"
+                  :class="isDarkMode ? 'text-gray-600' : 'text-gray-200'"
+                  stroke-width="12"
+                  fill="none"
+                />
+                <!-- Círculo de progreso -->
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="25"
+                  stroke="currentColor"
+                  :class="{
+                    'text-amber-500': userRank === 1,
+                    'text-gray-400': userRank === 2,
+                    'text-yellow-500': userRank === 3,
+                    'text-blue-500': userRank === 4,
+                    'text-purple-500': userRank === 5,
+                    'text-teal-500': userRank > 5 || userRank < 1
+                  }"
+                  class="transition-all duration-300"
+                  stroke-width="12"
+                  fill="none"
+                  stroke-linecap="butt"
+                  :stroke-dasharray="157.08"
+                  :stroke-dashoffset="157.08 - (157.08 * xpPercentage) / 100"
+                />
+              </svg>
+              
+              <!-- Avatar del usuario -->
+              <div
+                class="absolute inset-0 w-[54px] h-[54px] rounded-full flex items-center justify-center text-white font-bold text-lg m-auto"
               :style="{ backgroundColor: getUserColor(displayName) }"
             >
               {{ getUserInitial(displayName) }}
@@ -79,6 +117,8 @@
                 {{ userLevel }}
               </div>
             </div>
+            </div>
+            
             <div class="flex-1 ml-3">
               <h3 class="text-sm font-medium flex items-center">
                 {{ displayName || "Usuario" }}
@@ -151,18 +191,9 @@
             </div>
           </div>
 
-          <!-- XP Progress Bar -->
+          <!-- Información de XP -->
           <div
-            class="w-full rounded-full h-2.5 mb-1"
-            :class="isDarkMode ? 'bg-gray-600' : 'bg-gray-200'"
-          >
-            <div
-              class="bg-teal-500 h-2.5 rounded-full"
-              :style="{ width: `${xpPercentage}%` }"
-            ></div>
-          </div>
-          <div
-            class="flex justify-between text-xs"
+            class="flex justify-between text-xs mt-2"
             :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'"
           >
             <span>XP: {{ userXp }}/{{ xpForNextLevel }}</span>
