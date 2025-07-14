@@ -5,6 +5,7 @@
       v-if="isOpen"
       class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity touch-none"
       @click="$emit('close')"
+      @touchend="$emit('close')"
     ></div>
 
     <!-- Sidebar -->
@@ -24,7 +25,8 @@
           <!-- Close Button -->
           <button
             @click="$emit('close')"
-            class="p-2 rounded-lg transition-colors"
+            @touchend="$emit('close')"
+            class="p-2 rounded-lg transition-colors cursor-pointer"
             :class="
               isDarkMode
                 ? 'hover:bg-gray-700/50 text-gray-300 hover:text-white'
@@ -48,7 +50,8 @@
             <!-- Botón de apagado en la esquina superior derecha -->
             <button
               @click="handleLogout"
-              class="absolute -top-2 -right-2 p-2 rounded-full transition-colors"
+              @touchend="handleLogout"
+              class="absolute -top-2 -right-2 p-2 rounded-full transition-colors cursor-pointer"
               :class="
                 isDarkMode
                   ? 'text-red-400 hover:text-red-300'
@@ -179,7 +182,8 @@
               </div>
               <button
                 @click="openProfileModal"
-                class="text-xs mt-1"
+                @touchend="openProfileModal"
+                class="text-xs mt-1 cursor-pointer"
                 :class="
                   isDarkMode
                     ? 'text-teal-400 hover:text-teal-300'
@@ -231,8 +235,9 @@
               
               <button
                 @click="activeTab = 'admin'"
+                @touchend="() => activeTab = 'admin'"
                 :class="[
-                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2',
+                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2 cursor-pointer',
                   activeTab === 'admin'
                     ? isDarkMode
                       ? 'text-teal-400 border-transparent bg-gradient-to-t from-teal-500/30 to-transparent'
@@ -246,8 +251,9 @@
               </button>
               <button
                 @click="activeTab = 'profile'"
+                @touchend="() => activeTab = 'profile'"
                 :class="[
-                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2',
+                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2 cursor-pointer',
                   activeTab === 'profile'
                     ? isDarkMode
                       ? 'text-teal-400 border-transparent bg-gradient-to-t from-teal-500/30 to-transparent'
@@ -274,8 +280,9 @@
             <a
               href="/admin/eventos"
               @click.prevent="handleNavigation('/admin/eventos')"
+              @touchend.prevent="handleNavigation('/admin/eventos')"
               :class="[
-                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4',
+                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4 cursor-pointer',
                 currentPath === '/admin/eventos'
                   ? isDarkMode
                     ? 'bg-teal-500/20 text-teal-400 border-teal-500'
@@ -301,8 +308,9 @@
             <a
               href="/admin/fechas"
               @click.prevent="handleNavigation('/admin/fechas')"
+              @touchend.prevent="handleNavigation('/admin/fechas')"
               :class="[
-                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4',
+                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4 cursor-pointer',
                 currentPath === '/admin/fechas'
                   ? isDarkMode
                     ? 'bg-teal-500/20 text-teal-400 border-teal-500'
@@ -329,8 +337,9 @@
             <a
               href="/admin/ranking"
               @click.prevent="handleNavigation('/admin/ranking')"
+              @touchend.prevent="handleNavigation('/admin/ranking')"
               :class="[
-                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4',
+                'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4 cursor-pointer',
                 currentPath === '/admin/ranking'
                   ? isDarkMode
                     ? 'bg-teal-500/20 text-teal-400 border-teal-500'
@@ -355,8 +364,9 @@
 
             <button
               @click="openChangePassword"
+              @touchend="openChangePassword"
               :class="[
-                'flex items-center w-full px-6 py-[10px] text-left transition-all duration-200 border-l-4 border-transparent',
+                'flex items-center w-full px-6 py-[10px] text-left transition-all duration-200 border-l-4 border-transparent cursor-pointer',
                 isDarkMode
                   ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
                   : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
@@ -705,7 +715,11 @@ const handleProfileUpdate = (newDisplayName) => {
 
 const handleNavigation = (path) => {
   emit("close");
-  window.location.href = path;
+  
+  // Pequeña demora para permitir que se cierre el sidebar antes de navegar
+  setTimeout(() => {
+    window.location.href = path;
+  }, 100);
 };
 
 const handleLogout = async () => {
@@ -946,6 +960,26 @@ watch(
 <style scoped>
 a {
   transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Mejorar el tap en dispositivos móviles */
+a:active,
+button:active {
+  transform: scale(0.98);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  /* Estilos específicos para dispositivos táctiles */
+  a, button {
+    min-height: 44px; /* Área mínima recomendada para elementos táctiles */
+  }
 }
 
 @keyframes bounce {
