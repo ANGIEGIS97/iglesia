@@ -36,6 +36,15 @@ const xpMessage = ref("");
 const tipoXP = ref("evento");
 const accionXP = ref("agregados");
 
+// Función para reportar actividad de streaks
+const reportStreakActivity = (tipo: string, fecha = new Date()) => {
+  // Dispatch evento personalizado para notificar actividad de streak
+  window.dispatchEvent(new CustomEvent('streakActivity', {
+    detail: { tipo, fecha }
+  }));
+  console.log(`AdminEventList - Reportando actividad de streak: ${tipo}`);
+};
+
 // Función para mostrar notificación XP
 const showXpNotif = (
   amount: number,
@@ -50,6 +59,11 @@ const showXpNotif = (
   showXpNotification.value = true;
 
   console.log(`AdminEventList - showXpNotif: tipo=${tipo}, accion=${accion}`);
+
+  // Reportar actividad para streaks (solo para creación/actualización, no eliminación)
+  if (accion === "agregados" || accion === "modificados") {
+    reportStreakActivity("anuncios");
+  }
 
   // Actualizar experiencia en el sidebar si está disponible
   const sidebarComponent = document.querySelector("admin-sidebar");

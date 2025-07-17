@@ -32,6 +32,20 @@ export interface UserProfile {
   userRank?: number;
   achievements?: any[];
   loginStreak?: number;
+  streaks?: {
+    anuncios: {
+      current: number;
+      lastActivity: string | null;
+      weeklyGoalMet: boolean;
+      lastWeekStart: string | null;
+    };
+    fechas: {
+      current: number;
+      lastActivity: string | null;
+      weeklyGoalMet: boolean;
+      lastWeekStart: string | null;
+    };
+  };
 }
 
 export interface UserWithId extends UserProfile {
@@ -217,23 +231,40 @@ export const usuarios = {
       userRank: number;
       loginStreak: number;
       achievements: any[];
+      streaks?: {
+        anuncios: {
+          current: number;
+          lastActivity: string | null;
+          weeklyGoalMet: boolean;
+          lastWeekStart: string | null;
+        };
+        fechas: {
+          current: number;
+          lastActivity: string | null;
+          weeklyGoalMet: boolean;
+          lastWeekStart: string | null;
+        };
+      };
     }
   ): Promise<void> => {
     try {
       checkAuth();
       const userDocRef = doc(db, "users", userId);
-      await setDoc(
-        userDocRef,
-        {
-          userXp: gameState.userXp,
-          userLevel: gameState.userLevel,
-          userRank: gameState.userRank,
-          loginStreak: gameState.loginStreak,
-          achievements: gameState.achievements,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      const updateData: any = {
+        userXp: gameState.userXp,
+        userLevel: gameState.userLevel,
+        userRank: gameState.userRank,
+        loginStreak: gameState.loginStreak,
+        achievements: gameState.achievements,
+        updatedAt: serverTimestamp(),
+      };
+
+      // Agregar streaks si están presentes
+      if (gameState.streaks) {
+        updateData.streaks = gameState.streaks;
+      }
+
+      await setDoc(userDocRef, updateData, { merge: true });
     } catch (error) {
       console.error("Error al actualizar estado de gamificación:", error);
       throw new Error("No se pudo actualizar el estado de gamificación");
@@ -248,18 +279,39 @@ export const usuarios = {
     userRank: number;
     loginStreak: number;
     achievements: any[];
+    streaks?: {
+      anuncios: {
+        current: number;
+        lastActivity: string | null;
+        weeklyGoalMet: boolean;
+        lastWeekStart: string | null;
+      };
+      fechas: {
+        current: number;
+        lastActivity: string | null;
+        weeklyGoalMet: boolean;
+        lastWeekStart: string | null;
+      };
+    };
   } | null> => {
     try {
       const userDoc = await getDoc(doc(db, "users", userId));
       if (userDoc.exists()) {
         const data = userDoc.data();
-        return {
+        const gameState: any = {
           userXp: data.userXp ?? 0,
           userLevel: data.userLevel ?? 1,
           userRank: data.userRank ?? 1, // Usar rango 1 (Bronce) como valor predeterminado
           loginStreak: data.loginStreak ?? 0,
           achievements: data.achievements ?? [],
         };
+
+        // Agregar streaks si están presentes
+        if (data.streaks) {
+          gameState.streaks = data.streaks;
+        }
+
+        return gameState;
       }
       return null;
     } catch (error) {

@@ -197,11 +197,43 @@
 
           <!-- Información de XP -->
           <div
-            class="flex justify-between text-xs mt-2"
+            class="flex items-center space-x-3 text-xs mt-2"
             :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'"
           >
             <span>XP: {{ userXp }}/{{ xpForNextLevel }}</span>
-            <span>{{ xpPercentage }}%</span>
+            
+            <!-- Rachas máximas -->
+            <div class="flex items-center space-x-2">
+              <span class="text-xs">Racha maxima:</span>
+              
+              <!-- Streak de Anuncios -->
+              <div 
+                class="flex items-center space-x-1"
+                :title="anunciosMaxStreak > 0 ? `Streak máximo de anuncios: ${anunciosMaxStreak} semana${anunciosMaxStreak !== 1 ? 's' : ''}` : 'Sin racha de anuncios'"
+              >
+                <img 
+                  src="/svg/flama.svg" 
+                  alt="Streak anuncios" 
+                  class="w-3 h-3"
+                  :class="anunciosMaxStreak > 0 && anunciosWeeklyGoalMet ? 'filter-red' : 'filter-gray'"
+                />
+                <span class="text-xs font-medium">{{ anunciosMaxStreak }}</span>
+              </div>
+              
+              <!-- Streak de Fechas -->
+              <div 
+                class="flex items-center space-x-1"
+                :title="fechasMaxStreak > 0 ? `Streak máximo de fechas: ${fechasMaxStreak} semana${fechasMaxStreak !== 1 ? 's' : ''}` : 'Sin racha de fechas'"
+              >
+                <img 
+                  src="/svg/flama.svg" 
+                  alt="Streak fechas" 
+                  class="w-3 h-3"
+                  :class="fechasMaxStreak > 0 && fechasWeeklyGoalMet ? 'filter-blue' : 'filter-gray'"
+                />
+                <span class="text-xs font-medium">{{ fechasMaxStreak }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -303,6 +335,7 @@
                 "
               ></i>
               <span>Administrar Anuncios</span>
+              <i v-if="!streakStatus.anuncios.weeklyGoalMet" class="fas fa-exclamation-triangle ml-2 text-xs text-yellow-500"></i>
             </a>
 
             <a
@@ -331,6 +364,7 @@
                 "
               ></i>
               <span>Administrar Fechas</span>
+              <i v-if="!streakStatus.fechas.weeklyGoalMet" class="fas fa-exclamation-triangle ml-2 text-xs text-yellow-500"></i>
             </a>
 
             <!-- Ranking button -->
@@ -378,6 +412,19 @@
 
             <!-- Contador de Estadísticas -->
             <ContadorEstadisticas :darkMode="isDarkMode" />
+
+            <!-- Streaks Manager -->
+            <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-600">
+              <div class="mb-2">
+                <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Streaks Semanales
+                </h4>
+              </div>
+              <StreakManager 
+                ref="streakManagerRef" 
+                @streakUpdate="handleStreakUpdate"
+              />
+            </div>
             </div>
 
             <!-- Tab Content: Perfil -->
@@ -473,6 +520,7 @@ import ProfileModal from "./ProfileModal.vue";
 import { auth_api, usuarios } from "../lib/api.ts";
 import ContadorEstadisticas from "./ContadorEstadisticas.vue";
 import Logros from "./Logros.vue";
+import StreakManager from "./StreakManager.vue";
 
 const props = defineProps({
   isOpen: {
@@ -491,9 +539,16 @@ const cambioContrasenaRef = ref(null);
 const displayName = ref("");
 const showProfileModal = ref(false);
 const logrosRef = ref(null);
+const streakManagerRef = ref(null);
 const activeTab = ref('admin'); // Estado para controlar qué tab está activo
 let unsubscribeAuth = null;
 let unsubscribeProfile = null;
+
+// Estado de los streaks para mostrar indicadores
+const streakStatus = ref({
+  anuncios: { weeklyGoalMet: true },
+  fechas: { weeklyGoalMet: true }
+});
 
 // Nueva propiedad computada para contar logros desbloqueados
 const unlockedAchievementsCount = computed(() => {
@@ -509,6 +564,23 @@ const totalAchievementsCount = computed(() => {
     return logrosRef.value.achievements.length;
   }
   return 0;
+});
+
+// Propiedades computadas para streaks
+const anunciosMaxStreak = computed(() => {
+  return streakManagerRef.value?.streakData?.anuncios?.maxReached || 0;
+});
+
+const fechasMaxStreak = computed(() => {
+  return streakManagerRef.value?.streakData?.fechas?.maxReached || 0;
+});
+
+const anunciosWeeklyGoalMet = computed(() => {
+  return streakManagerRef.value?.streakData?.anuncios?.weeklyGoalMet || false;
+});
+
+const fechasWeeklyGoalMet = computed(() => {
+  return streakManagerRef.value?.streakData?.fechas?.weeklyGoalMet || false;
 });
 
 // Theme state
@@ -782,6 +854,16 @@ const updateUserProfile = async () => {
   }
 };
 
+// Función para obtener el estado inicial de los streaks
+const updateStreakStatus = () => {
+  if (streakManagerRef.value && streakManagerRef.value.streakData) {
+    streakStatus.value = {
+      anuncios: { weeklyGoalMet: streakManagerRef.value.streakData.anuncios.weeklyGoalMet },
+      fechas: { weeklyGoalMet: streakManagerRef.value.streakData.fechas.weeklyGoalMet }
+    };
+  }
+};
+
 // Función para configurar el listener de estadísticas
 const setupStatsListener = () => {
   window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
@@ -794,11 +876,21 @@ const setupStatsListener = () => {
   // Agregar listener para visita al ranking
   window.removeEventListener("rankingPageVisited", checkRankingVisitForAchievement);
   window.addEventListener("rankingPageVisited", checkRankingVisitForAchievement);
+
+  // Agregar listener para actividad de streaks
+  window.removeEventListener("streakActivity", handleStreakActivity);
+  window.addEventListener("streakActivity", handleStreakActivity);
+  
+  // Agregar listener para cuando se carga el estado del juego
+  window.removeEventListener("gameStateLoaded", updateStreakStatus);
+  window.addEventListener("gameStateLoaded", updateStreakStatus);
   
   console.log("AdminSidebar - Event listeners configurados correctamente");
   console.log("- statisticsUpdated listener: configurado");
   console.log("- forceGameStateReload listener: configurado");
   console.log("- rankingPageVisited listener: configurado");
+  console.log("- streakActivity listener: configurado");
+  console.log("- gameStateLoaded listener: configurado");
 };
 
 // Función para forzar recarga del estado desde Firebase
@@ -850,6 +942,22 @@ const checkRankingVisitForAchievement = () => {
   }
 };
 
+// Función para manejar actualizaciones de streaks
+const handleStreakUpdate = ({ tipo, streak }) => {
+  console.log(`Streak actualizado para ${tipo}:`, streak);
+  // Actualizar el estado local de streaks
+  streakStatus.value[tipo] = { weeklyGoalMet: streak.weeklyGoalMet };
+};
+
+// Función para manejar eventos de actividad de streaks
+const handleStreakActivity = (event) => {
+  console.log("Evento de actividad de streak recibido:", event.detail);
+  if (streakManagerRef.value) {
+    const { tipo, fecha } = event.detail;
+    streakManagerRef.value.reportActivity(tipo, fecha);
+  }
+};
+
 onMounted(async () => {
   updateCurrentPath();
   window.addEventListener("popstate", updateCurrentPath);
@@ -890,6 +998,8 @@ onMounted(async () => {
   setTimeout(() => {
     setupStatsListener();
     console.log("AdminSidebar - Event listeners reconfigurados después del montaje");
+    // Actualizar estado de streaks después de que todo esté cargado
+    updateStreakStatus();
   }, 500);
 
   // Registrar el componente como un elemento customizado para poder acceder desde otros componentes
@@ -932,6 +1042,8 @@ onBeforeUnmount(() => {
   window.removeEventListener("popstate", updateCurrentPath);
   window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
   window.removeEventListener("rankingPageVisited", checkRankingVisitForAchievement);
+  window.removeEventListener("streakActivity", handleStreakActivity);
+  window.removeEventListener("gameStateLoaded", updateStreakStatus);
 
   // Limpiar todas las suscripciones
   if (unsubscribeAuth) {
@@ -1008,5 +1120,18 @@ button:active {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Filtros para colorear los SVG de streaks */
+.filter-red {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+}
+
+.filter-blue {
+  filter: brightness(0) saturate(100%) invert(26%) sepia(81%) saturate(2851%) hue-rotate(206deg) brightness(102%) contrast(103%);
+}
+
+.filter-gray {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(2%) saturate(1031%) hue-rotate(314deg) brightness(89%) contrast(85%);
 }
 </style>

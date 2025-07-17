@@ -1374,6 +1374,14 @@ export default {
         this.showNotification("Error al eliminar el anuncio", true);
       }
     },
+    // Función para reportar actividad de streaks
+    reportStreakActivity(tipo, fecha = new Date()) {
+      // Dispatch evento personalizado para notificar actividad de streak
+      window.dispatchEvent(new CustomEvent('streakActivity', {
+        detail: { tipo, fecha }
+      }));
+      console.log(`AdminFechasList - Reportando actividad de streak: ${tipo}`);
+    },
     showXpNotif(amount, message, tipo = "fecha", accion = "agregados") {
       this.xpAmount = amount;
       this.xpMessage = message;
@@ -1382,6 +1390,11 @@ export default {
       this.showXpNotification = true;
 
       console.log(`showXpNotif - tipo: ${tipo}, accion: ${accion}`);
+
+      // Reportar actividad para streaks (solo para creación/actualización, no eliminación)
+      if (accion === "agregados" || accion === "modificados") {
+        this.reportStreakActivity("fechas");
+      }
 
       // Actualizar experiencia en el sidebar si está disponible
       const sidebarComponent = document.querySelector("admin-sidebar");
@@ -1414,6 +1427,10 @@ export default {
     },
     // Handler para eventos de XP desde el conversor de fechas a eventos
     handleXpEarned({ amount, message, tipo = "evento", accion = "agregados" }) {
+      // Reportar actividad para streaks cuando se crea un anuncio desde una fecha
+      if (tipo === "evento" && accion === "agregados") {
+        this.reportStreakActivity("anuncios");
+      }
       this.showXpNotif(amount, message, tipo, accion);
     },
   },

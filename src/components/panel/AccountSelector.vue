@@ -243,7 +243,7 @@ onMounted(() => {
           >
             <div
               @click="selectAccount(account)"
-              class="flex-1 flex items-center"
+              class="flex-1 flex items-center cursor-pointer"
             >
               <div
                 class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-3"
