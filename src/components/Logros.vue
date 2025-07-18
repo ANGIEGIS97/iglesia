@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Eliminado el botón desplegable - Ahora se muestra el contenido directamente -->
     <div class="w-full">
       <div
         class="w-full"
@@ -43,7 +42,7 @@
             v-for="(tab, tabIndex) in logrosCategories"
             :key="tabIndex"
             @click="activeCategory = tabIndex"
-            class="flex-1 py-[5px] px-2 font-medium text-[13px] transition-all duration-300 text-center border-b-2 relative"
+            class="flex-1 py-[4px] px-2 font-medium text-[13px] transition-all duration-300 text-center border-b-2 relative"
             :class="[
               activeCategory === tabIndex
                 ? tabIndex === 0
@@ -570,6 +569,38 @@ const achievements = ref([
     verse: "1 Corintios 9:24",
     xp: 30, // Logro de sistema
   },
+  {
+    icon: "🔥",
+    name: "Racha Inicial",
+    description: "Mantén una racha de 2 semanas consecutivas",
+    unlocked: false,
+    verse: "Hebreos 10:36",
+    xp: 40, // Logro de streak básico
+  },
+  {
+    icon: "⚡",
+    name: "Constancia",
+    description: "Mantén una racha de 3 semanas consecutivas",
+    unlocked: false,
+    verse: "Gálatas 6:9",
+    xp: 60, // Logro de streak intermedio
+  },
+  {
+    icon: "🌟",
+    name: "Perseverancia",
+    description: "Mantén una racha de 5 semanas consecutivas",
+    unlocked: false,
+    verse: "Santiago 1:12",
+    xp: 100, // Logro de streak avanzado
+  },
+  {
+    icon: "⚖️",
+    name: "Armonía Perfecta",
+    description: "Mantén ambas rachas simultáneamente por 2 semanas",
+    unlocked: false,
+    verse: "Eclesiastés 3:1",
+    xp: 80, // Logro de streak especial
+  },
 ]);
 
 const unlockedAchievements = computed(() => {
@@ -611,7 +642,7 @@ const logrosCategories = ref([
   },
   {
     name: "Sistema",
-    achievements: [0, 1, 2, 27], // Logros básicos del sistema
+    achievements: [0, 1, 2, 27, 28, 29, 30, 31], // Logros básicos del sistema y rachas
     colors: {
       from: "from-amber-400",
       to: "to-amber-600",
@@ -957,6 +988,39 @@ const checkRankingVisitAchievement = () => {
   unlockAchievement(27); // Explorador de Rangos - Visita la página de ranking
 };
 
+// Función para verificar logros de streaks
+const checkStreakAchievements = (streakData) => {
+  if (!streakData) return;
+  
+  console.log("Verificando logros de streaks con datos:", streakData);
+  
+  // Obtener el máximo streak actual de ambos tipos
+  const maxAnunciosStreak = streakData.anuncios?.current || 0;
+  const maxFechasStreak = streakData.fechas?.current || 0;
+  const maxCurrentStreak = Math.max(maxAnunciosStreak, maxFechasStreak);
+  
+  // Verificar logros basados en el streak más alto
+  if (maxCurrentStreak >= 2) {
+    unlockAchievement(28); // Racha Inicial - 2 semanas
+  }
+  if (maxCurrentStreak >= 3) {
+    unlockAchievement(29); // Constancia - 3 semanas
+  }
+  if (maxCurrentStreak >= 5) {
+    unlockAchievement(30); // Perseverancia - 5 semanas
+  }
+  
+  // Verificar logro de armonía perfecta (ambos streaks de al menos 2 semanas simultáneamente)
+  if (maxAnunciosStreak >= 2 && maxFechasStreak >= 2) {
+    // Verificar que ambos estén activos esta semana
+    const ambosActivos = (streakData.anuncios?.weeklyGoalMet || false) && 
+                         (streakData.fechas?.weeklyGoalMet || false);
+    if (ambosActivos) {
+      unlockAchievement(31); // Armonía Perfecta - Ambos streaks simultáneamente por 2 semanas
+    }
+  }
+};
+
 // Función para forzar la sincronización desde Firebase (ignorando localStorage)
 const forceFirebaseSync = async () => {
   const user = auth_api.getCurrentUser();
@@ -1105,6 +1169,7 @@ defineExpose({
   checkLevelAchievements,
   checkRankAchievements,
   checkRankingVisitAchievement,
+  checkStreakAchievements,
   loadAchievements,
   clearAchievementsLocalStorage,
   syncAchievementsToLocalStorage,

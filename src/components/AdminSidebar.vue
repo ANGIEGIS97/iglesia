@@ -39,14 +39,14 @@
 
         <!-- Perfil del Usuario con Nivel y XP -->
         <div
-          class="mb-2 p-4  border backdrop-blur-sm"
+          class="py-2 px-4 border backdrop-blur-sm"
           :class="
             isDarkMode
               ? 'bg-gray-700/50 border-gray-600/50'
               : 'bg-white/80 border-gray-200'
           "
         >
-          <div class="flex items-center mb-3 relative px-1">
+          <div class="flex items-center mb-2 relative px-1">
             <!-- Botón de apagado en la esquina superior derecha -->
             <button
               @click="handleLogout"
@@ -197,7 +197,7 @@
 
           <!-- Información de XP -->
           <div
-            class="flex items-center space-x-3 text-xs mt-2"
+            class="flex items-center space-x-3 text-xs"
             :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'"
           >
             <span>XP: {{ userXp }}/{{ xpForNextLevel }}</span>
@@ -214,7 +214,7 @@
                 <img 
                   src="/svg/flama.svg" 
                   alt="Streak anuncios" 
-                  class="w-3 h-3"
+                  class="w-4 h-4"
                   :class="anunciosMaxStreak > 0 && anunciosWeeklyGoalMet ? 'filter-red' : 'filter-gray'"
                 />
                 <span class="text-xs font-medium">{{ anunciosMaxStreak }}</span>
@@ -228,7 +228,7 @@
                 <img 
                   src="/svg/flama.svg" 
                   alt="Streak fechas" 
-                  class="w-3 h-3"
+                  class="w-4 h-4"
                   :class="fechasMaxStreak > 0 && fechasWeeklyGoalMet ? 'filter-blue' : 'filter-gray'"
                 />
                 <span class="text-xs font-medium">{{ fechasMaxStreak }}</span>
@@ -302,7 +302,7 @@
 
           <!-- Tab Content Container -->
           <div 
-            class="border-t-0 backdrop-blur-sm mt-0 pt-1"
+            class="border-t-0 backdrop-blur-sm mt-0 "
             :class="isDarkMode 
               ? 'border-gray-600/50' 
               : 'bg-white/50 border-gray-200/50'"
@@ -334,8 +334,8 @@
                     : ''
                 "
               ></i>
-              <span>Administrar Anuncios</span>
-              <i v-if="!streakStatus.anuncios.weeklyGoalMet" class="fas fa-exclamation-triangle ml-2 text-xs text-yellow-500"></i>
+              <span class="flex-1">Administrar Anuncios</span>
+              <i v-if="!streakStatus.anuncios.weeklyGoalMet" class="fas fa-exclamation-triangle text-xs text-yellow-500 flex-shrink-0"></i>
             </a>
 
             <a
@@ -363,8 +363,8 @@
                     : ''
                 "
               ></i>
-              <span>Administrar Fechas</span>
-              <i v-if="!streakStatus.fechas.weeklyGoalMet" class="fas fa-exclamation-triangle ml-2 text-xs text-yellow-500"></i>
+              <span class="flex-1">Administrar Fechas</span>
+              <i v-if="!streakStatus.fechas.weeklyGoalMet" class="fas fa-exclamation-triangle text-xs text-yellow-500 flex-shrink-0"></i>
             </a>
 
             <!-- Ranking button -->
@@ -417,12 +417,13 @@
             <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-600">
               <div class="mb-2">
                 <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Streaks Semanales
+                  Rachas Semanales
                 </h4>
               </div>
               <StreakManager 
                 ref="streakManagerRef" 
                 @streakUpdate="handleStreakUpdate"
+                @checkStreakAchievements="handleCheckStreakAchievements"
               />
             </div>
             </div>
@@ -947,6 +948,16 @@ const handleStreakUpdate = ({ tipo, streak }) => {
   console.log(`Streak actualizado para ${tipo}:`, streak);
   // Actualizar el estado local de streaks
   streakStatus.value[tipo] = { weeklyGoalMet: streak.weeklyGoalMet };
+};
+
+// Función para manejar verificación de logros de streaks
+const handleCheckStreakAchievements = (streakData) => {
+  console.log("Verificando logros de streaks con datos:", streakData);
+  if (logrosRef.value) {
+    logrosRef.value.checkStreakAchievements(streakData);
+  } else {
+    console.warn("logrosRef no está disponible para verificar logros de streaks");
+  }
 };
 
 // Función para manejar eventos de actividad de streaks

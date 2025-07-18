@@ -193,7 +193,7 @@ const guardarToken = (token: string) => {
   }
 };
 
-const manejarLoginExitoso = (response: any) => {
+const manejarLoginExitoso = (response: any, userProfile: any) => {
   isSuccess.value = true;
   intentosFallidos.value = 0;
   animateProgress();
@@ -201,7 +201,7 @@ const manejarLoginExitoso = (response: any) => {
   guardarToken(response.data.token);
 
   setTimeout(() => {
-    emit("login-success", response.data);
+    emit("login-success", { token: response.data.token, userProfile });
     closeModal();
   }, 1000);
 };
@@ -226,7 +226,7 @@ const handleSubmit = async () => {
     const userProfile = await auth_api.getCurrentUser();
     await guardarPerfilUsuario(userProfile);
     
-    manejarLoginExitoso(response);
+    manejarLoginExitoso(response, userProfile);
   } catch (err: any) {
     intentosFallidos.value++;
     error.value = handleFirebaseError(err);
@@ -261,15 +261,12 @@ const handleUseAnotherAccount = () => {
   rememberMe.value = false;
 };
 
-const handleAccountSelection = async (account) => {
-  showAccountSelector.value = false;
-  await updateAuthState();
-};
+// Eliminado: handleAccountSelection ya no se utiliza
 
 // Función para actualizar el estado de autenticación
 const updateAuthState = async () => {
   const token = localStorage.getItem('token');
-  const user = auth_api.getCurrentUser();
+  const user = await auth_api.getCurrentUser();
   if (user && token) {
     emit('auth-state-change', { authenticated: true, user });
   }

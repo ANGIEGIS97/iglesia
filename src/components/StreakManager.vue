@@ -52,7 +52,7 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { auth_api, usuarios } from "../lib/api.ts";
 
-const emit = defineEmits(['streakUpdate']);
+const emit = defineEmits(['streakUpdate', 'checkStreakAchievements']);
 
 // Estado de los streaks
 const streakData = ref({
@@ -151,30 +151,45 @@ const updateStreak = async (tipo, fecha = new Date()) => {
   // Guardar los datos actualizados
   await saveStreakData();
   emit('streakUpdate', { tipo, streak: { ...streak } });
+  
+  // Emitir evento para verificar logros con todos los datos de streaks
+  emit('checkStreakAchievements', streakData.value);
 };
 
 // Función para verificar y actualizar el estado semanal
 const checkWeeklyStatus = () => {
   const currentWeekStart = getWeekStart();
-  
-  ['anuncios', 'fechas'].forEach(tipo => {
+  let updated = false;
+
+  ['anuncios', 'fechas'].forEach((tipo) => {
     const streak = streakData.value[tipo];
-    
+    let tipoUpdated = false;
+
     if (streak.lastActivity) {
       const lastActivityDate = new Date(streak.lastActivity);
-      
-      // Si la última actividad no fue esta semana, marcar como no cumplido
+
+      // Si la última actividad no fue en la semana actual, marcar como no cumplido y resetear la racha
       if (!isSameWeek(currentWeekStart, lastActivityDate)) {
         streak.weeklyGoalMet = false;
-        
-        // Si pasó más de una semana sin actividad, resetear el streak
-        const lastWeekStart = streak.lastWeekStart ? new Date(streak.lastWeekStart) : getWeekStart(lastActivityDate);
-        if (!isNextWeek(lastWeekStart, currentWeekStart) && !isSameWeek(lastWeekStart, currentWeekStart)) {
+        if (streak.current !== 0) {
           streak.current = 0;
+          updated = true;
+          tipoUpdated = true;
         }
       }
     }
+
+    // Notificar a contenedor si hubo cambios para este tipo
+    if (tipoUpdated) {
+      emit('streakUpdate', { tipo, streak: { ...streak } });
+    }
   });
+
+  // Persistir cambios si hubo actualizaciones
+  if (updated) {
+    // No es necesario await aquí
+    saveStreakData();
+  }
 };
 
 // Función para obtener tooltip descriptivo
@@ -311,6 +326,269 @@ const resetStreaks = async () => {
   await saveStreakData();
 };
 
+// =====================================================
+// COMANDOS DE DEBUGGING
+// =====================================================
+
+// Debug: Mostrar estado completo de streaks
+const debugShowStreaks = () => {
+  console.group("🔥 ESTADO ACTUAL DE STREAKS");
+  console.log("📊 Datos completos:", JSON.parse(JSON.stringify(streakData.value)));
+  
+  ['anuncios', 'fechas'].forEach(tipo => {
+    const streak = streakData.value[tipo];
+    console.group(`📈 ${tipo.toUpperCase()}`);
+    console.log(`Current: ${streak.current}`);
+    console.log(`Max Reached: ${streak.maxReached}`);
+    console.log(`Weekly Goal Met: ${streak.weeklyGoalMet ? '✅' : '❌'}`);
+    console.log(`Last Activity: ${streak.lastActivity ? new Date(streak.lastActivity).toLocaleString() : 'Nunca'}`);
+    console.log(`Last Week Start: ${streak.lastWeekStart ? new Date(streak.lastWeekStart).toLocaleString() : 'N/A'}`);
+    console.groupEnd();
+  });
+  
+  console.groupEnd();
+};
+
+// Debug: Simular actividad de streak
+const debugSimulateActivity = (tipo, fechaOffset = 0) => {
+  if (!['anuncios', 'fechas'].includes(tipo)) {
+    console.error("❌ Tipo debe ser 'anuncios' o 'fechas'");
+    return;
+  }
+  
+  const fecha = new Date();
+  fecha.setDate(fecha.getDate() + fechaOffset);
+  
+  console.log(`🎮 Simulando actividad de ${tipo} para fecha: ${fecha.toLocaleString()}`);
+  reportActivity(tipo, fecha);
+};
+
+// Debug: Información detallada de fechas y semanas
+const debugWeekInfo = () => {
+  const now = new Date();
+  const weekStart = getWeekStart(now);
+  const nextWeek = new Date(weekStart);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  
+  console.group("📅 INFORMACIÓN DE SEMANAS");
+  console.log(`Fecha actual: ${now.toLocaleString()}`);
+  console.log(`Inicio de semana actual: ${weekStart.toLocaleString()}`);
+  console.log(`Inicio de próxima semana: ${nextWeek.toLocaleString()}`);
+  console.log(`Día de la semana (0=Domingo): ${now.getDay()}`);
+  
+  ['anuncios', 'fechas'].forEach(tipo => {
+    const streak = streakData.value[tipo];
+    if (streak.lastActivity) {
+      const lastDate = new Date(streak.lastActivity);
+      const lastWeekStart = getWeekStart(lastDate);
+      console.log(`${tipo} - Última actividad: ${lastDate.toLocaleString()}`);
+      console.log(`${tipo} - Inicio semana de última actividad: ${lastWeekStart.toLocaleString()}`);
+      console.log(`${tipo} - ¿Misma semana?: ${isSameWeek(now, lastDate) ? '✅' : '❌'}`);
+      console.log(`${tipo} - ¿Semana siguiente?: ${isNextWeek(lastWeekStart, weekStart) ? '✅' : '❌'}`);
+    }
+  });
+  
+  console.groupEnd();
+};
+
+// Debug: Forzar estado específico de streak
+const debugSetStreak = (tipo, current, weeklyGoalMet = true) => {
+  if (!['anuncios', 'fechas'].includes(tipo)) {
+    console.error("❌ Tipo debe ser 'anuncios' o 'fechas'");
+    return;
+  }
+  
+  console.log(`🔧 Estableciendo ${tipo} streak a ${current}, goal met: ${weeklyGoalMet}`);
+  
+  const streak = streakData.value[tipo];
+  streak.current = current;
+  streak.weeklyGoalMet = weeklyGoalMet;
+  streak.lastActivity = new Date().toISOString();
+  streak.lastWeekStart = getWeekStart().toISOString();
+  
+  if (current > streak.maxReached) {
+    streak.maxReached = current;
+  }
+  
+  saveStreakData();
+};
+
+// Debug: Verificar estado semanal manualmente
+const debugCheckWeeklyStatus = () => {
+  console.log("🔍 Verificando estado semanal...");
+  checkWeeklyStatus();
+  debugShowStreaks();
+};
+
+// Debug: Limpiar todos los datos (localStorage + Firestore)
+const debugClearAllData = async () => {
+  const user = auth_api.getCurrentUser();
+  if (!user?.uid) {
+    console.error("❌ No hay usuario autenticado");
+    return;
+  }
+  
+  console.warn("🗑️ LIMPIANDO TODOS LOS DATOS DE STREAKS");
+  
+  // Limpiar localStorage
+  localStorage.removeItem(`streakData_${user.uid}`);
+  console.log("✅ localStorage limpiado");
+  
+  // Resetear estado local
+  await resetStreaks();
+  console.log("✅ Estado local reseteado");
+  
+  console.log("🔄 Recargando datos...");
+  await loadStreakData();
+  debugShowStreaks();
+};
+
+// Debug: Simular paso del tiempo (cambiar todas las fechas)
+const debugTimeTravel = (daysOffset) => {
+  console.log(`⏰ Viajando en el tiempo ${daysOffset} días...`);
+  
+  const newDate = new Date();
+  newDate.setDate(newDate.getDate() + daysOffset);
+  
+  ['anuncios', 'fechas'].forEach(tipo => {
+    const streak = streakData.value[tipo];
+    if (streak.lastActivity) {
+      const lastDate = new Date(streak.lastActivity);
+      lastDate.setDate(lastDate.getDate() + daysOffset);
+      streak.lastActivity = lastDate.toISOString();
+    }
+    if (streak.lastWeekStart) {
+      const lastWeekDate = new Date(streak.lastWeekStart);
+      lastWeekDate.setDate(lastWeekDate.getDate() + daysOffset);
+      streak.lastWeekStart = lastWeekDate.toISOString();
+    }
+  });
+  
+  checkWeeklyStatus();
+  console.log(`📅 Nueva fecha simulada: ${newDate.toLocaleString()}`);
+  debugShowStreaks();
+};
+
+// Debug: Exportar datos de streaks
+const debugExportData = () => {
+  const data = {
+    streaks: streakData.value,
+    timestamp: new Date().toISOString(),
+    user: auth_api.getCurrentUser()?.uid || 'anonymous'
+  };
+  
+  console.log("📤 DATOS DE EXPORTACIÓN:");
+  console.log(JSON.stringify(data, null, 2));
+  
+  // Copiar al clipboard si está disponible
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    console.log("📋 Datos copiados al clipboard");
+  }
+  
+  return data;
+};
+
+// Debug: Importar datos de streaks
+const debugImportData = (data) => {
+  try {
+    const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+    
+    if (parsedData.streaks) {
+      console.log("📥 Importando datos de streaks...");
+      streakData.value = parsedData.streaks;
+      saveStreakData();
+      console.log("✅ Datos importados exitosamente");
+      debugShowStreaks();
+    } else {
+      console.error("❌ Formato de datos inválido");
+    }
+  } catch (error) {
+    console.error("❌ Error al importar datos:", error);
+  }
+};
+
+// Debug: Testear logros de streaks manualmente
+const debugTestStreakAchievements = () => {
+  console.log("🏆 Testeando logros de streaks con datos actuales...");
+  console.log("Datos actuales:", JSON.parse(JSON.stringify(streakData.value)));
+  emit('checkStreakAchievements', streakData.value);
+  console.log("✅ Verificación de logros completada");
+};
+
+// Debug: Configurar streaks para testing de logros
+const debugSetupStreakTest = (anunciosWeeks = 0, fechasWeeks = 0, bothActive = true) => {
+  console.log(`🧪 Configurando streaks para testing: Anuncios=${anunciosWeeks}, Fechas=${fechasWeeks}, Activos=${bothActive}`);
+  
+  const now = new Date();
+  const weekStart = getWeekStart(now);
+  
+  // Configurar streak de anuncios
+  streakData.value.anuncios.current = anunciosWeeks;
+  streakData.value.anuncios.maxReached = Math.max(streakData.value.anuncios.maxReached, anunciosWeeks);
+  streakData.value.anuncios.weeklyGoalMet = bothActive && anunciosWeeks > 0;
+  streakData.value.anuncios.lastActivity = anunciosWeeks > 0 ? now.toISOString() : null;
+  streakData.value.anuncios.lastWeekStart = anunciosWeeks > 0 ? weekStart.toISOString() : null;
+  
+  // Configurar streak de fechas
+  streakData.value.fechas.current = fechasWeeks;
+  streakData.value.fechas.maxReached = Math.max(streakData.value.fechas.maxReached, fechasWeeks);
+  streakData.value.fechas.weeklyGoalMet = bothActive && fechasWeeks > 0;
+  streakData.value.fechas.lastActivity = fechasWeeks > 0 ? now.toISOString() : null;
+  streakData.value.fechas.lastWeekStart = fechasWeeks > 0 ? weekStart.toISOString() : null;
+  
+  // Guardar y verificar logros
+  saveStreakData();
+  emit('checkStreakAchievements', streakData.value);
+  
+  console.log("✅ Configuración aplicada y logros verificados");
+  debugShowStreaks();
+};
+
+// Registrar comandos globales en window para acceso desde consola
+const registerDebugCommands = () => {
+  if (typeof window !== 'undefined') {
+    window.streakDebug = {
+      show: debugShowStreaks,
+      simulate: debugSimulateActivity,
+      weekInfo: debugWeekInfo,
+      setStreak: debugSetStreak,
+      checkWeekly: debugCheckWeeklyStatus,
+      clearAll: debugClearAllData,
+      timeTravel: debugTimeTravel,
+      export: debugExportData,
+      import: debugImportData,
+      reset: resetStreaks,
+      testAchievements: debugTestStreakAchievements,
+      setupTest: debugSetupStreakTest,
+      help: () => {
+        console.group("🔥 COMANDOS DE DEBUG DISPONIBLES");
+        console.log("streakDebug.show() - Mostrar estado actual");
+        console.log("streakDebug.simulate(tipo, diasOffset) - Simular actividad");
+        console.log("streakDebug.weekInfo() - Info de semanas");
+        console.log("streakDebug.setStreak(tipo, valor, goalMet) - Establecer streak");
+        console.log("streakDebug.checkWeekly() - Verificar estado semanal");
+        console.log("streakDebug.clearAll() - Limpiar todos los datos");
+        console.log("streakDebug.timeTravel(dias) - Viajar en el tiempo");
+        console.log("streakDebug.export() - Exportar datos");
+        console.log("streakDebug.import(data) - Importar datos");
+        console.log("streakDebug.reset() - Resetear streaks");
+        console.log("streakDebug.testAchievements() - Testear logros de streaks");
+        console.log("streakDebug.setupTest(anuncios, fechas, activos) - Configurar streaks para testing");
+        console.groupEnd();
+        console.log("💡 Tip: Usa streakDebug.help() para ver esta ayuda");
+      }
+    };
+    
+    console.log("🔧 Comandos de debug registrados en window.streakDebug");
+    console.log("💡 Usa streakDebug.help() para ver todos los comandos disponibles");
+  }
+};
+
+// =====================================================
+// FIN COMANDOS DE DEBUGGING
+// =====================================================
+
 // Función para limpiar datos obsoletos de localStorage
 const clearObsoleteLocalStorage = (currentUserId) => {
   try {
@@ -335,11 +613,26 @@ defineExpose({
   loadStreakData,
   saveStreakData,
   resetStreaks,
-  streakData
+  streakData,
+  // Comandos de debugging
+  debugShowStreaks,
+  debugSimulateActivity,
+  debugWeekInfo,
+  debugSetStreak,
+  debugCheckWeeklyStatus,
+  debugClearAllData,
+  debugTimeTravel,
+  debugExportData,
+  debugImportData,
+  debugTestStreakAchievements,
+  debugSetupStreakTest
 });
 
 // Configurar event listeners
 onMounted(async () => {
+  // Registrar comandos de debugging globalmente
+  registerDebugCommands();
+  
   // Suscribirse a cambios de autenticación
   unsubscribeAuth = auth_api.onAuthStateChange(async (user) => {
     if (user) {

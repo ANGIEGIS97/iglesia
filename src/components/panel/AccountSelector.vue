@@ -83,12 +83,17 @@ const selectAccount = async (account: SavedAccount) => {
         const profile = await usuarios.getById(userProfile.uid);
         if (profile?.data?.displayName) {
           localStorage.setItem("userDisplayName", profile.data.displayName);
+          // Actualizar información asociada a la cuenta recordada
+          localStorage.setItem(`displayName_${account.username}`, profile.data.displayName);
+        }
+        if (profile?.data?.email) {
+          localStorage.setItem(`email_${account.username}`, profile.data.email);
         }
       }
 
-      // Emitir evento con toda la información necesaria
+      // Emitir evento con toda la información necesaria (payload normalizado)
       emit("select-account", {
-        ...response.data,
+        token: response.data.token,
         userProfile,
         account
       });
