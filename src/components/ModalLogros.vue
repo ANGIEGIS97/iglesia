@@ -270,6 +270,12 @@ watch(
           '"Los entendidos resplandecerán como el resplandor del firmamento; y los que enseñan la justicia a la multitud, como las estrellas a perpetua eternidad."',
         "1 Corintios 9:24":
           '"¿No sabéis que los que corren en el estadio, todos a la verdad corren, pero uno solo se lleva el premio? Corred de tal manera que lo obtengáis."',
+        "Hebreos 10:36":
+          '"Porque os es necesaria la paciencia, para que habiendo hecho la voluntad de Dios, obtengáis la promesa."',
+        "Gálatas 6:9":
+          '"No nos cansemos, pues, de hacer bien; porque a su tiempo segaremos, si no desmayamos."',
+        "Santiago 1:12":
+          '"Bienaventurado el varón que soporta la tentación; porque cuando haya resistido la prueba, recibirá la corona de vida, que Dios ha prometido a los que le aman."',
       };
 
       verseText.value = versiculos[newVerse] || "Versículo no disponible.";
@@ -353,7 +359,7 @@ const getAchievementNumber = () => {
 
   // Definir las categorías con sus índices
   const categories = [
-    { name: "Sistema", indices: [0, 1, 2, 27] },
+    { name: "Sistema", indices: [0, 1, 2, 27, 28, 29, 30, 31] },
     {
       name: "Contenido",
       indices: [3, 4, 6, 8, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
