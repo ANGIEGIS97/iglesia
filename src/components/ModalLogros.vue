@@ -54,7 +54,12 @@
                 : 'bg-gray-100 shadow-gray-200/50',
             ]"
           >
-            <span class="text-4xl">{{ achievement?.icon }}</span>
+            <img
+              :src="modalIconSrc || achievement?.icon"
+              :alt="achievement?.name || 'Logro'"
+              class="w-14 h-14 object-contain"
+              @error="onModalIconError"
+            />
           </div>
 
           <h2
@@ -165,6 +170,19 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 
 const isDarkMode = computed(() => props.darkMode);
+
+// Estado local para manejar fallback del icono
+const modalIconSrc = ref("");
+watch(
+  () => props.achievement?.icon,
+  (newIcon) => {
+    modalIconSrc.value = newIcon || "";
+  },
+  { immediate: true }
+);
+const onModalIconError = () => {
+  modalIconSrc.value = "/svg/flama.svg";
+};
 
 // Ensure the modal is properly initialized
 watch(() => props.show, async (newVal) => {

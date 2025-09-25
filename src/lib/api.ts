@@ -74,6 +74,7 @@ export interface EventoAPI {
   linkBoton?: string;
   image?: string;
   fecha?: string;
+  favorito?: boolean;
   createdAt?: any;
   createdBy?: string;
   updatedAt?: any;
@@ -86,6 +87,7 @@ export interface Evento
   linkBoton?: string;
   image?: string;
   fecha?: string;
+  favorito?: boolean;
   createdAt?: any;
   createdBy?: string;
   updatedAt?: any;
@@ -368,6 +370,7 @@ export const eventos = {
         linkBoton: data.linkBoton?.trim() ?? "",
         image: data.image ?? "",
         fecha: data.fecha ?? new Date().toISOString(),
+        favorito: data.favorito ?? false,
         createdAt: serverTimestamp(),
         createdBy: auth.currentUser.uid,
       };
@@ -384,6 +387,27 @@ export const eventos = {
     } catch (error: any) {
       console.error("Error al crear evento:", error);
       throw new Error(error.message ?? "Error al crear el evento");
+    }
+  },
+  setFavorito: async (id: string, favorito: boolean) => {
+    try {
+      checkAuth();
+      const docRef = doc(db, "eventos", id);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        throw new Error("El evento no existe");
+      }
+      await updateDoc(docRef, {
+        favorito,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid,
+      });
+      return {
+        data: { id, favorito },
+      };
+    } catch (error: any) {
+      console.error("Error al actualizar favorito:", error);
+      throw new Error(error.message ?? "Error al actualizar favorito");
     }
   },
   update: async (id: string, data: any) => {

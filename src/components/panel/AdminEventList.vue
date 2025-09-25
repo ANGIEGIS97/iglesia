@@ -165,6 +165,7 @@ const loadEvents = async () => {
         linkBoton: item.linkBoton,
         image: item.image,
         fecha: item.fecha,
+        favorito: item.favorito === true,
         createdAt: item.createdAt,
         createdBy: item.createdBy,
         updatedAt: item.updatedAt,
@@ -328,6 +329,22 @@ const deleteSelected = async () => {
   }
 };
 
+// Favoritos
+const toggleFavorito = async (eventoItem: Evento) => {
+  try {
+    const nuevoValor = !(eventoItem as any).favorito;
+    await eventos.setFavorito(eventoItem.id, nuevoValor);
+    // Actualizar en memoria sin recargar todo
+    const idx = eventList.value.findIndex((e) => e.id === eventoItem.id);
+    if (idx !== -1) {
+      (eventList.value[idx] as any).favorito = nuevoValor;
+    }
+  } catch (err: any) {
+    console.error("Error al alternar favorito:", err);
+    error.value = err.message || "No se pudo actualizar el favorito";
+  }
+};
+
 onMounted(() => {
   loadEvents();
   loadUserProfile();
@@ -481,6 +498,19 @@ onMounted(() => {
         :key="evento.id"
         class="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative"
       >
+        <!-- Botón favorito -->
+        <button
+          class="absolute top-3 right-12 z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
+          :aria-label="(evento as any).favorito ? 'Quitar de favoritos' : 'Marcar como favorito'"
+          @click="toggleFavorito(evento)"
+          title="Favorito"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6"
+            :class="(evento as any).favorito ? 'text-yellow-400' : 'text-gray-400'">
+            <path :fill="(evento as any).favorito ? 'currentColor' : 'none'" :stroke="(evento as any).favorito ? 'currentColor' : 'currentColor'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              d="M11.48 3.499a.562.562 0 011.04 0l2.063 4.184a.563.563 0 00.424.308l4.62.671c.511.074.715.703.345 1.064l-3.342 3.257a.563.563 0 00-.162.498l.789 4.6a.562.562 0 01-.815.592l-4.132-2.173a.563.563 0 00-.524 0L7.15 18.673a.562.562 0 01-.815-.592l.79-4.6a.563.563 0 00-.162-.498L3.62 9.726a.563.563 0 01.345-1.064l4.62-.671a.563.563 0 00.424-.308l2.063-4.184z" />
+          </svg>
+        </button>
         <!-- Checkbox para selección -->
         <div class="absolute top-3 left-3 z-[5]">
           <input

@@ -137,17 +137,16 @@
                 'relative group',
               ]"
             >
-              <span
+              <img
+                :src="achievements[achievementId].icon"
+                :alt="achievements[achievementId].name"
+                class="w-12 h-12 object-contain transition-transform duration-300"
                 :class="[
-                  'text-xl',
                   achievements[achievementId].unlocked
-                    ? 'opacity-100 scale-110 transition-transform duration-300'
-                    : isDarkMode
-                    ? 'opacity-30 text-gray-400'
-                    : 'opacity-40 text-gray-500',
+                    ? 'opacity-100 scale-110'
+                    : 'opacity-60 grayscale',
                 ]"
-                >{{ achievements[achievementId].icon }}</span
-              >
+              />
 
               <!-- Locked overlay -->
               <div
@@ -264,7 +263,12 @@
               getAchievementGradientColors(latestAchievement),
             ]"
           >
-            <span class="text-4xl">{{ latestAchievement.icon }}</span>
+            <img
+              v-if="latestAchievement && latestAchievement.icon"
+              :src="latestAchievement.icon"
+              :alt="latestAchievement.name || 'Logro desbloqueado'"
+              class="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+            />
           </div>
           <h3 class="text-base sm:text-xl font-bold mb-1">¡Nuevo Logro!</h3>
           <p class="text-gray-300 mb-1">{{ latestAchievement.name }}</p>
@@ -346,7 +350,7 @@ const currentRankName = computed(() => {
 // Logros
 const achievements = ref([
   {
-    icon: "🗝️",
+    icon: "/Iconos/GuardianFe.webp",
     name: "Guardián de la Fe",
     description: "Cambia tu contraseña",
     unlocked: false,
@@ -354,7 +358,7 @@ const achievements = ref([
     xp: 20, // Logro básico
   },
   {
-    icon: "😇",
+    icon: "/Iconos/NuevaCriatura.webp",
     name: "Nueva Criatura",
     description: "Personaliza tu perfil",
     unlocked: false,
@@ -362,7 +366,7 @@ const achievements = ref([
     xp: 20, // Logro básico
   },
   {
-    icon: "🏺",
+    icon: "/Iconos/Vasija renovada.webp",
     name: "Vasija Renovada",
     description: "Cambia el tema de la interfaz",
     unlocked: false,
@@ -370,7 +374,7 @@ const achievements = ref([
     xp: 20, // Logro básico
   },
   {
-    icon: "📜",
+    icon: "/Iconos/PortadorBuenaNuevas.webp",
     name: "Portador de Buenas Nuevas",
     description: "Agrega tu primer anuncio",
     unlocked: false,
@@ -378,7 +382,7 @@ const achievements = ref([
     xp: 20, // Primer anuncio
   },
   {
-    icon: "📢",
+    icon: "/Iconos/Mensajero.webp",
     name: "Mensajero",
     description: "Agrega 3 anuncios",
     unlocked: false,
@@ -386,7 +390,7 @@ const achievements = ref([
     xp: 50, // Logro intermedio
   },
   {
-    icon: "📅",
+    icon: "/Iconos/Organizador.webp",
     name: "Organizador",
     description: "Agrega 3 fechas",
     unlocked: false,
@@ -394,7 +398,7 @@ const achievements = ref([
     xp: 50, // Logro intermedio
   },
   {
-    icon: "📣",
+    icon: "/Iconos/Heraldo.webp",
     name: "Heraldo",
     description: "Agrega 10 anuncios",
     unlocked: false,
@@ -402,7 +406,7 @@ const achievements = ref([
     xp: 100, // Logro avanzado
   },
   {
-    icon: "🗓️",
+    icon: "/Iconos/Planificador.webp",
     name: "Planificador",
     description: "Agrega 10 fechas",
     unlocked: false,
@@ -410,7 +414,7 @@ const achievements = ref([
     xp: 100, // Logro avanzado
   },
   {
-    icon: "📯",
+    icon: "/Iconos/Atalaya.webp",
     name: "Atalaya",
     description: "Agrega 25 anuncios",
     unlocked: false,
@@ -418,7 +422,7 @@ const achievements = ref([
     xp: 200, // Logro experto
   },
   {
-    icon: "📆",
+    icon: "/Iconos/Cronista.webp",
     name: "Cronista de Dios",
     description: "Agrega 25 fechas",
     unlocked: false,
@@ -426,7 +430,7 @@ const achievements = ref([
     xp: 200, // Logro experto
   },
   {
-    icon: "✏️",
+    icon: "/Iconos/Escriba.webp",
     name: "Escriba",
     description: "Modifica 10 anuncios",
     unlocked: false,
@@ -434,7 +438,7 @@ const achievements = ref([
     xp: 50, // Logro intermedio
   },
   {
-    icon: "🔄",
+    icon: "/Iconos/ObreroDiligente.webp",
     name: "Obrero Diligente",
     description: "Modifica 10 fechas",
     unlocked: false,
@@ -442,7 +446,7 @@ const achievements = ref([
     xp: 50, // Logro intermedio
   },
   {
-    icon: "🗑️",
+    icon: "/Iconos/Limpiador.webp",
     name: "Limpiador",
     description: "Elimina 5 anuncios",
     unlocked: false,
@@ -450,7 +454,7 @@ const achievements = ref([
     xp: 20, // Logro básico
   },
   {
-    icon: "❌",
+    icon: "/Iconos/Purificador.webp",
     name: "Purificador",
     description: "Elimina 5 fechas",
     unlocked: false,
@@ -458,7 +462,7 @@ const achievements = ref([
     xp: 20, // Logro básico
   },
   {
-    icon: "🎂",
+    icon: "/Iconos/Celebrador.webp",
     name: "Celebrador de la Vida",
     description: "Agrega una fecha con icono de cumpleaños",
     unlocked: false,
@@ -466,7 +470,7 @@ const achievements = ref([
     xp: 50, // Logro especial
   },
   {
-    icon: "👨🏻",
+    icon: "/Iconos/Varon.webp",
     name: "Varón de Valor",
     description: "Agrega una fecha con icono de reunión de varones",
     unlocked: false,
@@ -474,7 +478,7 @@ const achievements = ref([
     xp: 50, // Logro especial
   },
   {
-    icon: "👩🏽",
+    icon: "/Iconos/Mujer.webp",
     name: "Mujer Virtuosa",
     description: "Agrega una fecha con icono de reunión de damas",
     unlocked: false,
@@ -482,7 +486,7 @@ const achievements = ref([
     xp: 50, // Logro especial
   },
   {
-    icon: "❤️",
+    icon: "/Iconos/DadorAlegre.webp",
     name: "Dador Alegre",
     description: "Agrega una fecha con icono de canasta de amor",
     unlocked: false,
@@ -490,7 +494,7 @@ const achievements = ref([
     xp: 50, // Logro especial
   },
   {
-    icon: "🍷",
+    icon: "/Iconos/EnMemoriaDeEl.webp",
     name: "En Memoria de Él",
     description: "Agrega una fecha con icono de cena del Señor",
     unlocked: false,
@@ -498,7 +502,7 @@ const achievements = ref([
     xp: 50, // Logro especial
   },
   {
-    icon: "🌱",
+    icon: "/Iconos/Semilla de mostaza.webp",
     name: "Semilla de Mostaza",
     description: "Alcanza el nivel 3",
     unlocked: false,
@@ -506,7 +510,7 @@ const achievements = ref([
     xp: 30, // Logro inicial de progresión
   },
   {
-    icon: "⭐",
+    icon: "/Iconos/Siervo fiel.webp",
     name: "Siervo Fiel",
     description: "Alcanza el nivel 5",
     unlocked: false,
@@ -514,7 +518,7 @@ const achievements = ref([
     xp: 50, // Logro de progresión
   },
   {
-    icon: "🌠",
+    icon: "/Iconos/Resplandor.webp",
     name: "Resplandor Divino",
     description: "Alcanza el nivel 7",
     unlocked: false,
@@ -522,7 +526,7 @@ const achievements = ref([
     xp: 70, // Logro de progresión intermedio
   },
   {
-    icon: "🌟",
+    icon: "/Iconos/BuenMayordomo.webp",
     name: "Buen Mayordomo",
     description: "Alcanza el nivel 9",
     unlocked: false,
@@ -530,7 +534,7 @@ const achievements = ref([
     xp: 90, // Logro de progresión avanzado
   },
   {
-    icon: "🥉",
+    icon: "/Iconos/Bronce.webp",
     name: "Medalla de Bronce",
     description: "Alcanza el nivel máximo del rango Bronce (nivel 10)",
     unlocked: false,
@@ -538,7 +542,7 @@ const achievements = ref([
     xp: 100, // Logro de rango
   },
   {
-    icon: "🥈",
+    icon: "/Iconos/Plata.webp",
     name: "Medalla de Plata",
     description: "Alcanza el nivel máximo del rango Plata (nivel 10)",
     unlocked: false,
@@ -546,7 +550,7 @@ const achievements = ref([
     xp: 150, // Logro de rango
   },
   {
-    icon: "🥇",
+    icon: "/Iconos/Oro.webp",
     name: "Medalla de Oro",
     description: "Alcanza el nivel máximo del rango Oro (nivel 10)",
     unlocked: false,
@@ -554,7 +558,7 @@ const achievements = ref([
     xp: 200, // Logro de rango
   },
   {
-    icon: "💎",
+    icon: "/Iconos/Diamante.webp",
     name: "Diamante",
     description: "Alcanza el nivel máximo del rango Diamante (nivel 10)",
     unlocked: false,
@@ -562,7 +566,7 @@ const achievements = ref([
     xp: 250, // Logro de rango
   },
   {
-    icon: "👑",
+    icon: "/Iconos/Corona.webp",
     name: "Corredor por la Corona",
     description: "Visita la página de ranking global",
     unlocked: false,
@@ -570,7 +574,7 @@ const achievements = ref([
     xp: 30, // Logro de sistema
   },
   {
-    icon: "🔥",
+    icon: "/Iconos/RachaInicial.webp",
     name: "Racha Inicial",
     description: "Mantén una racha de 2 semanas consecutivas",
     unlocked: false,
@@ -578,7 +582,7 @@ const achievements = ref([
     xp: 40, // Logro de streak básico
   },
   {
-    icon: "⚡",
+    icon: "/Iconos/Constancia.webp",
     name: "Constancia",
     description: "Mantén una racha de 3 semanas consecutivas",
     unlocked: false,
@@ -586,7 +590,7 @@ const achievements = ref([
     xp: 60, // Logro de streak intermedio
   },
   {
-    icon: "🌟",
+    icon: "/Iconos/Perseverancia.webp",
     name: "Perseverancia",
     description: "Mantén una racha de 5 semanas consecutivas",
     unlocked: false,
@@ -594,7 +598,7 @@ const achievements = ref([
     xp: 100, // Logro de streak avanzado
   },
   {
-    icon: "⚖️",
+    icon: "/Iconos/ArmoniaPerfecta.webp",
     name: "Armonía Perfecta",
     description: "Mantén ambas rachas simultáneamente por 2 semanas",
     unlocked: false,
