@@ -35,9 +35,10 @@ carrusel
         :loop="true"
         :grab-cursor="true"
         :autoplay="{
-          delay: 5000,
+          delay: 7000,
           disableOnInteraction: false,
         }"
+        :keyboard="{ enabled: true, onlyInViewport: true, pageUpDown: true }"
         :effect="'creative'"
         :fade-effect="{ crossFade: true }"
         class="custom-swiper rounded-lg overflow-hidden"
@@ -50,6 +51,7 @@ carrusel
               :alt="`Slide ${index + 1}`"
               class="w-full h-[250px] sm:h-[600px] rounded-lg mb-10 object-cover"
             />
+            <FavoritoOverlay v-if="slide.favorito" />
             <!-- Sin overlay ni textos -->
           </div>
 
@@ -60,6 +62,7 @@ carrusel
               :alt="`Slide ${index + 1}`"
               class="w-full h-[250px] sm:h-[600px] rounded-lg mb-10 object-cover"
             />
+            <FavoritoOverlay v-if="slide.favorito" />
             <div
               v-if="slide.titulo || slide.descripcion || slide.eslogan"
               class="absolute inset-0 flex flex-col items-center justify-center text-white bg-black bg-opacity-50 rounded-lg"
@@ -109,6 +112,7 @@ carrusel
               :alt="`Slide ${index + 1}`"
               class="w-full h-[250px] sm:h-[600px] rounded-lg mb-10 object-cover"
             />
+            <FavoritoOverlay v-if="slide.favorito" />
             <div
               class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg"
             >
@@ -162,6 +166,7 @@ carrusel
               :alt="`Slide ${index + 1}`"
               class="w-full h-[250px] sm:h-[600px] rounded-lg mb-10 object-cover"
             />
+            <FavoritoOverlay v-if="slide.favorito" />
             <div
               class="absolute inset-0 flex items-center justify-end pr-4 sm:pr-24 bg-black bg-opacity-50 rounded-lg"
             >
@@ -204,6 +209,7 @@ carrusel
               :alt="`Slide ${index + 1}`"
               class="w-full h-[250px] sm:h-[600px] rounded-lg mb-10 object-cover"
             />
+            <FavoritoOverlay v-if="slide.favorito" />
             <div
               class="absolute inset-0 flex flex-col items-center justify-center text-center bg-black bg-opacity-50 rounded-lg"
             >
@@ -242,6 +248,7 @@ carrusel
               :alt="`Slide ${index + 1}`"
               class="w-full h-[250px] sm:h-[600px] rounded-lg mb-10 object-cover"
             />
+            <FavoritoOverlay v-if="slide.favorito" />
             <div
               class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
             >
@@ -304,7 +311,7 @@ carrusel
 <script>
 import { ref, onMounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
+import { Navigation, Pagination, Autoplay, EffectFade, Keyboard } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -312,6 +319,7 @@ import "swiper/css/autoplay";
 import "swiper/css/effect-fade";
 import { eventos } from "../../lib/api";
 import anunciosData from "./anuncios.json"; // Importamos el JSON
+import FavoritoOverlay from "./FavoritoOverlay.vue";
 
 // Función mejorada para procesar HTML y convertir listas en componentes Vue
 const processHtmlContent = (html) => {
@@ -410,12 +418,13 @@ export default {
   components: {
     Swiper,
     SwiperSlide,
+    FavoritoOverlay,
   },
   setup() {
     const slides = ref([]);
     const error = ref("");
     const isLoading = ref(true);
-    const modules = [Navigation, Pagination, Autoplay, EffectFade];
+    const modules = [Navigation, Pagination, Autoplay, EffectFade, Keyboard];
 
     // Estilos disponibles para asignar aleatoriamente
     const estilosDisponibles = [
@@ -440,6 +449,22 @@ export default {
     const hasLists = (content) => {
       if (!content) return false;
       return content.includes('<ul') && content.includes('<li');
+    };
+    
+    // Obtener valor numérico de fecha para ordenar (soporta string, Date o Timestamp de Firestore)
+    const toMillis = (value) => {
+      if (!value) return 0;
+      // Firestore Timestamp
+      if (value && typeof value.toDate === "function") {
+        try {
+          return value.toDate().getTime();
+        } catch (e) {
+          return 0;
+        }
+      }
+      // String o Date
+      const t = new Date(value).getTime();
+      return isNaN(t) ? 0 : t;
     };
     
     // Función para procesar el HTML y extraer listas
@@ -477,6 +502,11 @@ export default {
             eslogan: anuncio.textoBoton || anuncio.eslogan,
             linkBoton: anuncio.linkBoton || "#",
             referencia: anuncio.referencia || "",
+            favorito: anuncio.favorito === true,
+            // Campos de fecha opcionales para ordenamiento si están presentes en el JSON
+            fecha: anuncio.fecha || null,
+            createdAt: anuncio.createdAt || null,
+            updatedAt: anuncio.updatedAt || null,
             estilo: determinarEstilo(
               isOnlyImage,
               hasLink,
@@ -521,6 +551,11 @@ export default {
               eslogan: evento.textoBoton || evento.eslogan,
               linkBoton: evento.linkBoton || "#",
               referencia: evento.referencia || "",
+              favorito: evento.favorito === true,
+              // Incluir campos de fecha para ordenar
+              fecha: evento.fecha || null,
+              createdAt: evento.createdAt || null,
+              updatedAt: evento.updatedAt || null,
               estilo: determinarEstilo(
                 isOnlyImage,
                 hasLink,
@@ -532,10 +567,12 @@ export default {
             };
           });
 
-          // Combinar y ordenar ambos conjuntos de anuncios
-          slides.value = [...apiSlides, ...localSlides].sort((a, b) =>
-            a.source === "api" ? -1 : 1
-          );
+          // Combinar y ordenar por fecha/creación/actualización (más recientes primero)
+          slides.value = [...apiSlides, ...localSlides].sort((a, b) => {
+            const aTime = toMillis(a.fecha || a.createdAt || a.updatedAt);
+            const bTime = toMillis(b.fecha || b.createdAt || b.updatedAt);
+            return bTime - aTime;
+          });
         } catch (apiError) {
           console.error("Error al cargar anuncios de la API:", apiError);
           // Si falla la API, usar solo los anuncios locales
@@ -702,7 +739,7 @@ export default {
 
 /* Para el estilo "espiritu" queremos un color diferente de resaltado */
 .estilo-espiritu :deep(strong) {
-  @apply text-yellow-300 font-extrabold decoration-yellow-400;
+  @apply text-teal-300 font-extrabold decoration-yellow-400;
 }
 
 /* Para el estilo "enmarcado" */
