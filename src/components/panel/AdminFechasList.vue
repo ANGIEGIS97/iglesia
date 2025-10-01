@@ -192,7 +192,7 @@
                   Fecha
                 </th>
                 <th
-                  class="px-2 py-4 max-w-[200px] md:max-w-[250px] lg:max-w-[300px] truncate"
+                  class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider max-w-[200px] md:max-w-[250px] lg:max-w-[300px] truncate"
                 >
                   Título
                 </th>

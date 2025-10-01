@@ -9,7 +9,7 @@ interface GeminiResponse {
 }
 
 export class GeminiService {
-  private readonly API_KEY = 'AIzaSyDSo-j-21_RMhtNWoL7rZohOwjDlmme7ck';
+  private readonly API_KEY = 'AIzaSyBQ_udHV9cQBCSJnNE-LcJKYqz52QOrdQc';
   private readonly API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
   private limitWords(text: string, wordLimit: number): string {

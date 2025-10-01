@@ -170,6 +170,7 @@ const loadEvents = async () => {
         createdBy: item.createdBy,
         updatedAt: item.updatedAt,
         updatedBy: item.updatedBy,
+        visible: item.visible ?? true,
       }))
       .sort((a, b) => {
         const fechaA = a.fecha ? new Date(a.fecha).getTime() : 0;
@@ -345,6 +346,22 @@ const toggleFavorito = async (eventoItem: Evento) => {
   }
 };
 
+// Visibilidad
+const toggleVisible = async (eventoItem: Evento) => {
+  try {
+    const nuevoValor = !(eventoItem as any).visible;
+    await eventos.setVisible(eventoItem.id, nuevoValor);
+    // Actualizar en memoria sin recargar todo
+    const idx = eventList.value.findIndex((e) => e.id === eventoItem.id);
+    if (idx !== -1) {
+      (eventList.value[idx] as any).visible = nuevoValor;
+    }
+  } catch (err: any) {
+    console.error("Error al alternar visibilidad:", err);
+    error.value = err.message || "No se pudo actualizar la visibilidad";
+  }
+};
+
 onMounted(() => {
   loadEvents();
   loadUserProfile();
@@ -498,6 +515,27 @@ onMounted(() => {
         :key="evento.id"
         class="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative"
       >
+              <!-- Botón de visibilidad -->
+              <button
+          class="absolute top-3 right-20 z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
+          :aria-label="(evento as any).visible !== false ? 'Ocultar anuncio' : 'Mostrar anuncio'"
+          @click="toggleVisible(evento)"
+          :title="(evento as any).visible !== false ? 'Ocultar en carrusel' : 'Mostrar en carrusel'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"
+            :class="(evento as any).visible !== false ? 'text-green-400' : 'text-red-400'">
+            <template v-if="(evento as any).visible !== false">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </template>
+            <template v-else>
+              <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+              <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+              <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+              <line x1="2" y1="2" x2="22" y2="22"></line>
+            </template>
+          </svg>
+        </button>
         <!-- Botón favorito -->
         <button
           class="absolute top-3 right-12 z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"

@@ -75,6 +75,7 @@ export interface EventoAPI {
   image?: string;
   fecha?: string;
   favorito?: boolean;
+  visible?: boolean;
   createdAt?: any;
   createdBy?: string;
   updatedAt?: any;
@@ -88,6 +89,7 @@ export interface Evento
   image?: string;
   fecha?: string;
   favorito?: boolean;
+  visible?: boolean;
   createdAt?: any;
   createdBy?: string;
   updatedAt?: any;
@@ -371,6 +373,7 @@ export const eventos = {
         image: data.image ?? "",
         fecha: data.fecha ?? new Date().toISOString(),
         favorito: data.favorito ?? false,
+        visible: data.visible ?? true,
         createdAt: serverTimestamp(),
         createdBy: auth.currentUser.uid,
       };
@@ -408,6 +411,27 @@ export const eventos = {
     } catch (error: any) {
       console.error("Error al actualizar favorito:", error);
       throw new Error(error.message ?? "Error al actualizar favorito");
+    }
+  },
+  setVisible: async (id: string, visible: boolean) => {
+    try {
+      checkAuth();
+      const docRef = doc(db, "eventos", id);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        throw new Error("El evento no existe");
+      }
+      await updateDoc(docRef, {
+        visible,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid,
+      });
+      return {
+        data: { id, visible },
+      };
+    } catch (error: any) {
+      console.error("Error al actualizar visibilidad:", error);
+      throw new Error(error.message ?? "Error al actualizar visibilidad");
     }
   },
   update: async (id: string, data: any) => {

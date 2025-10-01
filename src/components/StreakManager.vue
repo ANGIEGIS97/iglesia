@@ -7,16 +7,9 @@
         :title="getStreakTooltip('anuncios')"
       >
         <img 
-          v-if="streakData.anuncios.weeklyGoalMet" 
           src="/svg/flama.svg" 
-          alt="Streak activo" 
-          class="w-4 h-4 filter-red"
-        />
-        <img 
-          v-else 
-          src="/svg/flama.svg" 
-          alt="Streak inactivo" 
-          class="w-4 h-4 filter-gray"
+          :alt="streakData.anuncios.weeklyGoalMet ? 'Streak activo' : 'Streak inactivo'" 
+          :class="streakData.anuncios.weeklyGoalMet ? 'w-4 h-4 filter-red' : 'w-4 h-4 filter-gray'"
         />
         <span class="text-gray-500 dark:text-gray-200">{{ streakData.anuncios.current }}</span>
       </div>
@@ -30,16 +23,9 @@
         :title="getStreakTooltip('fechas')"
       >
         <img 
-          v-if="streakData.fechas.weeklyGoalMet" 
           src="/svg/flama.svg" 
-          alt="Streak activo" 
-          class="w-4 h-4 filter-blue"
-        />
-        <img 
-          v-else 
-          src="/svg/flama.svg" 
-          alt="Streak inactivo" 
-          class="w-4 h-4 filter-gray"
+          :alt="streakData.fechas.weeklyGoalMet ? 'Streak activo' : 'Streak inactivo'" 
+          :class="streakData.fechas.weeklyGoalMet ? 'w-4 h-4 filter-blue' : 'w-4 h-4 filter-gray'"
         />
         <span class="text-gray-500 dark:text-gray-200">{{ streakData.fechas.current }}</span>
       </div>
@@ -54,22 +40,19 @@ import { auth_api, usuarios } from "../lib/api.ts";
 
 const emit = defineEmits(['streakUpdate', 'checkStreakAchievements']);
 
+// Función helper para crear estructura de streak vacía
+const createEmptyStreak = () => ({
+  current: 0,
+  maxReached: 0,
+  lastActivity: null,
+  lastWeekStart: null,
+  weeklyGoalMet: false
+});
+
 // Estado de los streaks
 const streakData = ref({
-  anuncios: {
-    current: 0,
-    maxReached: 0, // Agregando máximo alcanzado
-    lastActivity: null,
-    weeklyGoalMet: false,
-    lastWeekStart: null
-  },
-  fechas: {
-    current: 0,
-    maxReached: 0, // Agregando máximo alcanzado
-    lastActivity: null,
-    weeklyGoalMet: false,
-    lastWeekStart: null
-  }
+  anuncios: createEmptyStreak(),
+  fechas: createEmptyStreak()
 });
 
 let unsubscribeAuth = null;
@@ -82,6 +65,34 @@ const getWeekStart = (date = new Date()) => {
   const weekStart = new Date(d.setDate(diff));
   weekStart.setHours(0, 0, 0, 0);
   return weekStart;
+};
+
+// Función para calcular días desde la última actividad
+const getDaysSinceLastActivity = (lastActivity) => {
+  if (!lastActivity) return null;
+  const now = new Date();
+  const lastDate = new Date(lastActivity);
+  const diffMs = now.getTime() - lastDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
+// Función para obtener el fin de la semana (domingo 23:59:59)
+const getWeekEnd = (date = new Date()) => {
+  const weekStart = getWeekStart(date);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6); // Domingo de la semana actual
+  weekEnd.setHours(23, 59, 59, 999);
+  return weekEnd;
+};
+
+// Función para calcular días restantes hasta el fin de la semana actual
+const getDaysUntilWeekEnd = () => {
+  const now = new Date();
+  const weekEnd = getWeekEnd(now);
+  const diffMs = weekEnd.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
 };
 
 // Función para verificar si es la misma semana
@@ -101,50 +112,57 @@ const isNextWeek = (lastWeek, currentWeek) => {
   return getWeekStart(nextWeek).getTime() === getWeekStart(new Date(currentWeek)).getTime();
 };
 
-// Función para actualizar streak cuando hay actividad
+/**
+ * Actualizar streak cuando hay actividad
+ * 
+ * LÓGICA DE RACHA SEMANAL (BASADA EN SEMANAS DE CALENDARIO):
+ * - Primera publicación → Streak = 1 (primera semana)
+ * - Publicar en la misma semana → No incrementa (ya ganaste esta semana)
+ * - Publicar en la siguiente semana consecutiva → Streak += 1 (nueva semana ganada)
+ * - Saltar una semana completa sin publicar → Streak = 1 (racha perdida)
+ * 
+ * Una semana = de Lunes a Domingo
+ * Solo se puede ganar 1 racha por semana de calendario.
+ */
 const updateStreak = async (tipo, fecha = new Date()) => {
   const currentWeekStart = getWeekStart(fecha);
-  const currentWeekStartString = currentWeekStart.toISOString();
   const fechaString = fecha.toISOString();
-
   const streak = streakData.value[tipo];
   
-  // Si no hay actividad previa, inicializar
+  // Si no hay actividad previa, inicializar con 1 semana
   if (!streak.lastActivity) {
     streak.current = 1;
-    // Inicializar máximo alcanzado
     if (streak.maxReached === 0) {
       streak.maxReached = 1;
     }
     streak.lastActivity = fechaString;
+    streak.lastWeekStart = currentWeekStart.toISOString();
     streak.weeklyGoalMet = true;
-    streak.lastWeekStart = currentWeekStartString;
   } else {
     const lastActivityDate = new Date(streak.lastActivity);
     const lastWeekStart = streak.lastWeekStart ? new Date(streak.lastWeekStart) : getWeekStart(lastActivityDate);
     
-    // Si es la misma semana, no cambiar el streak pero marcar como cumplido
+    // Misma semana: Solo actualizar timestamp, NO incrementar (ya ganaste esta semana)
     if (isSameWeek(fecha, lastActivityDate)) {
+      streak.lastActivity = fechaString;
       streak.weeklyGoalMet = true;
-      streak.lastActivity = fechaString; // Actualizar última actividad
     } 
-    // Si es la semana siguiente consecutiva, incrementar streak
+    // Semana siguiente consecutiva: GANA UNA SEMANA (+1 al streak)
     else if (isNextWeek(lastWeekStart, currentWeekStart)) {
       streak.current += 1;
-      // Actualizar máximo alcanzado si es necesario
       if (streak.current > streak.maxReached) {
         streak.maxReached = streak.current;
       }
       streak.weeklyGoalMet = true;
       streak.lastActivity = fechaString;
-      streak.lastWeekStart = currentWeekStartString;
+      streak.lastWeekStart = currentWeekStart.toISOString();
     }
-    // Si hay un gap de más de una semana, resetear streak
+    // Más de una semana sin actividad: PIERDE LA RACHA (resetea a 1)
     else {
       streak.current = 1;
       streak.weeklyGoalMet = true;
       streak.lastActivity = fechaString;
-      streak.lastWeekStart = currentWeekStartString;
+      streak.lastWeekStart = currentWeekStart.toISOString();
     }
   }
 
@@ -156,7 +174,7 @@ const updateStreak = async (tipo, fecha = new Date()) => {
   emit('checkStreakAchievements', streakData.value);
 };
 
-// Función para verificar y actualizar el estado semanal
+// Función para verificar y actualizar el estado del streak
 const checkWeeklyStatus = () => {
   const currentWeekStart = getWeekStart();
   let updated = false;
@@ -167,9 +185,27 @@ const checkWeeklyStatus = () => {
 
     if (streak.lastActivity) {
       const lastActivityDate = new Date(streak.lastActivity);
+      const lastWeekStart = streak.lastWeekStart ? new Date(streak.lastWeekStart) : getWeekStart(lastActivityDate);
 
-      // Si la última actividad no fue en la semana actual, marcar como no cumplido y resetear la racha
-      if (!isSameWeek(currentWeekStart, lastActivityDate)) {
+      // Si la actividad fue en la semana actual, mantener goal como cumplido
+      if (isSameWeek(currentWeekStart, lastActivityDate)) {
+        if (!streak.weeklyGoalMet) {
+          streak.weeklyGoalMet = true;
+          updated = true;
+          tipoUpdated = true;
+        }
+      } 
+      // Si la actividad fue en la semana anterior (consecutiva), mantener streak pero marcar como pendiente
+      else if (isNextWeek(lastWeekStart, currentWeekStart)) {
+        // El usuario está en la semana siguiente, aún puede publicar para mantener streak
+        if (streak.weeklyGoalMet) {
+          streak.weeklyGoalMet = false;
+          updated = true;
+          tipoUpdated = true;
+        }
+      }
+      // Si pasó más de una semana sin actividad, resetear el streak
+      else {
         streak.weeklyGoalMet = false;
         if (streak.current !== 0) {
           streak.current = 0;
@@ -187,8 +223,11 @@ const checkWeeklyStatus = () => {
 
   // Persistir cambios si hubo actualizaciones
   if (updated) {
-    // No es necesario await aquí
-    saveStreakData();
+    saveStreakData().then(() => {
+      console.log("Datos de streaks actualizados y guardados en Firestore");
+    }).catch(error => {
+      console.error("Error al guardar datos de streaks:", error);
+    });
   }
 };
 
@@ -196,11 +235,32 @@ const checkWeeklyStatus = () => {
 const getStreakTooltip = (tipo) => {
   const streak = streakData.value[tipo];
   const tipoDisplay = tipo === 'anuncios' ? 'anuncios' : 'fechas';
+  const itemSingular = tipo === 'anuncios' ? 'anuncio' : 'fecha';
+  const weekText = streak.current === 1 ? 'semana' : 'semanas';
+  if (!streak.lastActivity || streak.current === 0) {
+    return `Sin racha. Publica 1 ${itemSingular} cada semana (Lun-Dom) para mantener tu racha`;
+  }
   
-  if (streak.weeklyGoalMet) {
-    return `¡Streak activo! ${streak.current} semana${streak.current !== 1 ? 's' : ''} consecutiva${streak.current !== 1 ? 's' : ''} creando ${tipoDisplay}`;
+  const now = new Date();
+  const lastActivityDate = new Date(streak.lastActivity);
+  
+  // Si ya publicó esta semana, mostrar que la semana está cumplida
+  if (isSameWeek(now, lastActivityDate)) {
+    return `🔥 ${streak.current} ${weekText} consecutivas - ✅ Ya cumpliste esta semana`;
+  }
+  
+  // Si no ha publicado esta semana, mostrar días restantes para publicar
+  const daysRemaining = getDaysUntilWeekEnd();
+  const daysText = daysRemaining === 1 ? 'día' : 'días';
+  
+  if (daysRemaining > 0) {
+    if (daysRemaining <= 2) {
+      return `🔥 ${streak.current} ${weekText} consecutivas - ⚠️ ¡Solo ${daysRemaining} ${daysText} para publicar esta semana!`;
+    } else {
+      return `🔥 ${streak.current} ${weekText} consecutivas - ${daysRemaining} ${daysText} para publicar esta semana`;
+    }
   } else {
-    return `⚠️ Necesitas crear al menos 1 ${tipo === 'anuncios' ? 'anuncio' : 'fecha'} esta semana para mantener tu streak de ${streak.current} semana${streak.current !== 1 ? 's' : ''}`;
+    return `💀 Racha perdida. Publica 1 ${itemSingular} para empezar de nuevo`;
   }
 };
 
@@ -220,35 +280,23 @@ const loadStreakData = async () => {
           current: gameState.streaks.anuncios?.current || 0,
           maxReached: gameState.streaks.anuncios?.maxReached || 0,
           lastActivity: gameState.streaks.anuncios?.lastActivity || null,
-          weeklyGoalMet: gameState.streaks.anuncios?.weeklyGoalMet || false,
-          lastWeekStart: gameState.streaks.anuncios?.lastWeekStart || null
+          lastWeekStart: gameState.streaks.anuncios?.lastWeekStart || null,
+          weeklyGoalMet: gameState.streaks.anuncios?.weeklyGoalMet || false
         },
         fechas: {
           current: gameState.streaks.fechas?.current || 0,
           maxReached: gameState.streaks.fechas?.maxReached || 0,
           lastActivity: gameState.streaks.fechas?.lastActivity || null,
-          weeklyGoalMet: gameState.streaks.fechas?.weeklyGoalMet || false,
-          lastWeekStart: gameState.streaks.fechas?.lastWeekStart || null
+          lastWeekStart: gameState.streaks.fechas?.lastWeekStart || null,
+          weeklyGoalMet: gameState.streaks.fechas?.weeklyGoalMet || false
         }
       };
     } else {
       // No hay datos en Firestore, inicializar desde cero
       console.log("No hay datos de streaks en Firestore, inicializando desde cero");
       streakData.value = {
-        anuncios: {
-          current: 0,
-          maxReached: 0,
-          lastActivity: null,
-          weeklyGoalMet: false,
-          lastWeekStart: null
-        },
-        fechas: {
-          current: 0,
-          maxReached: 0,
-          lastActivity: null,
-          weeklyGoalMet: false,
-          lastWeekStart: null
-        }
+        anuncios: createEmptyStreak(),
+        fechas: createEmptyStreak()
       };
       
       // Limpiar localStorage obsoleto para este usuario
@@ -303,20 +351,8 @@ const resetStreaks = async () => {
   
   // Resetear el estado local
   streakData.value = {
-    anuncios: {
-      current: 0,
-      maxReached: 0,
-      lastActivity: null,
-      weeklyGoalMet: false,
-      lastWeekStart: null
-    },
-    fechas: {
-      current: 0,
-      maxReached: 0,
-      lastActivity: null,
-      weeklyGoalMet: false,
-      lastWeekStart: null
-    }
+    anuncios: createEmptyStreak(),
+    fechas: createEmptyStreak()
   };
 
   // Limpiar localStorage
@@ -363,54 +399,70 @@ const debugSimulateActivity = (tipo, fechaOffset = 0) => {
   reportActivity(tipo, fecha);
 };
 
-// Debug: Información detallada de fechas y semanas
+// Debug: Información detallada de fechas y streaks
 const debugWeekInfo = () => {
   const now = new Date();
-  const weekStart = getWeekStart(now);
-  const nextWeek = new Date(weekStart);
-  nextWeek.setDate(nextWeek.getDate() + 7);
   
-  console.group("📅 INFORMACIÓN DE SEMANAS");
+  console.group("📅 INFORMACIÓN DE STREAKS");
   console.log(`Fecha actual: ${now.toLocaleString()}`);
-  console.log(`Inicio de semana actual: ${weekStart.toLocaleString()}`);
-  console.log(`Inicio de próxima semana: ${nextWeek.toLocaleString()}`);
   console.log(`Día de la semana (0=Domingo): ${now.getDay()}`);
   
   ['anuncios', 'fechas'].forEach(tipo => {
     const streak = streakData.value[tipo];
+    console.group(`\n📊 ${tipo.toUpperCase()}`);
+    console.log(`Streak actual: ${streak.current} semanas`);
+    console.log(`Máximo alcanzado: ${streak.maxReached} semanas`);
+    console.log(`Estado: ${streak.weeklyGoalMet ? '✅ Activo' : '❌ Inactivo'}`);
+    
     if (streak.lastActivity) {
       const lastDate = new Date(streak.lastActivity);
-      const lastWeekStart = getWeekStart(lastDate);
-      console.log(`${tipo} - Última actividad: ${lastDate.toLocaleString()}`);
-      console.log(`${tipo} - Inicio semana de última actividad: ${lastWeekStart.toLocaleString()}`);
-      console.log(`${tipo} - ¿Misma semana?: ${isSameWeek(now, lastDate) ? '✅' : '❌'}`);
-      console.log(`${tipo} - ¿Semana siguiente?: ${isNextWeek(lastWeekStart, weekStart) ? '✅' : '❌'}`);
+      const daysSince = getDaysSinceLastActivity(streak.lastActivity);
+      const daysUntilWeekEnd = getDaysUntilWeekEnd();
+      
+      console.log(`Última actividad: ${lastDate.toLocaleString()}`);
+      console.log(`Días desde última actividad: ${daysSince}`);
+      console.log(`Días hasta fin de semana: ${daysUntilWeekEnd}`);
+      console.log(`Estado del streak: ${streak.weeklyGoalMet ? '🔥 ACTIVO' : '⚠️ PENDIENTE'}`);
+    } else {
+      console.log(`Sin actividad registrada`);
     }
+    console.groupEnd();
   });
   
   console.groupEnd();
 };
 
 // Debug: Forzar estado específico de streak
-const debugSetStreak = (tipo, current, weeklyGoalMet = true) => {
+const debugSetStreak = (tipo, current, weeksAgo = 0) => {
   if (!['anuncios', 'fechas'].includes(tipo)) {
     console.error("❌ Tipo debe ser 'anuncios' o 'fechas'");
     return;
   }
   
-  console.log(`🔧 Estableciendo ${tipo} streak a ${current}, goal met: ${weeklyGoalMet}`);
+  const lastActivityDate = new Date();
+  lastActivityDate.setDate(lastActivityDate.getDate() - (weeksAgo * 7));
+  const lastWeekStart = getWeekStart(lastActivityDate);
+  
+  console.log(`🔧 Estableciendo ${tipo} streak a ${current} semanas, última actividad hace ${weeksAgo} semanas`);
   
   const streak = streakData.value[tipo];
   streak.current = current;
-  streak.weeklyGoalMet = weeklyGoalMet;
-  streak.lastActivity = new Date().toISOString();
-  streak.lastWeekStart = getWeekStart().toISOString();
+  streak.lastActivity = lastActivityDate.toISOString();
+  streak.lastWeekStart = lastWeekStart.toISOString();
+  streak.weeklyGoalMet = weeksAgo === 0;
   
   if (current > streak.maxReached) {
     streak.maxReached = current;
   }
   
   saveStreakData();
+  
+  const now = new Date();
+  if (isSameWeek(now, lastActivityDate)) {
+    console.log(`✅ Ya publicó esta semana - Semana cumplida`);
+  } else {
+    console.log(`⚠️ Faltan ${getDaysUntilWeekEnd()} días para fin de semana`);
+  }
 };
 
 // Debug: Verificar estado semanal manualmente
@@ -456,11 +508,12 @@ const debugTimeTravel = (daysOffset) => {
       const lastDate = new Date(streak.lastActivity);
       lastDate.setDate(lastDate.getDate() + daysOffset);
       streak.lastActivity = lastDate.toISOString();
-    }
+      
     if (streak.lastWeekStart) {
       const lastWeekDate = new Date(streak.lastWeekStart);
       lastWeekDate.setDate(lastWeekDate.getDate() + daysOffset);
       streak.lastWeekStart = lastWeekDate.toISOString();
+      }
     }
   });
   
@@ -517,25 +570,27 @@ const debugTestStreakAchievements = () => {
 };
 
 // Debug: Configurar streaks para testing de logros
-const debugSetupStreakTest = (anunciosWeeks = 0, fechasWeeks = 0, bothActive = true) => {
-  console.log(`🧪 Configurando streaks para testing: Anuncios=${anunciosWeeks}, Fechas=${fechasWeeks}, Activos=${bothActive}`);
+const debugSetupStreakTest = (anunciosWeeks = 0, fechasWeeks = 0, weeksAgo = 0) => {
+  console.log(`🧪 Configurando streaks para testing: Anuncios=${anunciosWeeks}, Fechas=${fechasWeeks}, Hace ${weeksAgo} semanas`);
   
+  const lastActivityDate = new Date();
+  lastActivityDate.setDate(lastActivityDate.getDate() - (weeksAgo * 7));
+  const lastWeekStart = getWeekStart(lastActivityDate);
   const now = new Date();
-  const weekStart = getWeekStart(now);
   
   // Configurar streak de anuncios
   streakData.value.anuncios.current = anunciosWeeks;
   streakData.value.anuncios.maxReached = Math.max(streakData.value.anuncios.maxReached, anunciosWeeks);
-  streakData.value.anuncios.weeklyGoalMet = bothActive && anunciosWeeks > 0;
-  streakData.value.anuncios.lastActivity = anunciosWeeks > 0 ? now.toISOString() : null;
-  streakData.value.anuncios.lastWeekStart = anunciosWeeks > 0 ? weekStart.toISOString() : null;
+  streakData.value.anuncios.weeklyGoalMet = weeksAgo === 0 && anunciosWeeks > 0;
+  streakData.value.anuncios.lastActivity = anunciosWeeks > 0 ? lastActivityDate.toISOString() : null;
+  streakData.value.anuncios.lastWeekStart = anunciosWeeks > 0 ? lastWeekStart.toISOString() : null;
   
   // Configurar streak de fechas
   streakData.value.fechas.current = fechasWeeks;
   streakData.value.fechas.maxReached = Math.max(streakData.value.fechas.maxReached, fechasWeeks);
-  streakData.value.fechas.weeklyGoalMet = bothActive && fechasWeeks > 0;
-  streakData.value.fechas.lastActivity = fechasWeeks > 0 ? now.toISOString() : null;
-  streakData.value.fechas.lastWeekStart = fechasWeeks > 0 ? weekStart.toISOString() : null;
+  streakData.value.fechas.weeklyGoalMet = weeksAgo === 0 && fechasWeeks > 0;
+  streakData.value.fechas.lastActivity = fechasWeeks > 0 ? lastActivityDate.toISOString() : null;
+  streakData.value.fechas.lastWeekStart = fechasWeeks > 0 ? lastWeekStart.toISOString() : null;
   
   // Guardar y verificar logros
   saveStreakData();
@@ -565,18 +620,21 @@ const registerDebugCommands = () => {
         console.group("🔥 COMANDOS DE DEBUG DISPONIBLES");
         console.log("streakDebug.show() - Mostrar estado actual");
         console.log("streakDebug.simulate(tipo, diasOffset) - Simular actividad");
-        console.log("streakDebug.weekInfo() - Info de semanas");
-        console.log("streakDebug.setStreak(tipo, valor, goalMet) - Establecer streak");
-        console.log("streakDebug.checkWeekly() - Verificar estado semanal");
+        console.log("streakDebug.weekInfo() - Info detallada de streaks");
+        console.log("streakDebug.setStreak(tipo, semanas, semanasAtras) - Establecer streak");
+        console.log("  Ejemplo: streakDebug.setStreak('anuncios', 3, 1) = 3 semanas, hace 1 semana");
+        console.log("streakDebug.checkWeekly() - Verificar estado de streaks");
         console.log("streakDebug.clearAll() - Limpiar todos los datos");
         console.log("streakDebug.timeTravel(dias) - Viajar en el tiempo");
         console.log("streakDebug.export() - Exportar datos");
         console.log("streakDebug.import(data) - Importar datos");
         console.log("streakDebug.reset() - Resetear streaks");
         console.log("streakDebug.testAchievements() - Testear logros de streaks");
-        console.log("streakDebug.setupTest(anuncios, fechas, activos) - Configurar streaks para testing");
+        console.log("streakDebug.setupTest(anuncios, fechas, semanasAtras) - Configurar streaks");
+        console.log("  Ejemplo: streakDebug.setupTest(3, 2, 1) = Anuncios: 3 sem, Fechas: 2 sem, hace 1 semana");
         console.groupEnd();
         console.log("💡 Tip: Usa streakDebug.help() para ver esta ayuda");
+        console.log("📅 Nota: Los streaks se basan en semanas de calendario (Lunes-Domingo)");
       }
     };
     
@@ -628,29 +686,24 @@ defineExpose({
   debugSetupStreakTest
 });
 
+// Función helper para inicializar datos de usuario
+const initializeUserData = async (user) => {
+  if (user?.uid) {
+    clearObsoleteLocalStorage(user.uid);
+    await loadStreakData();
+  }
+};
+
 // Configurar event listeners
 onMounted(async () => {
   // Registrar comandos de debugging globalmente
   registerDebugCommands();
   
   // Suscribirse a cambios de autenticación
-  unsubscribeAuth = auth_api.onAuthStateChange(async (user) => {
-    if (user) {
-      // Limpiar localStorage obsoleto
-      clearObsoleteLocalStorage(user.uid);
-      // Cargar datos de streaks
-      await loadStreakData();
-    }
-  });
+  unsubscribeAuth = auth_api.onAuthStateChange(initializeUserData);
 
   // Cargar datos si ya hay usuario autenticado
-  const currentUser = auth_api.getCurrentUser();
-  if (currentUser) {
-    // Limpiar localStorage obsoleto
-    clearObsoleteLocalStorage(currentUser.uid);
-    // Cargar datos de streaks
-    await loadStreakData();
-  }
+  await initializeUserData(auth_api.getCurrentUser());
 
   // Configurar listeners para actividad de streaks
   window.addEventListener('streakActivity', (event) => {

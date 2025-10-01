@@ -295,10 +295,10 @@ carrusel
             </div>
           </div>
         </swiper-slide>
-        <div class="swiper-button-next custom-swiper-button">
+        <div v-if="slides.length > 1" class="swiper-button-next custom-swiper-button">
           <i class="fas fa-chevron-right"></i>
         </div>
-        <div class="swiper-button-prev custom-swiper-button">
+        <div v-if="slides.length > 1" class="swiper-button-prev custom-swiper-button">
           <i class="fas fa-chevron-left"></i>
         </div>
       </swiper>
@@ -536,43 +536,50 @@ export default {
         try {
           // Intentar cargar anuncios de la API
           const response = await eventos.getAll();
-          const apiSlides = response.data.map((evento) => {
-            const hasLink = evento.linkBoton && evento.linkBoton !== "#";
-            const isOnlyImage =
-              !evento.titulo &&
-              !evento.descripcion &&
-              !(evento.textoBoton || evento.eslogan) &&
-              !evento.referencia;
+          const apiSlides = response.data
+            .filter((evento) => evento.visible !== false) // Filtrar solo anuncios visibles
+            .map((evento) => {
+              const hasLink = evento.linkBoton && evento.linkBoton !== "#";
+              const isOnlyImage =
+                !evento.titulo &&
+                !evento.descripcion &&
+                !(evento.textoBoton || evento.eslogan) &&
+                !evento.referencia;
 
-            return {
-              image: evento.image,
-              titulo: evento.titulo,
-              descripcion: evento.descripcion, // Mantener descripción original para procesamiento
-              eslogan: evento.textoBoton || evento.eslogan,
-              linkBoton: evento.linkBoton || "#",
-              referencia: evento.referencia || "",
-              favorito: evento.favorito === true,
-              // Incluir campos de fecha para ordenar
-              fecha: evento.fecha || null,
-              createdAt: evento.createdAt || null,
-              updatedAt: evento.updatedAt || null,
-              estilo: determinarEstilo(
-                isOnlyImage,
-                hasLink,
-                evento.estilo,
-                evento.linkBoton,
-                evento.descripcion
-              ),
-              source: "api",
-            };
-          });
+              return {
+                image: evento.image,
+                titulo: evento.titulo,
+                descripcion: evento.descripcion, // Mantener descripción original para procesamiento
+                eslogan: evento.textoBoton || evento.eslogan,
+                linkBoton: evento.linkBoton || "#",
+                referencia: evento.referencia || "",
+                favorito: evento.favorito === true,
+                // Incluir campos de fecha para ordenar
+                fecha: evento.fecha || null,
+                createdAt: evento.createdAt || null,
+                updatedAt: evento.updatedAt || null,
+                estilo: determinarEstilo(
+                  isOnlyImage,
+                  hasLink,
+                  evento.estilo,
+                  evento.linkBoton,
+                  evento.descripcion
+                ),
+                source: "api",
+              };
+            });
 
-          // Combinar y ordenar por fecha/creación/actualización (más recientes primero)
-          slides.value = [...apiSlides, ...localSlides].sort((a, b) => {
-            const aTime = toMillis(a.fecha || a.createdAt || a.updatedAt);
-            const bTime = toMillis(b.fecha || b.createdAt || b.updatedAt);
-            return bTime - aTime;
-          });
+          // Si hay anuncios de Firebase, usar solo esos (ordenados por fecha)
+          // Si NO hay anuncios de Firebase, usar los anuncios locales por defecto
+          if (apiSlides.length > 0) {
+            slides.value = apiSlides.sort((a, b) => {
+              const aTime = toMillis(a.fecha || a.createdAt || a.updatedAt);
+              const bTime = toMillis(b.fecha || b.createdAt || b.updatedAt);
+              return bTime - aTime;
+            });
+          } else {
+            slides.value = localSlides;
+          }
         } catch (apiError) {
           console.error("Error al cargar anuncios de la API:", apiError);
           // Si falla la API, usar solo los anuncios locales
