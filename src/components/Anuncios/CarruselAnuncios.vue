@@ -558,6 +558,7 @@ export default {
                 fecha: evento.fecha || null,
                 createdAt: evento.createdAt || null,
                 updatedAt: evento.updatedAt || null,
+                order: evento.order ?? 0, // Incluir el campo order
                 estilo: determinarEstilo(
                   isOnlyImage,
                   hasLink,
@@ -570,14 +571,12 @@ export default {
             });
 
           // Si hay anuncios de Firebase, usar solo esos (ordenados por fecha)
-          // Si NO hay anuncios de Firebase, usar los anuncios locales por defecto
+          // Si hay anuncios de Firebase, usar solo esos. Si no, usar los locales
           if (apiSlides.length > 0) {
-            slides.value = apiSlides.sort((a, b) => {
-              const aTime = toMillis(a.fecha || a.createdAt || a.updatedAt);
-              const bTime = toMillis(b.fecha || b.createdAt || b.updatedAt);
-              return bTime - aTime;
-            });
+            // Ordenar los anuncios de la API por el campo order (ascendente)
+            slides.value = apiSlides.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           } else {
+            // No hay anuncios en Firebase, usar los locales
             slides.value = localSlides;
           }
         } catch (apiError) {

@@ -28,6 +28,14 @@ const userName = ref("");
 const userProfiles = ref<{ [key: string]: UserProfile }>({});
 const selectedEvents = ref<string[]>([]);
 const isAllSelected = ref(false);
+const draggedIndex = ref<number | null>(null);
+const dragOverIndex = ref<number | null>(null);
+const isMobile = ref(false);
+
+// Detectar si es móvil
+const checkIfMobile = () => {
+  isMobile.value = window.innerWidth < 768;
+};
 
 // Notificaciones XP
 const showXpNotification = ref(false);
@@ -155,9 +163,9 @@ const loadUserProfiles = async (events: Evento[]) => {
 const loadEvents = async () => {
   try {
     const response = await eventos.getAll();
-    // Ordenar los eventos por fecha en orden descendente
+    // Ordenar los eventos por order (ya viene ordenado de la API)
     eventList.value = (response.data as EventoAPI[])
-      .map((item) => ({
+      .map((item, index) => ({
         id: item.id,
         titulo: item.titulo || "",
         descripcion: item.descripcion || "",
@@ -166,17 +174,14 @@ const loadEvents = async () => {
         image: item.image,
         fecha: item.fecha,
         favorito: item.favorito === true,
+        order: item.order ?? index,
         createdAt: item.createdAt,
         createdBy: item.createdBy,
         updatedAt: item.updatedAt,
         updatedBy: item.updatedBy,
         visible: item.visible ?? true,
       }))
-      .sort((a, b) => {
-        const fechaA = a.fecha ? new Date(a.fecha).getTime() : 0;
-        const fechaB = b.fecha ? new Date(b.fecha).getTime() : 0;
-        return fechaB - fechaA;
-      });
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     await loadUserProfiles(eventList.value);
   } catch (err) {
@@ -362,9 +367,75 @@ const toggleVisible = async (eventoItem: Evento) => {
   }
 };
 
+// Drag and Drop
+const handleDragStart = (event: DragEvent, index: number) => {
+  draggedIndex.value = index;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/html", "");
+  }
+};
+
+const handleDragOver = (event: DragEvent, index: number) => {
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "move";
+  }
+  dragOverIndex.value = index;
+};
+
+const handleDragLeave = () => {
+  dragOverIndex.value = null;
+};
+
+const handleDrop = async (event: DragEvent, dropIndex: number) => {
+  event.preventDefault();
+  
+  if (draggedIndex.value === null || draggedIndex.value === dropIndex) {
+    draggedIndex.value = null;
+    dragOverIndex.value = null;
+    return;
+  }
+
+  try {
+    // Reordenar el array localmente
+    const newEventList = [...eventList.value];
+    const [draggedItem] = newEventList.splice(draggedIndex.value, 1);
+    newEventList.splice(dropIndex, 0, draggedItem);
+
+    // Actualizar el array local inmediatamente para feedback visual
+    eventList.value = newEventList;
+
+    // Actualizar el orden en Firebase
+    const updatePromises = newEventList.map((evento, index) => 
+      eventos.updateOrder(evento.id, index)
+    );
+
+    await Promise.all(updatePromises);
+
+    // Recargar para asegurar consistencia
+    await loadEvents();
+  } catch (err: any) {
+    console.error("Error al reordenar eventos:", err);
+    error.value = err.message || "No se pudo reordenar los eventos";
+    // Recargar en caso de error
+    await loadEvents();
+  } finally {
+    draggedIndex.value = null;
+    dragOverIndex.value = null;
+  }
+};
+
+const handleDragEnd = () => {
+  draggedIndex.value = null;
+  dragOverIndex.value = null;
+};
+
 onMounted(() => {
   loadEvents();
   loadUserProfile();
+  checkIfMobile();
+  window.addEventListener('resize', checkIfMobile);
 });
 </script>
 
@@ -392,6 +463,12 @@ onMounted(() => {
           </h2>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Gestiona los anuncios y eventos especiales
+          </p>
+          <p class="text-xs text-teal-600 dark:text-teal-400 mt-1 hidden sm:flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+            Arrastra los anuncios para cambiar su orden
           </p>
         </div>
       </div>
@@ -513,11 +590,28 @@ onMounted(() => {
       <div
         v-for="(evento, index) in eventList"
         :key="evento.id"
-        class="bg-white dark:bg-gray-700 p-2 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 relative"
+        :draggable="!isMobile"
+        @dragstart="!isMobile && handleDragStart($event, index)"
+        @dragover="!isMobile && handleDragOver($event, index)"
+        @dragleave="!isMobile && handleDragLeave()"
+        @drop="!isMobile && handleDrop($event, index)"
+        @dragend="!isMobile && handleDragEnd()"
+        :class="[
+          'bg-white dark:bg-gray-700 p-2 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 relative',
+          !isMobile ? 'cursor-move' : '',
+          draggedIndex === index ? 'opacity-50 scale-95' : '',
+          dragOverIndex === index && draggedIndex !== index ? 'ring-4 ring-teal-500 scale-105' : ''
+        ]"
       >
+              <!-- Drag Handle Icon -->
+              <div v-if="!isMobile" class="absolute top-3 left-12 z-[5] text-gray-400 dark:text-gray-500 cursor-move" title="Arrastra para reordenar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                </svg>
+              </div>
               <!-- Botón de visibilidad -->
               <button
-          class="absolute top-3 right-20 z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
+          class="absolute top-3 right-[84px] z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
           :aria-label="(evento as any).visible !== false ? 'Ocultar anuncio' : 'Mostrar anuncio'"
           @click="toggleVisible(evento)"
           :title="(evento as any).visible !== false ? 'Ocultar en carrusel' : 'Mostrar en carrusel'"
@@ -538,7 +632,7 @@ onMounted(() => {
         </button>
         <!-- Botón favorito -->
         <button
-          class="absolute top-3 right-12 z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
+          class="absolute top-3 right-[48px] z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
           :aria-label="(evento as any).favorito ? 'Quitar de favoritos' : 'Marcar como favorito'"
           @click="toggleFavorito(evento)"
           title="Favorito"
@@ -560,7 +654,7 @@ onMounted(() => {
         </div>
         <!-- Numeración -->
         <div
-          class="absolute top-3 right-3 z-[5] bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-md"
+          class="absolute top-3 right-[12px] z-[5] bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-md"
         >
           {{ index + 1 }}
         </div>

@@ -76,6 +76,7 @@ export interface EventoAPI {
   fecha?: string;
   favorito?: boolean;
   visible?: boolean;
+  order?: number;
   createdAt?: any;
   createdBy?: string;
   updatedAt?: any;
@@ -90,6 +91,7 @@ export interface Evento
   fecha?: string;
   favorito?: boolean;
   visible?: boolean;
+  order?: number;
   createdAt?: any;
   createdBy?: string;
   updatedAt?: any;
@@ -329,7 +331,7 @@ export const eventos = {
   getAll: async () => {
     try {
       const eventosRef = collection(db, "eventos");
-      const q = query(eventosRef, orderBy("fecha", "desc"));
+      const q = query(eventosRef, orderBy("order", "asc"));
       const snapshot = await getDocs(q);
       return {
         data: snapshot.docs.map((doc) => ({
@@ -364,6 +366,19 @@ export const eventos = {
     try {
       checkAuth();
 
+      // Get all existing events to increment their order
+      const eventosRef = collection(db, "eventos");
+      const snapshot = await getDocs(eventosRef);
+      
+      // Increment order of all existing events
+      const updatePromises = snapshot.docs.map(async (docSnapshot) => {
+        const currentOrder = docSnapshot.data().order ?? 0;
+        const docRef = doc(db, "eventos", docSnapshot.id);
+        await updateDoc(docRef, { order: currentOrder + 1 });
+      });
+      
+      await Promise.all(updatePromises);
+
       // Formatear los datos antes de guardar
       const eventData = {
         titulo: data.titulo?.trim() ?? "",
@@ -374,11 +389,11 @@ export const eventos = {
         fecha: data.fecha ?? new Date().toISOString(),
         favorito: data.favorito ?? false,
         visible: data.visible ?? true,
+        order: 0,
         createdAt: serverTimestamp(),
         createdBy: auth.currentUser.uid,
       };
 
-      const eventosRef = collection(db, "eventos");
       const docRef = await addDoc(eventosRef, eventData);
 
       return {
@@ -490,6 +505,27 @@ export const eventos = {
     } catch (error: any) {
       console.error("Error al eliminar evento:", error);
       throw new Error(error.message ?? "Error al eliminar el evento");
+    }
+  },
+  updateOrder: async (id: string, order: number) => {
+    try {
+      checkAuth();
+      const docRef = doc(db, "eventos", id);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        throw new Error("El evento no existe");
+      }
+      await updateDoc(docRef, {
+        order,
+        updatedAt: serverTimestamp(),
+        updatedBy: auth.currentUser.uid,
+      });
+      return {
+        data: { id, order },
+      };
+    } catch (error: any) {
+      console.error("Error al actualizar orden:", error);
+      throw new Error(error.message ?? "Error al actualizar orden");
     }
   },
 };
