@@ -2,19 +2,18 @@ import { geminiService } from './gemini';
 
 export class UnsplashService {
   // Temporalmente hardcodeamos la API key para pruebas
-  private readonly API_KEY = 'ACdvcXLn5HroYjLavfqyMXdpgqTGFhcZGBjS4ucIBuA';
+  private readonly API_KEY = import.meta.env.PUBLIC_UNSPLASH_ACCESS_KEY as string | undefined;
   private readonly API_URL = 'https://api.unsplash.com';
 
   constructor() {
     console.log('UnsplashService inicializado');
     console.log('API Key disponible:', !!this.API_KEY);
-    console.log('API Key:', this.API_KEY);
   }
 
   async searchImage(query: string): Promise<string> {
     try {
       if (!this.API_KEY) {
-        throw new Error('API Key de Unsplash no está configurada');
+        throw new Error('Falta PUBLIC_UNSPLASH_ACCESS_KEY en variables de entorno');
       }
       console.log('Iniciando búsqueda de imagen para:', query);
      
@@ -57,7 +56,7 @@ EJEMPLOS ESPECÍFICOS:
       const url = `${this.API_URL}/photos/random?query=${encodeURIComponent(searchQuery)}&orientation=landscape&content_filter=high`;
       console.log('URL de Unsplash:', url);
       console.log('Headers:', {
-        'Authorization': `Client-ID ${this.API_KEY}`,
+        'Authorization': 'Client-ID [REDACTED]',
         'Accept-Version': 'v1'
       });
 

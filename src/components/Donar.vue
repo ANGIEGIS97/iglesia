@@ -1,4 +1,5 @@
 <template>
+  <Breadcrumb :items="[{ label: 'Inicio', href: '/' }, { label: 'Donaciones' }]" />
   <div class="mask-container">
     <div
       class="mask-box relative w-full h-[350px] sm:h-[520px] overflow-hidden"
@@ -156,6 +157,7 @@
 </template>
 
 <script setup>
+import Breadcrumb from "./common/Breadcrumb.vue";
 import { ref, computed } from "vue";
 
 const selectedPayment = ref(null);

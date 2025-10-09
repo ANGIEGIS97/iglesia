@@ -81,7 +81,7 @@ export default {
   },
   data() {
     return {
-      apiKey: "",
+      apiKey: "AIzaSyCW8XRiLI3hKz2nC4MxLsw2oIxBcXk9TOc",
       channelId: "UCPP7f0ZyCyZo8I_qgwFqveQ",
       videos: [],
       error: null,

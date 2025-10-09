@@ -9,7 +9,7 @@ interface GeminiResponse {
 }
 
 export class GeminiService {
-  private readonly API_KEY = 'AIzaSyBQ_udHV9cQBCSJnNE-LcJKYqz52QOrdQc';
+  private readonly API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY as string | undefined;
   private readonly API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
   private limitWords(text: string, wordLimit: number): string {
@@ -39,6 +39,9 @@ export class GeminiService {
 
   async generateContent(prompt: string): Promise<string> {
     try {
+      if (!this.API_KEY) {
+        throw new Error('Falta PUBLIC_GEMINI_API_KEY en variables de entorno');
+      }
       const response = await fetch(`${this.API_URL}?key=${this.API_KEY}`, {
         method: 'POST',
         headers: {
