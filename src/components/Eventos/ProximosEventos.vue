@@ -1,20 +1,15 @@
 <template>
   <div
-    class="bg-gray-100 dark:bg-slate-600 pb-10 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
+    class="bg-gray-100 dark:bg-slate-700 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
   >
     <div
       class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out"
     >
-      <div class="flex flex-col mb-2 px-3">
-        <div class="flex items-center gap-3 mb-2">
-          <i class="fas fa-calendar-alt text-3xl text-teal-500"> </i>
-          <h2 class="text-3xl font-semibold dark:text-white">
-            Próximos eventos
-          </h2>
-        </div>
-        <p class="text-gray-600 dark:text-gray-300 ml-1">
-          Mantente al día con nuestras próximas actividades y servicios
-        </p>
+      <div class="flex flex-col px-3">
+        <p class="text-teal-500 font-bold tracking-[0.2em] text-sm mb-2 uppercase">#Participa</p>
+        <h2 class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight mb-2">
+          Próximos <span class="text-outline">Eventos</span>
+        </h2>
       </div>
 
       <!-- Estado de carga -->
@@ -546,4 +541,13 @@ export default {
 .swiper-slide:hover {
   transform: translateY(-5px);
 }
+
+.text-outline {
+  -webkit-text-stroke: 1.5px black;
+  color: transparent;
+}
+.dark .text-outline {
+  -webkit-text-stroke: 1.5px white;
+}
+
 </style>

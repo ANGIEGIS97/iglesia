@@ -1,6 +1,6 @@
 <template>
   <section
-    class="bg-gray-100 dark:bg-slate-700 py-10 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
+    class="bg-gray-100 dark:bg-slate-800 py-10 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white"
     id="servicio"
   >
     <div
@@ -9,14 +9,12 @@
       <div
         class="flex flex-wrap w-full mb-12 flex-col items-center text-center"
       >
-        <h1
-          class="sm:text-4xl text-3xl font-bold mb-4 text-gray-800 dark:text-white relative inline-block"
-        >
-          Servicios
-          <span
-            class="absolute bottom-0 left-1/4 right-1/4 h-1 bg-teal-500 rounded-full"
-          ></span>
-        </h1>
+        <div class="flex flex-col mb-2 px-3 items-center">
+          <p class="text-teal-500 font-bold tracking-[0.2em] text-sm mb-2 uppercase">#Horarios</p>
+          <h1 class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight mb-4 text-center">
+             Nuestros <span class="text-outline">Servicios</span>
+          </h1>
+        </div>
         <p
           class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
         >
@@ -74,29 +72,56 @@
           </div>
         </div>
 
+    <!-- Contenedor con borde gradiente -->
         <div
-          class="p-[1px] dark:bg-gradient-to-r from-blue-500 to-teal-500 rounded-lg"
+          class="relative mt-10 overflow-hidden rounded-2xl p-[1px] bg-gradient-to-r from-teal-400 via-blue-400 to-blue-500 dark:from-teal-500 dark:via-blue-500 dark:to-purple-500 transition-all duration-300"
         >
+          <!-- Contenido interno -->
           <div
-            class="bg-gray-50 rounded-lg dark:bg-slate-600 dark:text-white p-4"
+            class="relative bg-white dark:bg-slate-700 rounded-2xl overflow-hidden"
           >
-            <h3
-              class="text-xl md:text-2xl text-center flex items-center justify-center"
-            >
-              <i class="fas fa-calendar-alt mr-2"></i>
-              Iglesia Bautista su Gracia es Mayor les invita al servicio de
-              predicación todos los domingos a las 10:00am
-            </h3>
-            <p
-              class="text-lg text-center mt-4 flex items-center justify-center"
-            >
-              <i class="fas fa-map-marker-alt mr-2"></i>
-              En el salón comunal Asovivir de Bosa
-            </p>
+            <!-- Gradiente de fondo sutil -->
+            <div
+              class="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-blue-500/5 to-purple-500/5 dark:from-teal-500/10 dark:via-blue-500/10 dark:to-purple-500/10"
+            ></div>
+            
+            <div class="relative p-4">
+              <div class="text-center space-y-4">
+                <!-- Título principal -->
+                <div class="flex items-center justify-center gap-3 flex-wrap">
+                  <h3
+                    class="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-white leading-tight max-w-3xl"
+                  >
+                    Iglesia Bautista su Gracia es Mayor
+                  </h3>
+                </div>
+                
+                <!-- Información del servicio -->
+                <div class="space-y-4">
+                  <p class="text-lg md:text-xl text-gray-700 dark:text-gray-200 font-medium">
+                    Les invita al servicio de predicación
+                  </p>
+                  
+                  <div class="flex flex-col sm:flex-row items-center justify-center gap-6 text-gray-600 dark:text-gray-300">
+                    <!-- Horario -->
+                    <div class="flex items-center gap-2 ">
+                      <i class="fas fa-clock text-teal-500 dark:text-teal-400"></i>
+                      <span class="font-semibold text-gray-800 dark:text-white">Domingos 10:00 AM</span>
+                    </div>
+                    
+                    <!-- Ubicación -->
+                    <div class="flex items-center gap-2 ">
+                      <i class="fas fa-map-marker-alt text-teal-500 dark:text-teal-400"></i>
+                      <span class="font-semibold text-gray-800 dark:text-white">Salón Comunal Asovivir de Bosa</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <blockquote
-          class="border-l-4 border-teal-400 italic my-8 pl-6 text-lg dark:text-white bg-gray-50 dark:bg-slate-800 p-4 rounded-r-lg shadow flex items-start"
+          class="border-l-4 border-teal-400 italic my-8 pl-6 text-lg dark:text-white bg-gray-50 dark:bg-slate-600 p-4 rounded-r-lg shadow flex items-start"
         >
           <i class="fas fa-quote-left text-teal-400 mr-4 text-2xl"></i>
           <div id="dailyVersesWrapper"></div>
@@ -197,5 +222,13 @@ export default {
 #servicio {
   position: relative;
   z-index: 1;
+}
+
+.text-outline {
+  -webkit-text-stroke: 1.5px black;
+  color: transparent;
+}
+.dark .text-outline {
+  -webkit-text-stroke: 1.5px white;
 }
 </style>

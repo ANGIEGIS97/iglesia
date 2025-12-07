@@ -9,14 +9,12 @@
       <div
         class="flex flex-wrap w-full mb-12 flex-col items-center text-center"
       >
-        <h1
-          class="sm:text-4xl text-3xl font-bold mb-4 text-gray-800 dark:text-white relative inline-block"
-        >
-          Ministerios
-          <span
-            class="absolute bottom-0 left-1/4 right-1/4 h-1 bg-teal-500 rounded-full"
-          ></span>
-        </h1>
+        <div class="flex flex-col mb-2 px-3 items-center">
+          <p class="text-teal-500 font-bold tracking-[0.2em] text-sm mb-2 uppercase">#Servimos</p>
+          <h1 class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight mb-4 text-center">
+            Nuestros <span class="text-outline">Ministerios</span>
+          </h1>
+        </div>
         <p
           class="lg:w-2/3 w-full leading-relaxed text-center text-lg dark:text-gray-300 max-w-3xl mx-auto"
         >
@@ -148,3 +146,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.text-outline {
+  -webkit-text-stroke: 1.5px black;
+  color: transparent;
+}
+.dark .text-outline {
+  -webkit-text-stroke: 1.5px white;
+}
+</style>

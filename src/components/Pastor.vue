@@ -25,11 +25,12 @@
             class="hidden lg:absolute lg:inset-y-0 lg:-start-16 lg:block lg:w-16 lg:bg-gray-100 rounded-l-lg dark:bg-slate-600 transition duration-300 ease-in-out"
           ></span>
           <div class="p-0 py-4 s sm:p-16 lg:p-14">
-            <h2
-              class="sm:text-4xl text-3xl font-bold text-center text-gray-800 dark:text-white mb-6"
-            >
-              Pastor Oscar Páez
-            </h2>
+            <div class="mb-6 text-center">
+              <p class="text-teal-500 font-bold tracking-[0.2em] text-sm mb-2 uppercase">#Liderazgo</p>
+              <h2 class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight">
+                Nuestro <span class="text-outline">Pastor</span>
+              </h2>
+            </div>
             <div
               class="mt-4 text-gray-700 text-justify text-[16px] leading-relaxed space-y-4 dark:text-gray-300"
             >
@@ -87,5 +88,13 @@
 
 #pastor {
   animation: fadeIn 1s ease-out;
+}
+
+.text-outline {
+  -webkit-text-stroke: 1.5px black;
+  color: transparent;
+}
+.dark .text-outline {
+  -webkit-text-stroke: 1.5px white;
 }
 </style>

@@ -142,6 +142,15 @@
         </div>
       </div>
     </div>
+    <!-- Animación de nieve para eventos navideños -->
+    <div
+      v-if="evento && evento.infoIconoTexto === 'Noches navideñas'"
+      class="snow-container pointer-events-none"
+    >
+      <div v-for="i in 50" :key="i" class="snowflake" :style="getSnowflakeStyle(i)">
+        ❄
+      </div>
+    </div>
     <!-- Modal para la imagen ampliada -->
     <div
       v-if="imagenAmpliada"
@@ -304,6 +313,22 @@ export default {
         });
       }, 100);
     },
+    getSnowflakeStyle(index) {
+      // Generate random values for each snowflake
+      const left = Math.random() * 100;
+      const animationDuration = 5 + Math.random() * 10; // 5-15 seconds
+      const animationDelay = Math.random() * 5; // 0-5 seconds delay
+      const fontSize = 10 + Math.random() * 20; // 10-30px
+      const opacity = 0.5 + Math.random() * 0.5; // 0.5-1.0
+
+      return {
+        left: `${left}%`,
+        animationDuration: `${animationDuration}s`,
+        animationDelay: `${animationDelay}s`,
+        fontSize: `${fontSize}px`,
+        opacity: opacity,
+      };
+    },
   },
   mounted() {
     document.body.classList.add("modal-open");
@@ -313,7 +338,6 @@ export default {
     // Lanzar confeti solo si es un cumpleaños y tiene icono activo
     if (
       this.evento &&
-      this.evento.infoAdiccional &&
       this.evento.infoIconoTexto === "Cumpleaños"
     ) {
       setTimeout(() => {
@@ -345,4 +369,37 @@ export default {
 .backdrop-blur-sm {
   transition: all 0.3s ease-in-out;
 }
+
+/* Snow animation styles */
+.snow-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 55;
+  overflow: hidden;
+}
+
+.snowflake {
+  position: absolute;
+  top: -20px;
+  color: white;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  animation: fall linear infinite;
+  user-select: none;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-20px) translateX(0);
+  }
+  50% {
+    transform: translateY(50vh) translateX(20px);
+  }
+  100% {
+    transform: translateY(100vh) translateX(0);
+  }
+}
+
 </style>

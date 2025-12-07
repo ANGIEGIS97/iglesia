@@ -6,11 +6,11 @@ carrusel
     <div
       class="container mx-auto px-2 py-4 lg:px-32 transition duration-300 ease-in-out font-asap"
     >
-      <div class="flex flex-col mb-2 px-3">
-        <div class="flex items-center gap-3 mb-2">
-          <i class="fas fa-bullhorn text-3xl text-teal-500"></i>
-          <h2 class="text-3xl font-semibold dark:text-white">Anuncios</h2>
-        </div>
+      <div class="flex flex-col mb-6 px-3">
+        <p class="text-teal-500 font-bold tracking-[0.2em] text-sm mb-2 uppercase">#Entérate</p>
+        <h2 class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight">
+          Nuestros <span class="text-outline">Anuncios</span>
+        </h2>
       </div>
 
       <div v-if="error" class="text-red-500 text-center mb-4">{{ error }}</div>
@@ -780,4 +780,13 @@ export default {
 .custom-bullet-content {
   @apply flex-1;
 }
+
+.text-outline {
+  -webkit-text-stroke: 1.5px black;
+  color: transparent;
+}
+.dark .text-outline {
+  -webkit-text-stroke: 1.5px white;
+}
+
 </style>

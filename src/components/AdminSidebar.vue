@@ -802,11 +802,11 @@ const handleLogout = async () => {
       logrosRef.value.clearAchievementsLocalStorage();
     }
 
-    await auth_api.logout();
-    // Redirigir a la página de despedida después del logout exitoso
+    // Redirigir a la página de logout SIN hacer logout todavía
+    // La página de logout se encargará de hacer el logout
     window.location.replace("/logout");
   } catch (error) {
-    console.error("Error al cerrar sesión:", error);
+    console.error("Error al preparar cierre de sesión:", error);
     // En caso de error, forzar la redirección de todas formas
     window.location.replace("/logout");
   }
