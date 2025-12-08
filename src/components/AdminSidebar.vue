@@ -215,7 +215,7 @@
                   src="/svg/flama.svg" 
                   alt="Streak anuncios" 
                   class="w-4 h-4"
-                  :class="anunciosMaxStreak > 0 && anunciosWeeklyGoalMet ? 'filter-red' : 'filter-gray'"
+                  :class="anunciosMaxStreak > 0 ? 'filter-red' : 'filter-gray'"
                 />
                 <span class="text-xs font-medium">{{ anunciosMaxStreak }}</span>
               </div>
@@ -229,7 +229,7 @@
                   src="/svg/flama.svg" 
                   alt="Streak fechas" 
                   class="w-4 h-4"
-                  :class="fechasMaxStreak > 0 && fechasWeeklyGoalMet ? 'filter-blue' : 'filter-gray'"
+                  :class="fechasMaxStreak > 0 ? 'filter-blue' : 'filter-gray'"
                 />
                 <span class="text-xs font-medium">{{ fechasMaxStreak }}</span>
               </div>

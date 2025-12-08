@@ -7,9 +7,8 @@ bienvenida
   <div>
     <!-- Hero Section -->
     <div class="relative h-screen overflow-hidden">
-      <!-- Parallax Background -->
+      <!-- Background -->
       <div
-        ref="parallaxBackground"
         class="absolute top-0 left-0 w-full h-full bg-cover bg-center"
         :style="{ backgroundImage: `url(${heroImage})` }"
       ></div>
@@ -34,7 +33,7 @@ bienvenida
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
                 </svg>
-                Bienvenido
+                Gracia y paz
               </span>
             </div>
             
@@ -151,7 +150,6 @@ export default {
       displayName: "",
       unsubscribe: null,
       authUnsubscribe: null,
-      nombresFemeninos: ["Angie", "Ana", "Maria", "Laura", "Sofia", "Isabella"],
       isLoading: true,
       previousDisplayName: "",
       rotatingWords: ["fe", "comunidad", "crecimiento espiritual"],
@@ -159,29 +157,33 @@ export default {
       wordRotationInterval: null,
     };
   },
-  computed: {
-    saludo() {
-      const nombre = this.displayName || this.previousDisplayName;
-      if (this.nombresFemeninos.includes(nombre)) {
-        return "Bienvenida";
-      } else {
-        return "Bienvenido";
-      }
-    },
-  },
+
   methods: {
-    handleScroll() {
-      const parallaxBackground = this.$refs.parallaxBackground;
-      if (parallaxBackground) {
-        const scrollPosition = window.pageYOffset;
-        const limit = parallaxBackground.offsetHeight;
-        if (scrollPosition <= limit) {
-          parallaxBackground.style.transform = `translateY(${
-            scrollPosition * 0.5
-          }px)`;
+    // Helper method for localStorage operations
+    setLocalStorage(key, value) {
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(key, value);
+        } catch (error) {
+          console.error("Error guardando en localStorage:", error);
         }
       }
     },
+    removeLocalStorage(key) {
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem(key);
+        } catch (error) {
+          console.error("Error removiendo de localStorage:", error);
+        }
+      }
+    },
+    clearDisplayName() {
+      this.previousDisplayName = this.displayName;
+      this.displayName = "";
+      this.removeLocalStorage("userDisplayName");
+    },
+
     initializeFromLocalStorage() {
       try {
         if (typeof window !== "undefined") {
@@ -204,12 +206,8 @@ export default {
           this.previousDisplayName = this.displayName;
           this.displayName = profile.data.displayName;
           // Actualizamos el localStorage con el nuevo valor
-          if (profile.data.displayName && typeof window !== "undefined") {
-            try {
-              localStorage.setItem("userDisplayName", profile.data.displayName);
-            } catch (error) {
-              console.error("Error guardando en localStorage:", error);
-            }
+          if (profile.data.displayName) {
+            this.setLocalStorage("userDisplayName", profile.data.displayName);
           }
 
           // Luego nos suscribimos a los cambios
@@ -219,12 +217,8 @@ export default {
               this.previousDisplayName = this.displayName;
               this.displayName = profile.displayName;
               // Actualizamos el localStorage cuando cambie el perfil
-              if (profile.displayName && typeof window !== "undefined") {
-                try {
-                  localStorage.setItem("userDisplayName", profile.displayName);
-                } catch (error) {
-                  console.error("Error guardando en localStorage:", error);
-                }
+              if (profile.displayName) {
+                this.setLocalStorage("userDisplayName", profile.displayName);
               }
             }
           );
@@ -234,15 +228,7 @@ export default {
           this.isLoading = false;
         }
       } else {
-        this.previousDisplayName = this.displayName;
-        this.displayName = "";
-        if (typeof window !== "undefined") {
-          try {
-            localStorage.removeItem("userDisplayName");
-          } catch (error) {
-            console.error("Error removiendo de localStorage:", error);
-          }
-        }
+        this.clearDisplayName();
         this.isLoading = false;
       }
     },
@@ -272,7 +258,6 @@ export default {
   },
   async mounted() {
     this.initializeFromLocalStorage();
-    window.addEventListener("scroll", this.handleScroll);
     this.loadDailyVerseScript();
     this.startWordRotation();
 
@@ -281,28 +266,11 @@ export default {
       if (user) {
         await this.setupProfileSubscription();
         // Recargar el versículo cuando el usuario inicie sesión
-        // Usar nextTick para asegurar que el DOM esté actualizado
         this.$nextTick(() => {
-          // Verificar que el contenedor existe antes de cargar el script
-          const verseContainer = document.getElementById('dailyVersesWrapper');
-          if (verseContainer) {
-            this.loadDailyVerseScript();
-          } else {
-            // Si aún no existe, intentar de nuevo después de un breve delay
-            setTimeout(() => {
-              this.loadDailyVerseScript();
-            }, 100);
-          }
+          setTimeout(() => this.loadDailyVerseScript(), 100);
         });
       } else {
-        this.displayName = "";
-        if (typeof window !== "undefined") {
-          try {
-            localStorage.removeItem("userDisplayName");
-          } catch (error) {
-            console.error("Error removiendo de localStorage:", error);
-          }
-        }
+        this.clearDisplayName();
         if (this.unsubscribe) {
           this.unsubscribe();
         }
@@ -311,7 +279,6 @@ export default {
     });
   },
   beforeUnmount() {
-    window.removeEventListener("scroll", this.handleScroll);
     // Limpiar todas las suscripciones
     if (this.unsubscribe) {
       this.unsubscribe();
