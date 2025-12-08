@@ -120,12 +120,7 @@
             </div>
           </div>
         </div>
-        <blockquote
-          class="border-l-4 border-teal-400 italic my-8 pl-6 text-lg dark:text-white bg-gray-50 dark:bg-slate-600 p-4 rounded-r-lg shadow flex items-start"
-        >
-          <i class="fas fa-quote-left text-teal-400 mr-4 text-2xl"></i>
-          <div id="dailyVersesWrapper"></div>
-        </blockquote>
+
       </article>
     </div>
   </section>
@@ -166,17 +161,9 @@ export default {
     },
   },
   mounted() {
-    this.loadDailyVerseScript();
     this.loadFontAwesome();
   },
   methods: {
-    loadDailyVerseScript() {
-      const script = document.createElement("script");
-      script.src = "https://dailyverses.net/get/random.js?language=nvi";
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-    },
     loadFontAwesome() {
       const link = document.createElement("link");
       link.href =
