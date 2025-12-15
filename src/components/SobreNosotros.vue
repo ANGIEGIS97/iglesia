@@ -1,44 +1,53 @@
 <template>
   <section
-    class="px-4 sm:px-6 2xl:px-80 py-8 sm:py-12 transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white bg-gray-100 dark:bg-slate-700"
+    class="transition duration-300 ease-in-out selection:bg-teal-500 selection:text-white bg-gray-100 dark:bg-slate-700"
   >
-    <article>
-      <!-- Header -->
-      <div class="flex flex-col mb-10 items-center text-center">
-        <p class="text-teal-500 font-bold tracking-[0.2em] text-sm mb-2 uppercase">#Nosotros</p>
-        <h1 class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight">
-          Sobre <span class="text-outline">Nosotros</span>
-        </h1>
-      </div>
-
-      <!-- Navigation Pills -->
-      <div class="mb-8 overflow-x-auto pb-2">
-        <div class="flex gap-2 min-w-max justify-center flex-wrap">
-          <button
-            v-for="event in events"
-            :key="event.id"
-            @click="activeEvent = event.id"
-            :class="[
-              'pill-button',
-              activeEvent === event.id ? 'pill-active' : 'pill-inactive'
-            ]"
-          >
-            <span class="pill-date">{{ event.date }}</span>
-            <span class="pill-separator">•</span>
-            <span class="pill-title">{{ event.title }}</span>
-          </button>
+    <div class="container mx-auto px-2 py-8 sm:py-12 lg:px-32">
+      <article>
+        <!-- Header -->
+        <div class="flex flex-col mb-10 items-center text-center">
+          <p class="text-teal-500 font-bold tracking-[0.2em] text-sm mb-2 uppercase">#Nosotros</p>
+          <h1 class="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white tracking-tight">
+            Sobre <span class="text-outline">Nosotros</span>
+          </h1>
         </div>
-      </div>
 
-      <!-- Content Area with Transition -->
-      <transition name="fade-slide" mode="out-in">
-        <div :key="activeEvent" class="content-container">
-          <p class="content-text">
-            {{ currentEventContent }}
-          </p>
+        <!-- Navigation Pills -->
+        <div 
+          ref="pillsContainer"
+          class="mb-8 overflow-x-auto pb-2 pills-scrollbar cursor-grab active:cursor-grabbing"
+          @mousedown="startDrag"
+          @mousemove="onDrag"
+          @mouseup="stopDrag"
+          @mouseleave="stopDrag"
+        >
+          <div class="flex gap-2 min-w-max justify-center">
+            <button
+              v-for="event in events"
+              :key="event.id"
+              @click="handlePillClick(event.id)"
+              :class="[
+                'pill-button',
+                activeEvent === event.id ? 'pill-active' : 'pill-inactive'
+              ]"
+            >
+              <span class="pill-date">{{ event.date }}</span>
+              <span class="pill-separator">•</span>
+              <span class="pill-title">{{ event.title }}</span>
+            </button>
+          </div>
         </div>
-      </transition>
-    </article>
+
+        <!-- Content Area with Transition -->
+        <transition name="fade-slide" mode="out-in">
+          <div :key="activeEvent" class="content-container">
+            <p class="content-text">
+              {{ currentEventContent }}
+            </p>
+          </div>
+        </transition>
+      </article>
+    </div>
   </section>
 </template>
 
@@ -47,6 +56,9 @@ export default {
   data() {
     return {
       activeEvent: 'inicio',
+      isDragging: false,
+      startX: 0,
+      scrollLeft: 0,
       events: [
         {
           id: 'inicio',
@@ -87,6 +99,31 @@ export default {
       const event = this.events.find(e => e.id === this.activeEvent);
       return event ? event.content : '';
     }
+  },
+  methods: {
+    startDrag(e) {
+      this.isDragging = true;
+      const container = this.$refs.pillsContainer;
+      this.startX = e.pageX - container.offsetLeft;
+      this.scrollLeft = container.scrollLeft;
+    },
+    onDrag(e) {
+      if (!this.isDragging) return;
+      e.preventDefault();
+      const container = this.$refs.pillsContainer;
+      const x = e.pageX - container.offsetLeft;
+      const walk = (x - this.startX) * 2; // Multiplicador para velocidad de scroll
+      container.scrollLeft = this.scrollLeft - walk;
+    },
+    stopDrag() {
+      this.isDragging = false;
+    },
+    handlePillClick(eventId) {
+      // Solo cambiar el evento activo si no estamos arrastrando
+      if (!this.isDragging) {
+        this.activeEvent = eventId;
+      }
+    }
   }
 };
 </script>
@@ -98,6 +135,16 @@ export default {
 }
 .dark .text-outline {
   -webkit-text-stroke: 1.5px white;
+}
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+.pills-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE y Edge */
+}
+
+.pills-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari y Opera */
 }
 
 /* Pills Navigation */
