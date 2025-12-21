@@ -10,7 +10,7 @@ interface GeminiResponse {
 
 export class GeminiService {
   private readonly API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY as string | undefined;
-  private readonly API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  private readonly API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
 
   private limitWords(text: string, wordLimit: number): string {
     const words = text.split(/\s+/);
@@ -24,7 +24,7 @@ export class GeminiService {
     // Remover cualquier contenido inapropiado o no relacionado
     const inappropriateTerms = ['secta', 'culto', 'ritual', 'florecer'];
     let sanitized = text;
-    
+
     inappropriateTerms.forEach(term => {
       sanitized = sanitized.replace(new RegExp(term, 'gi'), 'servicio');
     });
@@ -62,7 +62,7 @@ export class GeminiService {
 
       const data: GeminiResponse = await response.json();
       const text = data.candidates[0]?.content.parts[0]?.text || '';
-      
+
       // Aplicar el límite de palabras y sanitizar la respuesta
       const limitedText = this.limitWords(text, 50);
       return this.sanitizeResponse(limitedText);
