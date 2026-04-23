@@ -1,20 +1,19 @@
 import { auth_api } from "../lib/api";
+import { storage } from "../lib/storage";
 
 export const checkAuth = () => {
   if (typeof window === "undefined") return false;
 
-  // Verificar tanto el usuario actual como el token
-  const token = localStorage.getItem("token");
+  const token = storage.token.get();
   return !!auth_api.getCurrentUser() || !!token;
 };
 
 export const redirectIfNotAuthenticated = async () => {
   if (typeof window === "undefined") return;
 
-  // Esperar a que Firebase inicialice
   return new Promise((resolve) => {
     const unsubscribe = auth_api.onAuthStateChange((user) => {
-      const token = localStorage.getItem("token");
+      const token = storage.token.get();
 
       if (!user && !token) {
         window.location.href = "/";

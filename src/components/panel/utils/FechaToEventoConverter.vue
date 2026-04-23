@@ -43,6 +43,9 @@
 
 <script>
 import EventoModal from "../modals/EventoModal.vue";
+import { eventos, fechas } from "../../../lib/api";
+import { geminiService } from "../../../lib/gemini";
+import { unsplashService } from "../../../lib/unsplash";
 
 export default {
   name: "FechaToEventoConverter",
@@ -117,7 +120,6 @@ export default {
 
     async cargarEventoExistente() {
       this.generatingStep = "Cargando evento existente...";
-      const { eventos } = await import("../../../lib/api");
       const resultado = await eventos.get(this.fecha.eventoId);
 
       if (resultado && resultado.data) {
@@ -148,7 +150,6 @@ export default {
 
       try {
         this.generatingStep = "Generando descripción con IA...";
-        const { geminiService } = await import("../../../lib/gemini");
 
         const prompt = `Como escritor cristiano, genera una descripción breve y cautivadora (máximo 35 palabras) para un evento de iglesia titulado: "${
           this.fecha.titulo
@@ -196,7 +197,6 @@ export default {
         }
 
         this.generatingStep = "Generando eslogan con IA...";
-        const { geminiService } = await import("../../../lib/gemini");
 
         // Usar el tipo de evento (infoIconoTexto) o el título para generar un eslogan apropiado
         const tipoEvento = this.fecha.titulo;
@@ -232,7 +232,6 @@ export default {
       if (!imagen) {
         try {
           this.generatingStep = "Buscando imagen relacionada...";
-          const { unsplashService } = await import("../../../lib/unsplash");
 
           // Usar el título del evento para buscar una imagen relacionada
           const searchQuery = this.fecha.infoIconoTexto || this.fecha.titulo;
@@ -319,9 +318,6 @@ export default {
           : "Creando anuncio...";
         this.isGeneratingAnuncio = true;
 
-        // Importar eventos de manera dinámica
-        const { eventos, fechas } = await import("../../../lib/api");
-
         let eventoId = this.fecha.eventoId;
 
         // Determinar si estamos creando o actualizando para la notificación XP
@@ -388,9 +384,6 @@ export default {
 
         this.isGeneratingAnuncio = true;
         this.generatingStep = "Eliminando anuncio...";
-
-        // Importar las APIs de manera dinámica
-        const { eventos, fechas } = await import("../../../lib/api");
 
         // Obtener referencia al evento antes de eliminarlo
         const eventoId = this.fecha.eventoId;
