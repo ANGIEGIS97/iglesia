@@ -12,6 +12,7 @@
   "dependencies": {
     "@astrojs/tailwind": "^5.1.0",
     "@astrojs/vue": "^4.5.0",
+    "@google/genai": "^1.50.1",
     "animate.css": "^4.1.1",
     "astro": "^4.11.5",
     "axios": "^1.7.9",

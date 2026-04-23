@@ -1,77 +1,70 @@
-interface GeminiResponse {
-  candidates: Array<{
-    content: {
-      parts: Array<{
-        text: string;
-      }>;
-    };
-  }>;
-}
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from '@google/genai';
+
+const MODEL = 'gemini-2.5-flash';
+
+const SYSTEM_INSTRUCTION =
+  'Eres un escritor cristiano especializado en contenido para iglesias evangélicas. ' +
+  'Genera textos edificantes, espirituales y motivadores que reflejen los valores del Evangelio. ' +
+  'Mantén siempre un tono respetuoso, esperanzador e inclusivo. ' +
+  'Responde únicamente con el texto solicitado, sin explicaciones adicionales ni encabezados.';
+
+const INAPPROPRIATE_TERMS = ['secta', 'culto', 'ritual', 'florecer'];
 
 export class GeminiService {
-  private readonly API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY as string | undefined;
-  private readonly API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent';
+  private _client: GoogleGenAI | null = null;
+
+  private get client(): GoogleGenAI {
+    if (!this._client) {
+      const apiKey = import.meta.env.PUBLIC_GEMINI_API_KEY as string | undefined;
+      if (!apiKey) {
+        throw new Error('Falta PUBLIC_GEMINI_API_KEY en variables de entorno');
+      }
+      this._client = new GoogleGenAI({ apiKey });
+    }
+    return this._client;
+  }
 
   private limitWords(text: string, wordLimit: number): string {
     const words = text.split(/\s+/);
-    if (words.length > wordLimit) {
-      return words.slice(0, wordLimit).join(' ') + '.';
-    }
-    return text;
+    return words.length > wordLimit
+      ? words.slice(0, wordLimit).join(' ') + '.'
+      : text;
   }
 
   private sanitizeResponse(text: string): string {
-    // Remover cualquier contenido inapropiado o no relacionado
-    const inappropriateTerms = ['secta', 'culto', 'ritual', 'florecer'];
     let sanitized = text;
-
-    inappropriateTerms.forEach(term => {
+    for (const term of INAPPROPRIATE_TERMS) {
       sanitized = sanitized.replace(new RegExp(term, 'gi'), 'servicio');
-    });
-
-    // Asegurar que termine con un punto
-    if (!sanitized.endsWith('.')) {
-      sanitized += '.';
     }
-
+    if (!sanitized.endsWith('.')) sanitized += '.';
     return sanitized;
   }
 
   async generateContent(prompt: string): Promise<string> {
     try {
-      if (!this.API_KEY) {
-        throw new Error('Falta PUBLIC_GEMINI_API_KEY en variables de entorno');
-      }
-      const response = await fetch(`${this.API_URL}?key=${this.API_KEY}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await this.client.models.generateContent({
+        model: MODEL,
+        contents: prompt,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature: 0.7,
+          maxOutputTokens: 200,
+          safetySettings: [
+            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+          ],
         },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: prompt
-            }]
-          }]
-        })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data: GeminiResponse = await response.json();
-      const text = data.candidates[0]?.content.parts[0]?.text || '';
-
-      // Aplicar el límite de palabras y sanitizar la respuesta
-      const limitedText = this.limitWords(text, 50);
-      return this.sanitizeResponse(limitedText);
+      const text = response.text ?? '';
+      return this.sanitizeResponse(this.limitWords(text, 50));
     } catch (error) {
       console.error('Error calling Gemini API:', error);
-      throw new Error('Failed to generate content with Gemini');
+      throw new Error('No se pudo generar contenido con Gemini');
     }
   }
 }
 
-// Create a singleton instance
 export const geminiService = new GeminiService();
