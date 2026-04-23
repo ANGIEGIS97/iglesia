@@ -48,7 +48,7 @@ export class GeminiService {
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
           temperature: 0.7,
-          maxOutputTokens: 200,
+          maxOutputTokens: 800,
           safetySettings: [
             { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
             { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
@@ -59,7 +59,7 @@ export class GeminiService {
       });
 
       const text = response.text ?? '';
-      return this.sanitizeResponse(this.limitWords(text, 50));
+      return this.sanitizeResponse(this.limitWords(text, 70));
     } catch (error) {
       console.error('Error calling Gemini API:', error);
       throw new Error('No se pudo generar contenido con Gemini');
