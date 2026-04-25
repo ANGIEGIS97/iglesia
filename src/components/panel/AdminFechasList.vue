@@ -1,21 +1,12 @@
 <template>
   <div>
-    <!-- Notificación XP -->
-    <NotificacionXP
-      :show="showXpNotification"
-      :amount="xpAmount"
-      :message="xpMessage"
-      :tipo="tipoXP"
-      :accion="accionXP"
-    />
-
     <div class="space-y-6 mt-24">
       <div
         class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 sm:px-0"
       >
         <div>
           <h1
-            class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent"
+            class="text-2xl sm:text-3xl font-bold bg-linear-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent"
           >
             Administrar Fechas
           </h1>
@@ -57,7 +48,7 @@
           </transition>
           <button
             @click="openModal()"
-            class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600 order-1 sm:order-2"
+            class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-linear-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600 order-1 sm:order-2"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -111,7 +102,7 @@
       <!-- Indicador de carga para generación de anuncio -->
       <div
         v-if="isGeneratingAnuncio"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       >
         <div
           class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full"
@@ -178,7 +169,7 @@
                     type="checkbox"
                     :checked="isAllSelected"
                     @change="toggleSelectAll"
-                    class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50"
+                    class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200/50"
                   />
                 </th>
                 <th
@@ -251,7 +242,7 @@
                     type="checkbox"
                     v-model="selectedFechas"
                     :value="fecha.id"
-                    class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200 focus:ring-opacity-50"
+                    class="rounded border-gray-300 text-teal-600 shadow-sm focus:border-teal-300 focus:ring focus:ring-teal-200/50"
                   />
                 </td>
                 <td class="px-1 py-4 whitespace-nowrap font-medium">
@@ -476,10 +467,10 @@
                       <div class="flex flex-col">
                         <div class="flex items-center mb-1">
                           <div
-                            class="flex items-center space-x-2 flex-shrink min-w-0 max-w-[80%]"
+                            class="flex items-center space-x-2 shrink min-w-0 max-w-[80%]"
                           >
                             <span
-                              class="text-sm font-medium text-gray-500 dark:text-gray-400 flex-shrink-0"
+                              class="text-sm font-medium text-gray-500 dark:text-gray-400 shrink-0"
                             >
                               #{{ index + 1 }}
                             </span>
@@ -721,718 +712,408 @@
   </div>
 </template>
 
-<script>
-import { fechas, eventos } from "../../lib/api";
+<script setup lang="ts">
+import { ref, nextTick } from "vue";
+import { fechas as fechasApi, eventos as eventosApi } from "../../lib/api";
 import FechaModal from "./modals/FechaModal.vue";
 import FechaToEventoConverter from "./utils/FechaToEventoConverter.vue";
 import EventoModal from "./modals/EventoModal.vue";
-import NotificacionXP from "../NotificacionXP.vue";
+import { iconOptions } from "../../data/iconOptions";
+import { formatDateBogotaShort } from "../../composables/useFormatters";
+import { isUrl as isUrlCheck } from "../../composables/useValidation";
+import { useGameStore } from "../../stores/useGameStore";
+import { useStatsStore } from "../../stores/useStatsStore";
+import { useToast } from "../../composables/useToast";
+import { useConfirm } from "../../composables/useConfirm";
 
-export default {
-  name: "AdminFechasList",
-  components: {
-    FechaModal,
-    FechaToEventoConverter,
-    EventoModal,
-    NotificacionXP,
-  },
-  data() {
-    return {
-      fechas: [],
-      isLoading: true,
-      selectedFechas: [],
-      isAllSelected: false,
-      showModal: false,
-      errorMessage: "",
-      isErrorNotification: true,
-      editingFecha: null,
-      fechaParaConvertir: null,
-      isGeneratingAnuncio: false,
-      generatingStep: "",
-      eventoParaVer: null,
-      showEventoModal: false,
-      // Notificaciones XP
-      showXpNotification: false,
-      xpAmount: 0,
-      xpMessage: "",
-      tipoXP: "fecha",
-      accionXP: "agregados",
-    };
-  },
-  async created() {
-    await this.loadFechas();
-  },
-  methods: {
-    showNotification(mensaje, isError = true, timeout = 5000) {
-      this.errorMessage = mensaje;
-      this.isErrorNotification = isError;
+const { xp: toastXp } = useToast();
+const { confirm: confirmDialog } = useConfirm();
+const gameStore = useGameStore();
+const statsStore = useStatsStore();
 
-      // Limpiar el mensaje después del tiempo especificado
-      setTimeout(() => {
-        if (this.errorMessage === mensaje) {
-          this.errorMessage = "";
+const fechas = ref<any[]>([]);
+const isLoading = ref(true);
+const selectedFechas = ref<string[]>([]);
+const isAllSelected = ref(false);
+const showModal = ref(false);
+const errorMessage = ref("");
+const isErrorNotification = ref(true);
+const editingFecha = ref<any>(null);
+const fechaParaConvertir = ref<any>(null);
+const isGeneratingAnuncio = ref(false);
+const generatingStep = ref("");
+const eventoParaVer = ref<any>(null);
+const showEventoModal = ref(false);
+
+const fechaToEventoConverter = ref<InstanceType<typeof FechaToEventoConverter> | null>(null);
+
+loadFechas();
+
+function showNotification(mensaje: string, isError = true, timeout = 5000) {
+  errorMessage.value = mensaje;
+  isErrorNotification.value = isError;
+  setTimeout(() => {
+    if (errorMessage.value === mensaje) errorMessage.value = "";
+  }, timeout);
+}
+
+async function loadFechas() {
+  try {
+    isLoading.value = true;
+    const response = await fechasApi.getAll();
+    const fechasConvertidas = response.data.map((fecha: any) => ({
+      ...fecha,
+      infoAdiccional: Number(fecha.infoAdiccional),
+    }));
+    fechas.value = sortFechas(fechasConvertidas);
+    isLoading.value = false;
+    verificarEventosAsociados(fechasConvertidas);
+  } catch (error) {
+    console.error("Error al cargar fechas:", error);
+    showNotification("Error al cargar las fechas", true);
+    isLoading.value = false;
+  }
+}
+
+async function verificarEventosAsociados(fechasArray: any[]) {
+  const fechasConEventos = fechasArray.filter((fecha) => fecha.eventoId);
+  if (fechasConEventos.length === 0) return;
+
+  try {
+    const eventosIds = [...new Set(fechasConEventos.map((fecha) => fecha.eventoId))];
+    const verificaciones = await Promise.all(
+      eventosIds.map(async (eventoId) => {
+        try {
+          await eventosApi.getById(eventoId);
+          return { id: eventoId, existe: true };
+        } catch {
+          return { id: eventoId, existe: false };
         }
-      }, timeout);
-    },
-    async loadFechas() {
-      try {
-        this.isLoading = true;
-        const response = await fechas.getAll();
+      })
+    );
 
-        // Convertir infoAdiccional a número en cada fecha
-        const fechasConvertidas = response.data.map((fecha) => ({
-          ...fecha,
-          infoAdiccional: Number(fecha.infoAdiccional),
-        }));
+    const eventosInexistentes = verificaciones.filter((v) => !v.existe).map((v) => v.id);
+    if (eventosInexistentes.length === 0) return;
 
-        // Mostrar las fechas inmediatamente
-        this.fechas = this.sortFechas(fechasConvertidas);
-        this.isLoading = false;
+    const fechasParaActualizar = fechasConEventos.filter((fecha) =>
+      eventosInexistentes.includes(fecha.eventoId)
+    );
 
-        // Verificar eventos asociados de forma asíncrona después de mostrar las fechas
-        this.verificarEventosAsociados(fechasConvertidas);
-      } catch (error) {
-        console.error("Error al cargar fechas:", error);
-        this.showNotification("Error al cargar las fechas", true);
-        this.isLoading = false;
-      }
-    },
-    async verificarEventosAsociados(fechasArray) {
-      // Filtrar fechas que tienen eventoId
-      const fechasConEventos = fechasArray.filter((fecha) => fecha.eventoId);
-
-      if (fechasConEventos.length === 0) return; // No hay fechas con eventos asociados
-
-      try {
-        // Obtener solo los IDs de los eventos asociados para verificar
-        const eventosIds = [
-          ...new Set(fechasConEventos.map((fecha) => fecha.eventoId)),
-        ];
-
-        // Comprobar la existencia de cada evento de forma individual
-        const verificaciones = await Promise.all(
-          eventosIds.map(async (eventoId) => {
-            try {
-              await eventos.getById(eventoId);
-              return { id: eventoId, existe: true };
-            } catch (error) {
-              return { id: eventoId, existe: false };
-            }
-          })
-        );
-
-        // Filtrar los eventos que no existen
-        const eventosInexistentes = verificaciones
-          .filter((verificacion) => !verificacion.existe)
-          .map((verificacion) => verificacion.id);
-
-        if (eventosInexistentes.length === 0) return;
-
-        // Identificar fechas con referencias a eventos que ya no existen
-        const fechasParaActualizar = fechasConEventos.filter((fecha) =>
-          eventosInexistentes.includes(fecha.eventoId)
-        );
-
-        // Actualizar las fechas que tienen referencias a eventos eliminados
-        if (fechasParaActualizar.length > 0) {
-          console.log(
-            `Se encontraron ${fechasParaActualizar.length} fechas con referencias a eventos eliminados`
-          );
-
-          // Actualizar cada fecha para eliminar la referencia al evento
-          const actualizaciones = fechasParaActualizar.map((fecha) =>
-            fechas.update(fecha.id, { eventoId: null })
-          );
-
-          await Promise.all(actualizaciones);
-
-          // Actualizar las fechas en el array local
-          fechasParaActualizar.forEach((fechaInvalida) => {
-            const index = this.fechas.findIndex(
-              (f) => f.id === fechaInvalida.id
-            );
-            if (index !== -1) {
-              this.fechas[index].eventoId = null;
-            }
-          });
-
-          // Mostrar notificación si se actualizaron fechas
-          if (fechasParaActualizar.length > 0) {
-            this.showNotification(
-              `Se han actualizado ${fechasParaActualizar.length} fechas que tenían referencias a eventos eliminados`,
-              false
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error al verificar eventos asociados:", error);
-        // No mostramos error al usuario para no interrumpir la carga de fechas
-      }
-    },
-    sortFechas(fechas) {
-      return fechas.sort((a, b) => {
-        const fechaA = new Date(a.fecha);
-        const fechaB = new Date(b.fecha);
-        return fechaA - fechaB;
+    if (fechasParaActualizar.length > 0) {
+      await Promise.all(fechasParaActualizar.map((fecha) => fechasApi.update(fecha.id, { eventoId: null })));
+      fechasParaActualizar.forEach((fechaInvalida) => {
+        const index = fechas.value.findIndex((f) => f.id === fechaInvalida.id);
+        if (index !== -1) fechas.value[index].eventoId = null;
       });
-    },
-    openModal(fecha = null) {
-      this.editingFecha = fecha;
-      this.showModal = true;
-    },
-    closeModal() {
-      this.showModal = false;
-      this.editingFecha = null;
-    },
-    async saveFecha(fechaData) {
-      try {
-        // Verificamos si estamos editando o duplicando
-        if (this.editingFecha && this.editingFecha.id) {
-          // Estamos editando una fecha existente
-          await fechas.update(this.editingFecha.id, fechaData);
-          // Establecer tipo y acción específicos
-          this.tipoXP = "fecha";
-          this.accionXP = "modificados";
-          // Notificación XP por actualizar fecha
-          this.showXpNotif(20, "¡Fecha actualizada!", "fecha", "modificados");
+      showNotification(
+        `Se han actualizado ${fechasParaActualizar.length} fechas que tenían referencias a eventos eliminados`,
+        false
+      );
+    }
+  } catch (error) {
+    console.error("Error al verificar eventos asociados:", error);
+  }
+}
+
+function sortFechas(list: any[]) {
+  return list.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+}
+
+function openModal(fecha: any = null) {
+  editingFecha.value = fecha;
+  showModal.value = true;
+}
+
+function closeModal() {
+  showModal.value = false;
+  editingFecha.value = null;
+}
+
+async function saveFecha(fechaData: any) {
+  try {
+    if (editingFecha.value && editingFecha.value.id) {
+      await fechasApi.update(editingFecha.value.id, fechaData);
+      showXpNotif(20, "¡Fecha actualizada!", "fecha", "modificados");
+    } else {
+      await fechasApi.create(fechaData);
+      showXpNotif(30, "¡Nueva fecha creada!", "fecha", "agregados");
+      if (fechaData.titulo && fechaData.titulo.includes("(Copia)")) {
+        errorMessage.value = "Fecha duplicada con éxito";
+        isErrorNotification.value = false;
+        setTimeout(() => {
+          if (errorMessage.value === "Fecha duplicada con éxito") errorMessage.value = "";
+        }, 3000);
+      }
+    }
+    await loadFechas();
+    closeModal();
+  } catch (error) {
+    console.error("Error al guardar fecha:", error);
+    errorMessage.value = "Error al guardar la fecha";
+    isErrorNotification.value = true;
+  }
+}
+
+async function deleteFecha(id: string) {
+  if (await confirmDialog("¿Estás seguro que deseas eliminar esta fecha?", { danger: true })) {
+    try {
+      await fechasApi.delete(id);
+      showNotification("Fecha eliminada con éxito", false);
+      fechas.value = fechas.value.filter((fecha) => fecha.id !== id);
+      showXpNotif(10, "¡Fecha eliminada!", "fecha", "eliminados");
+    } catch (error) {
+      console.error("Error al eliminar fecha:", error);
+      showNotification("Error al eliminar la fecha", true);
+    }
+  }
+}
+
+async function convertirAAnuncio(fecha: any) {
+  if (fecha.eventoId) {
+    await verEvento(fecha.eventoId);
+  } else {
+    fechaParaConvertir.value = fecha;
+    nextTick(() => {
+      fechaToEventoConverter.value?.convertirFechaAEvento();
+    });
+  }
+}
+
+async function verEvento(eventoId: string) {
+  const loadingIndicator = document.createElement("div");
+  loadingIndicator.className = "fixed top-4 right-4 bg-teal-500 text-white px-4 py-2 rounded-lg z-50";
+  loadingIndicator.textContent = "Cargando anuncio...";
+  document.body.appendChild(loadingIndicator);
+
+  try {
+    try {
+      const response = await eventosApi.getById(eventoId);
+      eventoParaVer.value = response.data;
+      setTimeout(() => { showEventoModal.value = true; }, 100);
+    } catch (error: any) {
+      console.error("Error al obtener el evento:", error);
+      if (error.message?.includes("Evento no encontrado")) {
+        const fechaConEventoEliminado = fechas.value.find((f) => f.eventoId === eventoId);
+        if (fechaConEventoEliminado) {
+          await fechasApi.update(fechaConEventoEliminado.id, { eventoId: null });
+          showNotification("El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia.", true);
+          const index = fechas.value.findIndex((f) => f.id === fechaConEventoEliminado.id);
+          if (index !== -1) fechas.value[index].eventoId = null;
         } else {
-          // Estamos creando una nueva fecha (ya sea desde cero o duplicando)
-          await fechas.create(fechaData);
-          // Establecer tipo y acción específicos
-          this.tipoXP = "fecha";
-          this.accionXP = "agregados";
-          // Notificación XP por crear fecha
-          this.showXpNotif(30, "¡Nueva fecha creada!", "fecha", "agregados");
-
-          // Mostrar mensaje específico si es una duplicación
-          if (fechaData.titulo && fechaData.titulo.includes("(Copia)")) {
-            this.errorMessage = "Fecha duplicada con éxito";
-            this.isErrorNotification = false;
-            // Limpiar el mensaje después de 3 segundos
-            setTimeout(() => {
-              if (this.errorMessage === "Fecha duplicada con éxito") {
-                this.errorMessage = "";
-              }
-            }, 3000);
-          }
+          showNotification("El evento asociado ya no existe", true);
         }
-        // Actualizar contadores manualmente después de las operaciones
-        if (window.actualizarContadorEstadisticas) {
-          setTimeout(() => window.actualizarContadorEstadisticas(), 500);
-        }
-        await this.loadFechas();
-        this.closeModal();
-      } catch (error) {
-        console.error("Error al guardar fecha:", error);
-        this.errorMessage = "Error al guardar la fecha";
-        this.isErrorNotification = true;
-      }
-    },
-    async deleteFecha(id) {
-      if (window.confirm("¿Estás seguro que deseas eliminar esta fecha?")) {
-        try {
-          await fechas.delete(id);
-          this.showNotification("Fecha eliminada con éxito", false);
-          this.fechas = this.fechas.filter((fecha) => fecha.id !== id);
-          // Establecer tipo y acción específicos
-          this.tipoXP = "fecha";
-          this.accionXP = "eliminados";
-          // Notificación XP por eliminar fecha
-          this.showXpNotif(10, "¡Fecha eliminada!", "fecha", "eliminados");
-
-          // Actualizar contadores manualmente después de las operaciones
-          if (window.actualizarContadorEstadisticas) {
-            setTimeout(() => window.actualizarContadorEstadisticas(), 500);
-          }
-        } catch (error) {
-          console.error("Error al eliminar fecha:", error);
-          this.showNotification("Error al eliminar la fecha", true);
-        }
-      }
-    },
-    async convertirAAnuncio(fecha) {
-      if (fecha.eventoId) {
-        // Si ya tiene un evento asociado, mostrar ese evento
-        await this.verEvento(fecha.eventoId);
       } else {
-        // Si no tiene evento asociado, crear uno nuevo
-        this.fechaParaConvertir = fecha;
-        // Esperar a que el componente se monte en el DOM
-        this.$nextTick(() => {
-          if (this.$refs.fechaToEventoConverter) {
-            this.$refs.fechaToEventoConverter.convertirFechaAEvento();
-          }
-        });
+        showNotification("Error al cargar el evento", true);
       }
-    },
-    async verEvento(eventoId) {
-      try {
-        // Usaremos una variable local para el estado de carga en lugar de isLoading global
-        const loadingIndicator = document.createElement("div");
-        loadingIndicator.className =
-          "fixed top-4 right-4 bg-teal-500 text-white px-4 py-2 rounded-lg z-50";
-        loadingIndicator.textContent = "Cargando anuncio...";
-        document.body.appendChild(loadingIndicator);
+    }
+  } catch (error) {
+    console.error("Error general:", error);
+    showNotification("Error al procesar la solicitud", true);
+  } finally {
+    const indicator = document.querySelector(".fixed.top-4.right-4");
+    if (indicator) document.body.removeChild(indicator);
+  }
+}
 
-        console.log("Obteniendo evento con ID:", eventoId);
+async function handleUpdateEvento(eventoData: any) {
+  if (!eventoParaVer.value?.id) return;
+  const eventoModificado = JSON.stringify(eventoData) !== JSON.stringify(eventoParaVer.value);
 
-        try {
-          const response = await eventos.getById(eventoId);
-          console.log("Evento obtenido:", response.data);
-          this.eventoParaVer = response.data;
-
-          // Usar setTimeout para asegurar que el componente se monte correctamente
-          setTimeout(() => {
-            this.showEventoModal = true;
-            console.log("Modal abierto con delay:", this.showEventoModal);
-          }, 100);
-        } catch (error) {
-          console.error("Error al obtener el evento:", error);
-
-          // Si el evento no existe, actualizar la fecha para eliminar la referencia
-          if (error.message.includes("Evento no encontrado")) {
-            // Buscar la fecha que tiene este eventoId
-            const fechaConEventoEliminado = this.fechas.find(
-              (f) => f.eventoId === eventoId
-            );
-
-            if (fechaConEventoEliminado) {
-              // Actualizar la fecha para eliminar la referencia al evento eliminado
-              await fechas.update(fechaConEventoEliminado.id, {
-                eventoId: null,
-              });
-
-              this.showNotification(
-                "El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia.",
-                true
-              );
-              // Actualizar localmente la fecha afectada en lugar de recargar todas
-              const index = this.fechas.findIndex(
-                (fecha) => fecha.id === fechaConEventoEliminado.id
-              );
-              if (index !== -1) {
-                this.fechas[index].eventoId = null;
-              }
-            } else {
-              this.showNotification("El evento asociado ya no existe", true);
-            }
-          } else {
-            this.showNotification("Error al cargar el evento", true);
-          }
-        }
-      } catch (error) {
-        console.error("Error general:", error);
-        this.showNotification("Error al procesar la solicitud", true);
-      } finally {
-        // Eliminar el indicador de carga local
-        const loadingIndicator = document.querySelector(".fixed.top-4.right-4");
-        if (loadingIndicator) {
-          document.body.removeChild(loadingIndicator);
-        }
-      }
-    },
-    async handleUpdateEvento(eventoData) {
-      // Actualizar el evento si se modificó
-      if (this.eventoParaVer && this.eventoParaVer.id) {
-        // Verificar si realmente se modificó el evento comparando con los datos originales
-        const eventoModificado =
-          JSON.stringify(eventoData) !== JSON.stringify(this.eventoParaVer);
-
-        if (eventoModificado) {
+  if (eventoModificado) {
+    try {
+      await eventosApi.update(eventoParaVer.value.id, eventoData);
+      closeEventoModal(false);
+      showNotification("Evento actualizado con éxito", false);
+    } catch (error: any) {
+      console.error("Error al actualizar el evento:", error);
+      if (error.message?.includes("El evento no existe")) {
+        const fechaConEventoEliminado = fechas.value.find((f) => f.eventoId === eventoParaVer.value?.id);
+        if (fechaConEventoEliminado) {
           try {
-            // Actualizar sin mostrar estado de carga
-            await eventos.update(this.eventoParaVer.id, eventoData);
-
-            // Cerrar el modal sin parámetro para evitar recargas
-            this.closeEventoModal(false);
-
-            // Mostrar notificación de éxito
-            this.showNotification("Evento actualizado con éxito", false);
-          } catch (error) {
-            console.error("Error al actualizar el evento:", error);
-
-            // Si el evento no existe, actualizar la fecha
-            if (error.message.includes("El evento no existe")) {
-              // Buscar la fecha que tiene este eventoId
-              const fechaConEventoEliminado = this.fechas.find(
-                (f) => f.eventoId === this.eventoParaVer.id
-              );
-
-              if (fechaConEventoEliminado) {
-                // Actualizar la fecha para eliminar la referencia al evento eliminado
-                try {
-                  await fechas.update(fechaConEventoEliminado.id, {
-                    eventoId: null, // o undefined
-                  });
-
-                  this.showNotification(
-                    "El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia.",
-                    true
-                  );
-
-                  // Actualizar localmente la fecha afectada en lugar de recargar todas
-                  const index = this.fechas.findIndex(
-                    (fecha) => fecha.id === fechaConEventoEliminado.id
-                  );
-                  if (index !== -1) {
-                    this.fechas[index].eventoId = null;
-                  }
-                } catch (updateError) {
-                  console.error("Error al actualizar la fecha:", updateError);
-                  this.showNotification("Error al actualizar la fecha", true);
-                }
-              } else {
-                this.showNotification("El evento asociado ya no existe", true);
-              }
-            } else {
-              this.showNotification("Error al actualizar el evento", true);
-            }
+            await fechasApi.update(fechaConEventoEliminado.id, { eventoId: null });
+            showNotification("El evento asociado a esta fecha ya no existe. Se ha actualizado la referencia.", true);
+            const index = fechas.value.findIndex((f) => f.id === fechaConEventoEliminado.id);
+            if (index !== -1) fechas.value[index].eventoId = null;
+          } catch (updateError) {
+            console.error("Error al actualizar la fecha:", updateError);
+            showNotification("Error al actualizar la fecha", true);
           }
         } else {
-          // Si no hubo cambios, simplemente cerrar el modal sin recargar
-          this.closeEventoModal(false);
-        }
-      }
-    },
-    closeEventoModal(recargarFechas = false) {
-      console.log("Cerrando modal de evento");
-      this.showEventoModal = false;
-      this.eventoParaVer = null;
-
-      // Eliminar la clase modal-open del body para restaurar el scroll
-      document.body.classList.remove("modal-open");
-
-      // Nunca recargar las fechas al cerrar - se maneja de otra forma
-      // if (recargarFechas) {
-      //   this.loadFechas();
-      // }
-
-      console.log("Modal cerrado:", this.showEventoModal, this.eventoParaVer);
-    },
-    handleConverterError(mensaje) {
-      this.errorMessage = mensaje;
-      this.isErrorNotification = true;
-
-      // Limpiar el mensaje después de 5 segundos
-      setTimeout(() => {
-        if (this.errorMessage === mensaje) {
-          this.errorMessage = "";
-        }
-      }, 5000);
-    },
-    handleConverterSuccess(mensaje, datosActualizados) {
-      this.errorMessage = mensaje;
-      this.isErrorNotification = false;
-
-      // Limpiar el mensaje después de 5 segundos
-      setTimeout(() => {
-        if (this.errorMessage === mensaje) {
-          this.errorMessage = "";
-        }
-      }, 5000);
-
-      // Actualizar solo la fecha específica en lugar de recargar todas
-      if (datosActualizados && datosActualizados.fechaId) {
-        const fechaIndex = this.fechas.findIndex(
-          (fecha) => fecha.id === datosActualizados.fechaId
-        );
-
-        if (fechaIndex !== -1) {
-          // Actualizar la fecha con el nuevo eventoId
-          const fechaActualizada = {
-            ...this.fechas[fechaIndex],
-            eventoId: datosActualizados.eventoId,
-          };
-
-          // Actualizar el array manteniendo la reactividad
-          this.fechas.splice(fechaIndex, 1, fechaActualizada);
+          showNotification("El evento asociado ya no existe", true);
         }
       } else {
-        // Si por alguna razón no tenemos los datos actualizados, recargamos toda la lista
-        this.loadFechas();
+        showNotification("Error al actualizar el evento", true);
       }
-    },
-    formatDate(date) {
-      // Crear la fecha en la zona horaria de Bogotá
-      const fechaBogota = new Date(date + "T00:00:00-05:00");
-      return fechaBogota.toLocaleDateString("es-CO", {
-        timeZone: "America/Bogota",
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-      });
-    },
-    getColorClass(value) {
-      if (value === "Info") return "bg-teal-500";
-      const iconOptions = [
-        { value: "Cumpleaños", colorClass: "bg-yellow-500" },
-        { value: "Canasta de amor", colorClass: "bg-red-500" },
-        { value: "Cena del Señor", colorClass: "bg-red-700" },
-        { value: "Reunión de damas", colorClass: "bg-pink-500" },
-        { value: "Reunión de varones", colorClass: "bg-blue-500" },
-        { value: "Reunión de jovenes", colorClass: "bg-indigo-500" },
-        { value: "Domingo misionero", colorClass: "bg-green-500" },
-        { value: "Culto de oración", colorClass: "bg-violet-500" },
-        { value: "Noches navideñas", colorClass: "bg-red-400" },
-        { value: "Reuniones caseras", colorClass: "bg-orange-500" },
-      ];
-      const option = iconOptions.find((opt) => opt.value === value);
-      return option ? option.colorClass : "bg-teal-500";
-    },
-    getDiasRestantes(fecha) {
-      // Obtener fecha actual en Bogotá
-      const hoyBogota = new Date(
-        new Date().toLocaleString("en-US", { timeZone: "America/Bogota" })
+    }
+  } else {
+    closeEventoModal(false);
+  }
+}
+
+function closeEventoModal(_recargarFechas = false) {
+  showEventoModal.value = false;
+  eventoParaVer.value = null;
+  document.body.classList.remove("modal-open");
+}
+
+function handleConverterError(mensaje: string) {
+  errorMessage.value = mensaje;
+  isErrorNotification.value = true;
+  setTimeout(() => {
+    if (errorMessage.value === mensaje) errorMessage.value = "";
+  }, 5000);
+}
+
+function handleConverterSuccess(mensaje: string, datosActualizados: any) {
+  errorMessage.value = mensaje;
+  isErrorNotification.value = false;
+  setTimeout(() => {
+    if (errorMessage.value === mensaje) errorMessage.value = "";
+  }, 5000);
+
+  if (datosActualizados?.fechaId) {
+    const fechaIndex = fechas.value.findIndex((f) => f.id === datosActualizados.fechaId);
+    if (fechaIndex !== -1) {
+      fechas.value.splice(fechaIndex, 1, { ...fechas.value[fechaIndex], eventoId: datosActualizados.eventoId });
+    }
+  } else {
+    loadFechas();
+  }
+}
+
+function formatDate(date: string) {
+  return formatDateBogotaShort(date);
+}
+
+function getColorClass(value: string) {
+  const option = iconOptions.find((opt) => opt.value === value);
+  return option ? option.colorClass : "bg-teal-500";
+}
+
+function getDiasRestantes(fecha: string) {
+  const hoyBogota = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Bogota" }));
+  hoyBogota.setHours(0, 0, 0, 0);
+  const fechaEvento = new Date(fecha + "T00:00:00-05:00");
+  fechaEvento.setHours(0, 0, 0, 0);
+  const diferencia = fechaEvento.getTime() - hoyBogota.getTime();
+  const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+  if (diferencia < 0) return "Evento pasado";
+  if (diferencia === 0 || dias === 0) return "Hoy";
+  if (dias === 1) return "Mañana";
+  return `${dias} días`;
+}
+
+function getDiasRestantesClass(fecha: string) {
+  const hoyBogota = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Bogota" }));
+  hoyBogota.setHours(0, 0, 0, 0);
+  const fechaEvento = new Date(fecha + "T00:00:00-05:00");
+  fechaEvento.setHours(0, 0, 0, 0);
+  const diferencia = fechaEvento.getTime() - hoyBogota.getTime();
+  const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+  if (diferencia < 0) return "text-gray-500 dark:text-gray-400";
+  if (dias <= 7) return "text-red-600 dark:text-red-400 font-semibold";
+  if (dias <= 30) return "text-yellow-600 dark:text-yellow-400";
+  return "text-green-600 dark:text-green-400";
+}
+
+function toggleSelectAll() {
+  selectedFechas.value = isAllSelected.value ? [] : fechas.value.map((f) => f.id);
+  isAllSelected.value = !isAllSelected.value;
+}
+
+async function deleteSelected() {
+  if (await confirmDialog("¿Estás seguro de que deseas eliminar las fechas seleccionadas?", { danger: true })) {
+    try {
+      await Promise.all(selectedFechas.value.map((id) => fechasApi.delete(id)));
+      fechas.value = fechas.value.filter((f) => !selectedFechas.value.includes(f.id));
+      const deletedCount = selectedFechas.value.length;
+      showNotification(
+        `Se han eliminado ${deletedCount} fecha${deletedCount !== 1 ? "s" : ""} correctamente`,
+        false
       );
-      hoyBogota.setHours(0, 0, 0, 0);
-
-      // Convertir la fecha del evento a la zona horaria de Bogotá
-      const fechaEvento = new Date(fecha + "T00:00:00-05:00");
-      fechaEvento.setHours(0, 0, 0, 0);
-
-      const diferencia = fechaEvento.getTime() - hoyBogota.getTime();
-      const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-
-      if (diferencia < 0) return "Evento pasado";
-      if (diferencia === 0 || dias === 0) return "Hoy";
-      if (dias === 1) return "Mañana";
-      return `${dias} días`;
-    },
-    getDiasRestantesClass(fecha) {
-      // Obtener fecha actual en Bogotá
-      const hoyBogota = new Date(
-        new Date().toLocaleString("en-US", { timeZone: "America/Bogota" })
-      );
-      hoyBogota.setHours(0, 0, 0, 0);
-
-      // Convertir la fecha del evento a la zona horaria de Bogotá
-      const fechaEvento = new Date(fecha + "T00:00:00-05:00");
-      fechaEvento.setHours(0, 0, 0, 0);
-
-      const diferencia = fechaEvento.getTime() - hoyBogota.getTime();
-      const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-
-      if (diferencia < 0) return "text-gray-500 dark:text-gray-400";
-      if (dias <= 7) return "text-red-600 dark:text-red-400 font-semibold";
-      if (dias <= 30) return "text-yellow-600 dark:text-yellow-400";
-      return "text-green-600 dark:text-green-400";
-    },
-    toggleSelectAll() {
-      this.selectedFechas = this.isAllSelected
-        ? []
-        : this.fechas.map((f) => f.id);
-      this.isAllSelected = !this.isAllSelected;
-    },
-    async deleteSelected() {
-      if (
-        window.confirm(
-          "¿Estás seguro de que deseas eliminar las fechas seleccionadas?"
-        )
-      ) {
-        try {
-          await Promise.all(this.selectedFechas.map((id) => fechas.delete(id)));
-
-          // En lugar de recargar todas las fechas, solo eliminamos las fechas seleccionadas del array local
-          this.fechas = this.fechas.filter(
-            (fecha) => !this.selectedFechas.includes(fecha.id)
-          );
-
-          const deletedCount = this.selectedFechas.length;
-          this.showNotification(
-            `Se han eliminado ${deletedCount} fecha${
-              deletedCount !== 1 ? "s" : ""
-            } correctamente`,
-            false
-          );
-
-          // Notificación XP por eliminar fechas
-          if (deletedCount > 0) {
-            const xpAmountForSelection =
-              deletedCount === 1 ? 10 : 7 * deletedCount;
-            const message = `¡${deletedCount} fecha${
-              deletedCount !== 1 ? "s" : ""
-            } eliminada${deletedCount !== 1 ? "s" : ""}!`;
-            this.showXpNotif(
-              xpAmountForSelection,
-              message,
-              "fecha",
-              "eliminados"
-            );
-          }
-
-          this.selectedFechas = [];
-          this.isAllSelected = false;
-        } catch (error) {
-          console.error("Error al eliminar fechas seleccionadas:", error);
-          this.showNotification(
-            "Error al eliminar las fechas seleccionadas",
-            true
-          );
-        }
+      if (deletedCount > 0) {
+        const xpAmount = deletedCount === 1 ? 10 : 7 * deletedCount;
+        const msg = `¡${deletedCount} fecha${deletedCount !== 1 ? "s" : ""} eliminada${deletedCount !== 1 ? "s" : ""}!`;
+        showXpNotif(xpAmount, msg, "fecha", "eliminados");
       }
-    },
-    getIconFileName(value) {
-      if (value === "Info") return "default.svg";
-      const iconOptions = [
-        { value: "Cumpleaños", icon: "cumple.svg" },
-        { value: "Canasta de amor", icon: "canasta-de-amor.svg" },
-        { value: "Cena del Señor", icon: "cena-del-senor.svg" },
-        { value: "Reunión de damas", icon: "reunion-de-damas.svg" },
-        { value: "Reunión de varones", icon: "reunion-de-varones.svg" },
-        { value: "Reunión de jovenes", icon: "reunion-de-jovenes.svg" },
-        { value: "Domingo misionero", icon: "domingo-misionero.svg" },
-        { value: "Culto de oración", icon: "culto-de-oracion.svg" },
-        { value: "Noches navideñas", icon: "noches-navidenas.svg" },
-        { value: "Reuniones caseras", icon: "reuniones-caseras.svg" },
-      ];
-      const option = iconOptions.find((opt) => opt.value === value);
-      return option ? option.icon : "default.svg";
-    },
-    duplicarFecha(fecha) {
-      // Crear una copia profunda del objeto sin usar la referencia original
-      const fechaDuplicada = JSON.parse(
-        JSON.stringify({
-          // No incluir el ID para asegurar que sea una nueva fecha
-          titulo: `${fecha.titulo} (Copia)`,
-          fecha: fecha.fecha,
-          hora: fecha.hora,
-          lugar: fecha.lugar,
-          createdBy: fecha.createdBy,
-          updatedBy: null,
-          eventoId: null, // No copiar el eventoId para evitar conflictos
-          banner: fecha.banner,
-          infoAdiccional: fecha.infoAdiccional,
-          infoIconoTexto: fecha.infoIconoTexto,
-        })
-      );
+      selectedFechas.value = [];
+      isAllSelected.value = false;
+    } catch (error) {
+      console.error("Error al eliminar fechas seleccionadas:", error);
+      showNotification("Error al eliminar las fechas seleccionadas", true);
+    }
+  }
+}
 
-      // Asegurarnos de que no haya ID en el objeto
-      delete fechaDuplicada.id;
+function getIconFileName(value: string) {
+  const option = iconOptions.find((opt) => opt.value === value);
+  return option ? option.icon : "default.svg";
+}
 
-      // Abrir el modal con la fecha duplicada para que el usuario pueda editarla
-      this.editingFecha = fechaDuplicada;
-      this.showModal = true;
-    },
-    isUrl(str) {
-      if (!str) return false;
-      // Agregar soporte para URLs que empiezan con www.
-      if (str.startsWith("www.")) {
-        str = "http://" + str;
-      }
-      try {
-        new URL(str);
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    async handleDeleteEvento() {
-      if (!this.eventoParaVer || !this.eventoParaVer.id) {
-        this.showNotification(
-          "No se pudo identificar el evento para eliminar",
-          true
-        );
-        return;
-      }
+function duplicarFecha(fecha: any) {
+  const fechaDuplicada = JSON.parse(JSON.stringify({
+    titulo: `${fecha.titulo} (Copia)`,
+    fecha: fecha.fecha,
+    hora: fecha.hora,
+    lugar: fecha.lugar,
+    createdBy: fecha.createdBy,
+    updatedBy: null,
+    eventoId: null,
+    banner: fecha.banner,
+    infoAdiccional: fecha.infoAdiccional,
+    infoIconoTexto: fecha.infoIconoTexto,
+  }));
+  delete fechaDuplicada.id;
+  editingFecha.value = fechaDuplicada;
+  showModal.value = true;
+}
 
-      try {
-        // La confirmación ya se realizó en EventoModal, no es necesario repetirla aquí
+function isUrl(str: string) {
+  return isUrlCheck(str);
+}
 
-        // Guardar el ID del evento y buscar fechas afectadas antes de cualquier operación
-        const eventoId = this.eventoParaVer.id;
-        const fechasConEvento = this.fechas.filter(
-          (f) => f.eventoId === eventoId
-        );
+async function handleDeleteEvento() {
+  if (!eventoParaVer.value?.id) {
+    showNotification("No se pudo identificar el evento para eliminar", true);
+    return;
+  }
 
-        // Cerrar el modal sin recargar fechas
-        this.closeEventoModal(false);
+  try {
+    const eventoId = eventoParaVer.value.id;
+    const fechasConEvento = fechas.value.filter((f) => f.eventoId === eventoId);
+    closeEventoModal(false);
+    await eventosApi.delete(eventoId);
 
-        // Eliminar el evento sin activar el estado de carga
-        // No establecemos isLoading = true para evitar mostrar "Cargando fechas..."
-        await eventos.delete(eventoId);
+    if (fechasConEvento.length > 0) {
+      await Promise.all(fechasConEvento.map((f) => fechasApi.update(f.id, { eventoId: null })));
+    }
 
-        // Actualizar las fechas para quitar la referencia al evento eliminado
-        if (fechasConEvento.length > 0) {
-          const actualizaciones = fechasConEvento.map((f) =>
-            fechas.update(f.id, { eventoId: null })
-          );
-          await Promise.all(actualizaciones);
-        }
+    showNotification("Anuncio eliminado con éxito", false);
+    fechasConEvento.forEach((f) => {
+      const index = fechas.value.findIndex((fecha) => fecha.id === f.id);
+      if (index !== -1) fechas.value[index].eventoId = null;
+    });
+  } catch (error) {
+    console.error("Error al eliminar el evento:", error);
+    showNotification("Error al eliminar el anuncio", true);
+  }
+}
 
-        // Mostrar mensaje de éxito
-        this.showNotification("Anuncio eliminado con éxito", false);
+function reportStreakActivity(tipo: string, fecha = new Date()) {
+  window.dispatchEvent(new CustomEvent("streakActivity", { detail: { tipo, fecha } }));
+}
 
-        // Actualizar localmente las fechas afectadas
-        fechasConEvento.forEach((f) => {
-          const index = this.fechas.findIndex((fecha) => fecha.id === f.id);
-          if (index !== -1) {
-            this.fechas[index].eventoId = null;
-          }
-        });
-      } catch (error) {
-        console.error("Error al eliminar el evento:", error);
-        this.showNotification("Error al eliminar el anuncio", true);
-      }
-    },
-    // Función para reportar actividad de streaks
-    reportStreakActivity(tipo, fecha = new Date()) {
-      // Dispatch evento personalizado para notificar actividad de streak
-      window.dispatchEvent(new CustomEvent('streakActivity', {
-        detail: { tipo, fecha }
-      }));
-      console.log(`AdminFechasList - Reportando actividad de streak: ${tipo}`);
-    },
-    showXpNotif(amount, message, tipo = "fecha", accion = "agregados") {
-      this.xpAmount = amount;
-      this.xpMessage = message;
-      this.tipoXP = tipo;
-      this.accionXP = accion;
-      this.showXpNotification = true;
+function showXpNotif(amount: number, message: string, tipo = "fecha", accion: "agregados" | "eliminados" | "modificados" = "agregados") {
+  if (accion === "agregados" || accion === "modificados") reportStreakActivity("fechas");
+  gameStore.awardXp(amount);
+  statsStore.incrementar(tipo, accion);
+  toastXp(amount, message);
+}
 
-      console.log(`showXpNotif - tipo: ${tipo}, accion: ${accion}`);
-
-      // Reportar actividad para streaks (solo para creación/actualización, no eliminación)
-      if (accion === "agregados" || accion === "modificados") {
-        this.reportStreakActivity("fechas");
-      }
-
-      // Actualizar experiencia en el sidebar si está disponible
-      const sidebarComponent = document.querySelector("admin-sidebar");
-      if (sidebarComponent && typeof sidebarComponent.awardXp === "function") {
-        sidebarComponent.awardXp(amount);
-      } else {
-        // Si no existe aún el componente, guardar el XP en localStorage
-        const currentXp = localStorage.getItem("tempXp")
-          ? parseInt(localStorage.getItem("tempXp") || "0")
-          : 0;
-        localStorage.setItem("tempXp", (currentXp + amount).toString());
-      }
-
-      // Actualizar contador usando la función global expuesta por ContadorEstadisticas
-      if (window.actualizarContador) {
-        window.actualizarContador(tipo, accion);
-        console.log(`Llamando a window.actualizarContador(${tipo}, ${accion})`);
-      } else {
-        console.warn(
-          "La función window.actualizarContador no está disponible."
-        );
-        // Como fallback, podríamos llamar a la versión manual, pero idealmente no debería pasar
-        // this.actualizarContadorManualmente(tipo, accion);
-      }
-
-      // Ocultar después de 3 segundos
-      setTimeout(() => {
-        this.showXpNotification = false;
-      }, 3000);
-    },
-    // Handler para eventos de XP desde el conversor de fechas a eventos
-    handleXpEarned({ amount, message, tipo = "evento", accion = "agregados" }) {
-      // Reportar actividad para streaks cuando se crea un anuncio desde una fecha
-      if (tipo === "evento" && accion === "agregados") {
-        this.reportStreakActivity("anuncios");
-      }
-      this.showXpNotif(amount, message, tipo, accion);
-    },
-  },
-};
+function handleXpEarned({ amount, message, tipo = "evento", accion = "agregados" }: {
+  amount: number; message: string; tipo?: string; accion?: "agregados" | "eliminados" | "modificados";
+}) {
+  if (tipo === "evento" && accion === "agregados") reportStreakActivity("anuncios");
+  showXpNotif(amount, message, tipo, accion);
+}
 </script>

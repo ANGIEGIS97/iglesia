@@ -8,7 +8,7 @@ const SYSTEM_INSTRUCTION =
   'Mantén siempre un tono respetuoso, esperanzador e inclusivo. ' +
   'Responde únicamente con el texto solicitado, sin explicaciones adicionales ni encabezados.';
 
-const INAPPROPRIATE_TERMS = ['secta', 'culto', 'ritual', 'florecer'];
+const INAPPROPRIATE_TERMS = ['secta', 'culto', 'ritual', 'florecer', 'espiservicio'];
 
 export class GeminiService {
   private _client: GoogleGenAI | null = null;

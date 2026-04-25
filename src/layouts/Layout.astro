@@ -1,6 +1,9 @@
 ---
+import "../styles/global.css";
 import { ViewTransitions } from "astro:transitions";
 import MenuInicio from "../components/MenuInicio.vue";
+import ToastContainer from "../components/common/ToastContainer.vue";
+import ConfirmDialog from "../components/common/ConfirmDialog.vue";
 const { titulo } = Astro.props;
 ---
 
@@ -12,15 +15,21 @@ const { titulo } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <!-- Script para evitar el parpadeo del modo oscuro -->
     <script is:inline>
-      if (
-        localStorage.getItem("darkMode") === "true" ||
-        (!localStorage.getItem("darkMode") &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches)
-      ) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
+      function applyTheme(doc) {
+        const root = (doc || document).documentElement;
+        const stored = localStorage.getItem("darkMode");
+        const isDark =
+          stored === "true" ||
+          (stored === null &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+        root.classList.toggle("dark", isDark);
       }
+      applyTheme();
+      // Re-aplica el tema al documento entrante antes de que ViewTransitions
+      // reemplace el <html>, evitando que se pierda la clase `dark` al navegar.
+      document.addEventListener("astro:before-swap", (e) =>
+        applyTheme(e.newDocument)
+      );
     </script>
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -36,19 +45,12 @@ const { titulo } = Astro.props;
     />
     <title>{titulo}</title>
     <ViewTransitions />
-    <style is:global>
-      html {
-        scroll-padding-top: 85px;
-        font-family: "Poppins", sans-serif;
-      }
-      body {
-        font-family: "Poppins", sans-serif;
-      }
-    </style>
   </head>
   <body class="dark:bg-gray-800">
     <MenuInicio client:load />
     <slot />
+    <ToastContainer client:load />
+    <ConfirmDialog client:load />
     <script>
       // RefTagger
       window.refTagger = {

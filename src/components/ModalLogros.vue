@@ -1,32 +1,26 @@
 <template>
-  <Teleport to="body">
-    <div
-      v-if="show"
-      class="fixed inset-0 z-[999] flex items-center justify-center"
-    >
-    <!-- Fondo oscuro -->
-    <div class="absolute inset-0 bg-black/70" @click="closeModal"></div>
-
-    <!-- Contenido del modal -->
-    <div
-      class="relative w-11/12 max-w-md rounded-xl overflow-hidden shadow-2xl transform transition-all"
-      :class="isDarkMode ? 'bg-gray-800' : 'bg-white'"
-    >
-      <!-- Header con borde de color según categoría -->
+  <BaseModal
+    :open="show"
+    backdrop-class="bg-black/70"
+    z-class="z-[999]"
+    :panel-class="panelClass"
+    @close="closeModal"
+  >
+    <template #header="{ close, labelId }">
+      <!-- Header: banda de color según categoría + botón de cierre flotante -->
       <div
         class="h-2 w-full"
         :class="[
           achievement?.unlocked
-            ? `bg-gradient-to-r ${getModalColors().from} ${getModalColors().to}`
+            ? `bg-linear-to-r ${getModalColors().from} ${getModalColors().to}`
             : isDarkMode
             ? 'bg-gray-700'
             : 'bg-gray-200',
         ]"
       ></div>
 
-      <!-- Botón de cierre -->
       <button
-        @click="closeModal"
+        @click="close"
         class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full transition-colors z-10"
         :class="
           isDarkMode
@@ -34,16 +28,21 @@
             : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'
         "
         type="button"
+        aria-label="Cerrar"
       >
         <i class="fas fa-times text-xl"></i>
       </button>
 
+      <span :id="labelId" class="sr-only">{{ achievement?.name || "Detalle de logro" }}</span>
+    </template>
+
+    <template #default>
       <!-- Contenido principal -->
       <div class="p-6 relative">
         <!-- Icono y nombre -->
         <div class="flex flex-col items-center mb-6">
           <div
-            class="flex items-center justify-center mb-4 w-20 h-20 rounded-full bg-gradient-to-br shadow-lg"
+            class="flex items-center justify-center mb-4 w-20 h-20 rounded-full bg-linear-to-br shadow-lg"
             :class="[
               achievement?.unlocked
                 ? `${getModalColors().from} ${getModalColors().to} ${
@@ -82,7 +81,7 @@
           class="mt-4 p-4 rounded-lg"
           :class="[
             isDarkMode
-              ? `border-[1px] ${getDarkVerseBorder()} ${getDarkVerseBg()}`
+              ? `border ${getDarkVerseBorder()} ${getDarkVerseBg()}`
               : verseBgColor,
           ]"
         >
@@ -143,14 +142,13 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
-  </Teleport>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup>
 import { ref, computed, watch, nextTick } from "vue";
-import { Teleport } from 'vue';
+import BaseModal from "./common/BaseModal.vue";
 
 const props = defineProps({
   achievement: {
@@ -170,6 +168,13 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 
 const isDarkMode = computed(() => props.darkMode);
+
+const panelClass = computed(
+  () =>
+    `relative w-11/12 max-w-md rounded-xl overflow-hidden shadow-2xl transform transition-all ${
+      isDarkMode.value ? "bg-gray-800" : "bg-white"
+    }`,
+);
 
 // Estado local para manejar fallback del icono
 const modalIconSrc = ref("");
@@ -420,9 +425,9 @@ const getDarkVerseBorder = () => {
   if (!props.achievement?.unlocked) return "border-gray-600";
 
   const base = getModalColors().base;
-  if (base === "amber") return "border-amber-500/70 border-opacity-70";
-  if (base === "blue") return "border-blue-500/70 border-opacity-70";
-  if (base === "purple") return "border-purple-500/70 border-opacity-70";
+  if (base === "amber") return "border-amber-500/70";
+  if (base === "blue") return "border-blue-500/70";
+  if (base === "purple") return "border-purple-500/70";
   return "border-gray-600";
 };
 
@@ -440,6 +445,5 @@ const getDarkVerseBg = () => {
 // Cerrar el modal
 const closeModal = () => {
   emit("close");
-  console.log("Modal cerrado"); // Para debug
 };
 </script>

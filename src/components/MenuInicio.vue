@@ -1,12 +1,12 @@
 <template>
   <!-- Barra de navegación principal -->
   <nav
-    class="bg-gray-800 fixed w-full z-50 top-0 start-0 border-b border-gray-600 navbar selection:bg-teal-500 selection:text-white"
+    class="bg-gray-800 fixed w-full z-50 top-0 inset-s-0 border-b border-gray-600 navbar selection:bg-teal-500 selection:text-white"
     style="list-style-type: none"
   >
     <!-- Contenedor principal de la barra de navegación -->
     <div
-      class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-2"
+      class="max-w-(--breakpoint-xl) flex flex-wrap items-center justify-between mx-auto p-2"
     >
       <!-- Logo y nombre de la iglesia -->
       <a
@@ -19,7 +19,7 @@
       </a>
 
       <!-- Menú de navegación (visible solo en desktop) -->
-      <div class="hidden lg:flex items-center justify-between flex-grow">
+      <div class="hidden lg:flex items-center justify-between grow">
         <div class="relative p-[2px] rounded-lg mx-auto">
           <div class="bg-gray-800 md:bg-transparent rounded-lg">
             <ul
@@ -72,7 +72,7 @@
                   style="top: calc(100% + 8px)"
                 >
                   <div
-                    class="absolute -top-[9px] left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 bg-gray-800"
+                    class="absolute top-[-9px] left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 bg-gray-800"
                   >
                     <div
                       class="absolute inset-0 border-l border-t border-white"
@@ -251,7 +251,7 @@
   <!-- Overlay para cerrar el menú al hacer clic fuera -->
   <div
     v-if="isMenuOpen"
-    class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+    class="fixed inset-0 bg-black/50 z-30 lg:hidden"
     @click="closeMenu"
   ></div>
 
@@ -266,9 +266,9 @@
     @animationend="handleAnimationEnd"
   >
     <div
-      class="relative p-[2px] rounded-lg shadow-xl sm:shadow-none bg-gray-100 dark:bg-gradient-to-r dark:from-teal-500 dark:to-blue-500 dark:animate-gradient"
+      class="relative p-[2px] rounded-lg shadow-xl sm:shadow-none bg-gray-100 dark:bg-linear-to-r dark:from-teal-500 dark:to-blue-500 dark:animate-gradient"
     >
-      <div class="bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg">
+      <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg">
         <div class="container mx-auto px-4 py-4">
           <ul class="space-y-4 nav-menu">
             <li v-for="item in menuItems" :key="item.href">
@@ -289,7 +289,7 @@
   <!-- Admin Sidebar -->
   <AdminSidebar
     :isOpen="adminMenuVisible"
-    :darkMode="isDarkMode"
+    :darkMode="isDark"
     @close="closeAdminMenu"
     ref="adminSidebarRef"
   />
@@ -301,276 +301,191 @@
   <LoginForm ref="loginFormRef" @login-success="handleLoginSuccess" />
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, nextTick, onMounted, onBeforeUnmount } from "vue";
 import BarraProgreso from "./BarraProgreso.vue";
 import AdminSidebar from "./AdminSidebar.vue";
 import LoginForm from "./panel/LoginForm.vue";
 import { checkAuth } from "../middleware/auth";
+import { useDarkMode } from "../composables/useDarkMode";
 import "animate.css";
 
-export default {
-  components: {
-    BarraProgreso,
-    AdminSidebar,
-    LoginForm,
-  },
-  name: "MenuInicio",
-  data() {
-    return {
-      adminMenuVisible: false,
-      isAuthenticated: false,
-      activeSection: "",
-      currentPath: "",
-      isMenuOpen: false,
-      isClosing: false,
-      isConocenosOpen: false,
-      isDarkMode: true,
-      scrollTimeout: null, // Para debounce del scroll
-      menuItems: [
-        { href: "/#inicio", text: "Inicio" },
-        { href: "/#anuncios", text: "Anuncios y Eventos" },
-        { href: "/#pastor", text: "Pastor" },
-        { href: "/#servicio", text: "Servicios" },
-        { href: "/#ministerios", text: "Ministerios" },
-        { href: "/confesion", text: "Confesión de fe" },
-        { href: "/preguntas", text: "Preguntas frecuentes" },
-        { href: "/donaciones", text: "Donaciones" },
-      ],
-    };
-  },
-  methods: {
-    toggleMenu() {
-      this.isMenuOpen = !this.isMenuOpen;
-      this.isClosing = false;
-      document.body.style.overflow = this.isMenuOpen ? "hidden" : "auto";
-    },
-    closeMenu() {
-      if (this.isMenuOpen) {
-        this.isClosing = true;
-        document.body.style.overflow = "auto";
+const { isDark, toggle: darkToggle, load: darkLoad } = useDarkMode();
+
+const adminMenuVisible = ref(false);
+const isAuthenticated = ref(false);
+const activeSection = ref("");
+const currentPath = ref("");
+const isMenuOpen = ref(false);
+const isClosing = ref(false);
+const isConocenosOpen = ref(false);
+let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const adminSidebarRef = ref<InstanceType<typeof AdminSidebar> | null>(null);
+const loginFormRef = ref<InstanceType<typeof LoginForm> | null>(null);
+
+const menuItems = [
+  { href: "/#inicio", text: "Inicio" },
+  { href: "/#anuncios", text: "Anuncios y Eventos" },
+  { href: "/#pastor", text: "Pastor" },
+  { href: "/#servicio", text: "Servicios" },
+  { href: "/#ministerios", text: "Ministerios" },
+  { href: "/confesion", text: "Confesión de fe" },
+  { href: "/preguntas", text: "Preguntas frecuentes" },
+  { href: "/donaciones", text: "Donaciones" },
+];
+
+function toggleMenu() {
+  isMenuOpen.value = !isMenuOpen.value;
+  isClosing.value = false;
+  document.body.style.overflow = isMenuOpen.value ? "hidden" : "auto";
+}
+
+function closeMenu() {
+  if (isMenuOpen.value) {
+    isClosing.value = true;
+    document.body.style.overflow = "auto";
+  }
+  adminMenuVisible.value = false;
+  isConocenosOpen.value = false;
+}
+
+function handleAnimationEnd() {
+  if (isClosing.value) {
+    isMenuOpen.value = false;
+    isClosing.value = false;
+    document.body.style.overflow = "auto";
+  }
+}
+
+function toggleDarkMode() {
+  darkToggle();
+  if (isAuthenticated.value) {
+    nextTick(() => {
+      const logros = (adminSidebarRef.value as any)?.$refs?.logrosRef;
+      if (logros) logros.unlockAchievement(2);
+    });
+  }
+}
+
+function toggleAdminMenu() {
+  adminMenuVisible.value = !adminMenuVisible.value;
+}
+
+function closeAdminMenu() {
+  adminMenuVisible.value = false;
+}
+
+function handleDocumentClick(event: MouseEvent) {
+  const conocenosButton = document.querySelector(".nav-menu button");
+  const dropdownMenu = document.querySelector(".dropdown-menu");
+  if (
+    conocenosButton &&
+    dropdownMenu &&
+    !conocenosButton.contains(event.target as Node) &&
+    !dropdownMenu.contains(event.target as Node)
+  ) {
+    isConocenosOpen.value = false;
+  }
+}
+
+function checkAuthStatus() {
+  isAuthenticated.value = checkAuth();
+}
+
+function handleScroll() {
+  if (currentPath.value !== "/") return;
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    const sections = ["inicio", "anuncios", "pastor", "servicio", "ministerios"];
+    const scrollPosition = window.scrollY + 100;
+    let current = "";
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && scrollPosition >= el.offsetTop && scrollPosition < el.offsetTop + el.offsetHeight) {
+        current = id;
       }
-      this.adminMenuVisible = false;
-      this.isConocenosOpen = false;
-    },
-    handleAnimationEnd() {
-      if (this.isClosing) {
-        this.isMenuOpen = false;
-        this.isClosing = false;
-        document.body.style.overflow = "auto";
-      }
-    },    toggleDarkMode() {
-      const isDarkMode = !document.documentElement.classList.contains("dark");
-      document.documentElement.classList.toggle("dark");
-      localStorage.setItem("darkMode", isDarkMode);
-      this.isDarkMode = isDarkMode;
-
-      // Solo desbloquear el logro si el usuario está autenticado
-      if (this.isAuthenticated) {
-        // Esperar a que los componentes estén listos
-        this.$nextTick(() => {
-          if (this.$refs.adminSidebarRef) {
-            const adminSidebar = this.$refs.adminSidebarRef;
-            // Intentar acceder al componente Logros 
-            if (adminSidebar.$refs.logrosRef) {
-              adminSidebar.$refs.logrosRef.unlockAchievement(2); // Índice 2 corresponde a "Vasija Renovada"
-              console.log("Logro 'Vasija Renovada' desbloqueado");
-            } else {
-              console.warn("No se pudo acceder al componente Logros");
-            }
-          }
-        });
-      }
-    },
-    loadDarkModePreference() {
-      const darkMode = localStorage.getItem("darkMode");
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-
-      if (darkMode === "true" || (!darkMode && prefersDark)) {
-        document.documentElement.classList.add("dark");
-        this.isDarkMode = true;
-      } else {
-        document.documentElement.classList.remove("dark");
-        this.isDarkMode = false;
-      }
-    },
-    toggleAdminMenu() {
-      this.adminMenuVisible = !this.adminMenuVisible;
-    },
-    closeAdminMenu() {
-      this.adminMenuVisible = false;
-    },
-    handleDocumentClick(event) {
-      const conocenosButton = document.querySelector(".nav-menu button");
-      const dropdownMenu = document.querySelector(".dropdown-menu");
-
-      if (
-        conocenosButton &&
-        dropdownMenu &&
-        !conocenosButton.contains(event.target) &&
-        !dropdownMenu.contains(event.target)
-      ) {
-        this.isConocenosOpen = false;
-      }
-    },
-    checkAuthStatus() {
-      this.isAuthenticated = checkAuth();
-    },
-    handleScroll() {
-      if (this.currentPath !== "/") return;
-
-      // Debounce para mejor rendimiento
-      if (this.scrollTimeout) {
-        clearTimeout(this.scrollTimeout);
-      }
-
-      this.scrollTimeout = setTimeout(() => {
-        const sections = [
-          "inicio",
-          "anuncios",
-          "pastor",
-          "servicio",
-          "ministerios",
-        ];
-        const scrollPosition = window.scrollY + 100;
-        let currentActiveSection = "";
-
-        // Encontrar la sección activa basada en el scroll
-        sections.forEach((sectionId) => {
-          const section = document.getElementById(sectionId);
-          if (!section) return;
-
-          const sectionTop = section.offsetTop;
-          const sectionHeight = section.offsetHeight;
-
-          if (
-            scrollPosition >= sectionTop &&
-            scrollPosition < sectionTop + sectionHeight
-          ) {
-            currentActiveSection = sectionId;
-          }
-        });
-
-        // Solo actualizar si hay cambio de sección
-        if (currentActiveSection && currentActiveSection !== this.activeSection) {
-          this.activeSection = currentActiveSection;
-          this.updateScrollBasedLinks();
-        }
-      }, 16); // ~60fps
-    },
-    updateScrollBasedLinks() {
-      // Solo actualizar links de secciones (que empiezan con /#)
-      const navLinks = document.querySelectorAll('.nav-menu a[href^="/#"]');
-      
-      navLinks.forEach((link) => {
-        const href = link.getAttribute("href").substring(2); // Remover /#
-        const isActive = href === this.activeSection;
-        link.classList.toggle("text-teal-400", isActive);
-        link.classList.toggle("text-white", !isActive);
-      });
-    },
-    updateActiveLink() {
-      const allLinks = document.querySelectorAll(".nav-menu a");
-
-      allLinks.forEach((link) => {
-        const href = link.getAttribute("href");
-        let isActive = false;
-
-        // Para rutas normales (no hash)
-        if (!href.startsWith("/#")) {
-          // Normalizar las rutas para comparación
-          const normalizedHref = href.endsWith("/") ? href.slice(0, -1) : href;
-          const normalizedPath = this.currentPath.endsWith("/") ? this.currentPath.slice(0, -1) : this.currentPath;
-          
-          isActive = normalizedHref === normalizedPath || 
-                    href === this.currentPath || 
-                    (href + "/") === this.currentPath ||
-                    href === (this.currentPath + "/");
-                    
-
-        } 
-        // Para la página principal, verificar si estamos en home
-        else if (href === "/" || href === "/#inicio") {
-          isActive = this.currentPath === "/";
-        }
-
-        link.classList.toggle("text-teal-400", isActive);
-        link.classList.toggle("text-white", !isActive);
-      });
-
-      // Si estamos en la página principal, usar la lógica de scroll
-      if (this.currentPath === "/") {
-        this.$nextTick(() => {
-          this.handleScroll();
-        });
-      }
-    },
-    updateCurrentPath() {
-      const newPath = window.location.pathname;
-      const hashChanged = this.$route && this.$route.hash !== window.location.hash;
-      
-      // Solo actualizar si realmente cambió la ruta
-      if (newPath !== this.currentPath || hashChanged) {
-        this.currentPath = newPath;
-        
-
-        
-        // Resetear sección activa si salimos de la página principal
-        if (this.currentPath !== "/") {
-          this.activeSection = "";
-        }
-        
-        this.updateActiveLink();
-      }
-    },
-    handleLoginSuccess() {
-      this.checkAuthStatus();
-      this.closeMenu();
-    },
-    openLoginModal() {
-      if (this.$refs.loginFormRef) {
-        this.$refs.loginFormRef.openModal();
-      } else {
-        console.error(
-          "No se pudo encontrar la referencia al formulario de login"
-        );
-      }
-    },
-    toggleConocenosMenu() {
-      this.isConocenosOpen = !this.isConocenosOpen;
-    },
-    closeConocenosMenu() {
-      this.isConocenosOpen = false;
-    },
-  },
-  mounted() {
-    this.loadDarkModePreference();
-    this.checkAuthStatus();
-    document.body.addEventListener("click", this.handleDocumentClick);
-    this.updateCurrentPath();
-
-    // Siempre agregar el listener, pero la lógica interna se encarga de verificar la ruta
-    window.addEventListener("scroll", this.handleScroll);
-    window.addEventListener("popstate", this.updateCurrentPath);
-    
-    // Ejecutar scroll handler inicial si estamos en la página principal
-    if (this.currentPath === "/") {
-      this.$nextTick(this.handleScroll);
+    });
+    if (current && current !== activeSection.value) {
+      activeSection.value = current;
+      updateScrollBasedLinks();
     }
-  },
-  beforeUnmount() {
-    document.body.removeEventListener("click", this.handleDocumentClick);
-    window.removeEventListener("scroll", this.handleScroll);
-    window.removeEventListener("popstate", this.updateCurrentPath);
-    document.body.style.overflow = "";
-    
-    // Limpiar timeout si existe
-    if (this.scrollTimeout) {
-      clearTimeout(this.scrollTimeout);
+  }, 16);
+}
+
+function updateScrollBasedLinks() {
+  document.querySelectorAll<HTMLAnchorElement>('.nav-menu a[href^="/#"]').forEach((link) => {
+    const href = link.getAttribute("href")!.substring(2);
+    link.classList.toggle("text-teal-400", href === activeSection.value);
+    link.classList.toggle("text-white", href !== activeSection.value);
+  });
+}
+
+function updateActiveLink() {
+  document.querySelectorAll<HTMLAnchorElement>(".nav-menu a").forEach((link) => {
+    const href = link.getAttribute("href");
+    if (!href) return;
+    let isActive = false;
+    if (!href.startsWith("/#")) {
+      const normHref = href.endsWith("/") ? href.slice(0, -1) : href;
+      const normPath = currentPath.value.endsWith("/") ? currentPath.value.slice(0, -1) : currentPath.value;
+      isActive =
+        normHref === normPath ||
+        href === currentPath.value ||
+        href + "/" === currentPath.value ||
+        href === currentPath.value + "/";
+    } else if (href === "/" || href === "/#inicio") {
+      isActive = currentPath.value === "/";
     }
-  },
-};
+    link.classList.toggle("text-teal-400", isActive);
+    link.classList.toggle("text-white", !isActive);
+  });
+  if (currentPath.value === "/") nextTick(handleScroll);
+}
+
+function updateCurrentPath() {
+  const newPath = window.location.pathname;
+  if (newPath !== currentPath.value) {
+    currentPath.value = newPath;
+    if (currentPath.value !== "/") activeSection.value = "";
+    updateActiveLink();
+  }
+}
+
+function handleLoginSuccess() {
+  checkAuthStatus();
+  closeMenu();
+}
+
+function openLoginModal() {
+  (loginFormRef.value as any)?.openModal();
+}
+
+function toggleConocenosMenu() {
+  isConocenosOpen.value = !isConocenosOpen.value;
+}
+
+function closeConocenosMenu() {
+  isConocenosOpen.value = false;
+}
+
+onMounted(() => {
+  darkLoad();
+  checkAuthStatus();
+  document.body.addEventListener("click", handleDocumentClick);
+  updateCurrentPath();
+  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("popstate", updateCurrentPath);
+  if (currentPath.value === "/") nextTick(handleScroll);
+});
+
+onBeforeUnmount(() => {
+  document.body.removeEventListener("click", handleDocumentClick);
+  window.removeEventListener("scroll", handleScroll);
+  window.removeEventListener("popstate", updateCurrentPath);
+  document.body.style.overflow = "";
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+});
 </script>
 
 <style scoped>

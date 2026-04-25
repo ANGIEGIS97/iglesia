@@ -11,39 +11,21 @@
   </Transition>
 </template>
 
-<script>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 
-export default {
-  name: "BackToTop",
-  setup() {
-    const isVisible = ref(false);
+const isVisible = ref(false);
 
-    const toggleVisibility = () => {
-      isVisible.value = window.scrollY > 20;
-    };
+function toggleVisibility() {
+  isVisible.value = window.scrollY > 20;
+}
 
-    const scrollToTop = () => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    };
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
-    onMounted(() => {
-      window.addEventListener("scroll", toggleVisibility);
-    });
-
-    onUnmounted(() => {
-      window.removeEventListener("scroll", toggleVisibility);
-    });
-
-    return {
-      isVisible,
-      scrollToTop,
-    };
-  },
-};
+onMounted(() => window.addEventListener("scroll", toggleVisibility));
+onUnmounted(() => window.removeEventListener("scroll", toggleVisibility));
 </script>
 
 <style scoped>

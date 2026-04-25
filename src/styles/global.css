@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-vivaldi: "Vivaldi", cursive;
+  --font-dancing-script: "Dancing Script", cursive;
+
+  --animate-spin-slow: spin 4s linear infinite;
+  --animate-gradient: gradient 3s ease infinite;
+
+  --inset-2px: 2px;
+
+  @keyframes gradient {
+    0%, 100% {
+      background-size: 200% 200%;
+      background-position: left center;
+    }
+    50% {
+      background-size: 200% 200%;
+      background-position: right center;
+    }
+  }
+}
+
+html {
+  scroll-padding-top: 85px;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+}

@@ -2,65 +2,39 @@
   <div>
     <div class="w-full">
       <div
-        class="w-full"
-        :class="
-          isDarkMode
-            ? 'border-gray-600/50'
-            : 'bg-white border-gray-200'
-        "
+        class="w-full bg-white border-gray-200 dark:bg-transparent dark:border-gray-600/50"
       >
         <!-- Pestañas de categorías de logros -->
-        <div
-          class="flex border-b relative"
-          :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'"
-        >
+        <div class="flex border-b relative border-gray-200 dark:border-gray-600">
           <!-- Indicador de tab activo animado -->
           <div
             class="absolute bottom-0 h-0.5 transition-all duration-300 ease-out"
             :class="[
-              activeCategory === 0
-                ? isDarkMode
-                  ? 'bg-blue-500'
-                  : 'bg-blue-600'
-                : activeCategory === 1
-                ? isDarkMode
-                  ? 'bg-purple-500'
-                  : 'bg-purple-600'
-                : activeCategory === 2
-                ? isDarkMode
-                  ? 'bg-amber-500'
-                  : 'bg-amber-600'
-                : ''
+              activeCategory === 0 ? 'bg-blue-600 dark:bg-blue-500' : '',
+              activeCategory === 1 ? 'bg-purple-600 dark:bg-purple-500' : '',
+              activeCategory === 2 ? 'bg-amber-600 dark:bg-amber-500' : '',
             ]"
             :style="{
               width: `${100 / logrosCategories.length}%`,
               left: `${(activeCategory * 100) / logrosCategories.length}%`
             }"
           ></div>
-          
+
           <button
             v-for="(tab, tabIndex) in logrosCategories"
             :key="tabIndex"
             @click="activeCategory = tabIndex"
-            class="flex-1 py-[4px] px-2 font-medium text-[13px] transition-all duration-300 text-center border-b-2 relative"
+            class="flex-1 py-[4px] px-2 font-medium text-[13px] transition-all duration-300 text-center border-b-2 border-transparent relative"
             :class="[
               activeCategory === tabIndex
                 ? tabIndex === 0
-                  ? isDarkMode
-                    ? 'text-blue-400 border-transparent bg-gradient-to-t from-blue-500/30 to-transparent'
-                    : 'text-blue-600 border-transparent bg-gradient-to-t from-blue-200/40 to-transparent'
+                  ? 'text-blue-600 bg-linear-to-t from-blue-200/40 to-transparent dark:text-blue-400 dark:from-blue-500/30'
                   : tabIndex === 1
-                  ? isDarkMode
-                    ? 'text-purple-400 border-transparent bg-gradient-to-t from-purple-500/30 to-transparent'
-                    : 'text-purple-600 border-transparent bg-gradient-to-t from-purple-200/40 to-transparent'
+                  ? 'text-purple-600 bg-linear-to-t from-purple-200/40 to-transparent dark:text-purple-400 dark:from-purple-500/30'
                   : tabIndex === 2
-                  ? isDarkMode
-                    ? 'text-amber-400 border-transparent bg-gradient-to-t from-amber-500/30 to-transparent'
-                    : 'text-amber-600 border-transparent bg-gradient-to-t from-amber-200/40 to-transparent'
+                  ? 'text-amber-600 bg-linear-to-t from-amber-200/40 to-transparent dark:text-amber-400 dark:from-amber-500/30'
                   : ''
-                : isDarkMode
-                ? 'text-gray-300 hover:text-gray-100 hover:bg-gray-700/30 border-transparent'
-                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-transparent',
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700/30',
             ]"
           >
             <span class="relative z-10">{{ tab.name }}</span>
@@ -69,21 +43,13 @@
               :class="[
                 activeCategory === tabIndex
                   ? tabIndex === 0
-                    ? isDarkMode
-                      ? 'text-blue-400/80'
-                      : 'text-blue-500/80'
+                    ? 'text-blue-500/80 dark:text-blue-400/80'
                     : tabIndex === 1
-                    ? isDarkMode
-                      ? 'text-purple-400/80'
-                      : 'text-purple-500/80'
+                    ? 'text-purple-500/80 dark:text-purple-400/80'
                     : tabIndex === 2
-                    ? isDarkMode
-                      ? 'text-amber-400/80'
-                      : 'text-amber-500/80'
+                    ? 'text-amber-500/80 dark:text-amber-400/80'
                     : ''
-                  : isDarkMode
-                  ? 'text-gray-400/80'
-                  : 'text-gray-500/80',
+                  : 'text-gray-500/80 dark:text-gray-400/80',
               ]"
             >
               ({{ calculateCategoryCompletionPercentage(tabIndex) }}%)
@@ -91,14 +57,7 @@
           </button>
         </div>
 
-        <div 
-          class="p-4"
-          :class="
-            isDarkMode
-              ? 'bg-gray-700/30'
-              : ''
-          "
-        >
+        <div class="p-4 dark:bg-gray-700/30">
           <div
             class="grid grid-cols-4 gap-2 transition-all duration-300 ease-in-out animate-fadeIn"
             @click.stop="closeAllTooltips"
@@ -118,22 +77,8 @@
               :class="[
                 'w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300',
                 achievements[achievementId].unlocked
-                  ? isDarkMode
-                    ? `bg-gradient-to-br ${
-                        getAchievementColors(achievementId).darkFrom
-                      } ${
-                        getAchievementColors(achievementId).darkTo
-                      } shadow-lg ${
-                        getAchievementColors(achievementId).darkShadow
-                      } hover:brightness-110 cursor-pointer`
-                    : `bg-gradient-to-br ${
-                        getAchievementColors(achievementId).from
-                      } ${getAchievementColors(achievementId).to} shadow-md ${
-                        getAchievementColors(achievementId).shadow
-                      } hover:brightness-110 cursor-pointer`
-                  : isDarkMode
-                  ? 'bg-gray-700/80 hover:bg-gray-700 cursor-help'
-                  : 'bg-gray-100 hover:bg-gray-200 cursor-help',
+                  ? `bg-linear-to-br shadow-md hover:brightness-110 cursor-pointer ${getAchievementColors(achievementId).from} ${getAchievementColors(achievementId).to} ${getAchievementColors(achievementId).shadow} ${getAchievementColors(achievementId).darkFrom} ${getAchievementColors(achievementId).darkTo} ${getAchievementColors(achievementId).darkShadow}`
+                  : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-700/80 dark:hover:bg-gray-700 cursor-help',
                 'relative group',
               ]"
             >
@@ -153,11 +98,7 @@
                 v-if="!achievements[achievementId].unlocked"
                 class="absolute inset-0 flex items-center justify-center"
               >
-                <div
-                  :class="[
-                    isDarkMode ? 'opacity-80 text-white' : ' text-gray-500',
-                  ]"
-                >
+                <div class="text-gray-500 dark:opacity-80 dark:text-white">
                   <i class="fas fa-lock"></i>
                 </div>
               </div>
@@ -166,7 +107,7 @@
               <div
                 v-if="!achievements[achievementId].unlocked"
                 :class="[
-                  'absolute bottom-full mb-2 w-40 z-[60] transition-all duration-200', // Base classes
+                  'absolute bottom-full mb-2 w-40 z-60 transition-all duration-200', // Base classes
                   loopIdx % 4 === 0 // Si es el primer elemento de la fila
                     ? 'left-0' // Alinear a la izquierda
                     : loopIdx % 4 === 3 // Si es el último elemento de la fila
@@ -183,28 +124,16 @@
                 @click.stop
               >
                 <div
-                  class="relative p-3 rounded-lg text-[13px]"
-                  :class="
-                    isDarkMode
-                      ? `bg-gray-800 border border-gray-700 shadow-md ${
-                          getAchievementColors(achievementId).darkShadow
-                        }`
-                      : 'bg-white border border-gray-200 shadow-md shadow-gray-200'
-                  "
+                  class="relative p-3 rounded-lg text-[13px] bg-white border border-gray-200 shadow-md shadow-gray-200 dark:bg-gray-800 dark:border-gray-700"
+                  :class="getAchievementColors(achievementId).darkShadow"
                 >
-                  <p
-                    class="font-bold mb-1"
-                    :class="isDarkMode ? 'text-white' : 'text-gray-800'"
-                  >
+                  <p class="font-bold mb-1 text-gray-800 dark:text-white">
                     {{ achievements[achievementId].name }}
                   </p>
-                  <p :class="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+                  <p class="text-gray-600 dark:text-gray-300">
                     {{ achievements[achievementId].description }}
                   </p>
-                  <div
-                    class="mt-1 text-xs"
-                    :class="isDarkMode ? 'text-amber-400' : 'text-amber-600'"
-                  >
+                  <div class="mt-1 text-xs text-amber-600 dark:text-amber-400">
                     {{
                       achievements[achievementId].unlocked
                         ? "📖 " + achievements[achievementId].verse
@@ -216,17 +145,14 @@
                     ></i>
                   </div>
                   <div
-                    class="absolute -bottom-2 w-3 h-3 rotate-45"
-                    :class="[
-                      loopIdx % 4 === 0 // Si es el primer elemento
-                        ? 'left-4' // Ajustar la flecha para la izquierda
-                        : loopIdx % 4 === 3 // Si es el último elemento
-                        ? 'right-4' // Ajustar la flecha para la derecha
-                        : 'left-1/2 transform -translate-x-1/2', // Centrado por defecto
-                      isDarkMode
-                        ? 'bg-gray-800 border-r border-b border-gray-700'
-                        : 'bg-white border-r border-b border-gray-200',
-                    ]"
+                    class="absolute -bottom-2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+                    :class="
+                      loopIdx % 4 === 0
+                        ? 'left-4'
+                        : loopIdx % 4 === 3
+                        ? 'right-4'
+                        : 'left-1/2 transform -translate-x-1/2'
+                    "
                   ></div>
                 </div>
               </div>
@@ -240,13 +166,13 @@
     <Teleport to="body">
       <div
         v-if="showAchievement"
-        class="fixed inset-0 bg-black/50 z-[99] transition-opacity duration-300"
+        class="fixed inset-0 bg-black/50 z-99 transition-opacity duration-300"
         @click="closeAchievementNotification"
       ></div>
       <div
         v-if="showAchievement"
         :class="[
-          'fixed top-1/3 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white p-6 rounded-lg shadow-lg z-[100] animate-bounce',
+          'fixed top-1/3 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white p-6 rounded-lg shadow-lg z-100 animate-bounce',
           `border-2 ${getNotificationBorderColor()}`,
         ]"
       >
@@ -259,7 +185,7 @@
           </button>
           <div
             :class="[
-              'flex items-center justify-center mb-2 w-16 h-16 mx-auto rounded-full bg-gradient-to-br',
+              'flex items-center justify-center mb-2 w-16 h-16 mx-auto rounded-full bg-linear-to-br',
               getAchievementGradientColors(latestAchievement),
             ]"
           >
@@ -321,8 +247,27 @@ const props = defineProps({
 
 const emit = defineEmits(["achievement-unlocked", "xp-awarded"]);
 
-// Theme state
-const isDarkMode = computed(() => props.darkMode);
+// Theme state - reactivo a la clase `dark` en <html> (fuente de verdad real del tema)
+const isDarkMode = ref(
+  typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark")
+);
+
+let darkObserver = null;
+onMounted(() => {
+  isDarkMode.value = document.documentElement.classList.contains("dark");
+  darkObserver = new MutationObserver(() => {
+    isDarkMode.value = document.documentElement.classList.contains("dark");
+  });
+  darkObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+});
+
+onUnmounted(() => {
+  if (darkObserver) darkObserver.disconnect();
+});
 
 // Achievement UI state
 // Ya no necesitamos showAchievements ref porque siempre se mostrarán los logros
@@ -627,9 +572,9 @@ const logrosCategories = ref([
       from: "from-blue-400",
       to: "to-blue-600",
       shadow: "shadow-blue-500/20",
-      darkFrom: "from-blue-500",
-      darkTo: "to-blue-700",
-      darkShadow: "shadow-blue-700/30",
+      darkFrom: "dark:from-blue-500",
+      darkTo: "dark:to-blue-700",
+      darkShadow: "dark:shadow-blue-700/30",
     },
   },
   {
@@ -639,9 +584,9 @@ const logrosCategories = ref([
       from: "from-purple-400",
       to: "to-purple-600",
       shadow: "shadow-purple-500/20",
-      darkFrom: "from-purple-500",
-      darkTo: "to-purple-700",
-      darkShadow: "shadow-purple-700/30",
+      darkFrom: "dark:from-purple-500",
+      darkTo: "dark:to-purple-700",
+      darkShadow: "dark:shadow-purple-700/30",
     },
   },
   {
@@ -651,9 +596,9 @@ const logrosCategories = ref([
       from: "from-amber-400",
       to: "to-amber-600",
       shadow: "shadow-amber-500/20",
-      darkFrom: "from-amber-500",
-      darkTo: "to-amber-700",
-      darkShadow: "shadow-amber-700/30",
+      darkFrom: "dark:from-amber-500",
+      darkTo: "dark:to-amber-700",
+      darkShadow: "dark:shadow-amber-700/30",
     },
   },
 ]);
@@ -1212,9 +1157,9 @@ const getAchievementColors = (index) => {
     from: "from-amber-400",
     to: "to-amber-600",
     shadow: "shadow-amber-500/20",
-    darkFrom: "from-amber-500",
-    darkTo: "to-amber-700",
-    darkShadow: "shadow-amber-700/30",
+    darkFrom: "dark:from-amber-500",
+    darkTo: "dark:to-amber-700",
+    darkShadow: "dark:shadow-amber-700/30",
   };
 };
 

@@ -10,6 +10,7 @@ const KEYS = {
   streaks: (uid: string) => `streakData_${uid}`,
   stats: (uid: string) => `estadisticas_${uid}`,
   token: "token",
+  darkMode: "darkMode",
 } as const;
 
 function safeGet<T>(key: string): T | null {
@@ -57,5 +58,10 @@ export const storage = {
     get: () => localStorage.getItem(KEYS.token),
     set: (value: string) => localStorage.setItem(KEYS.token, value),
     clear: () => localStorage.removeItem(KEYS.token),
+  },
+  darkMode: {
+    get: () => safeGet<boolean>(KEYS.darkMode),
+    set: (value: boolean) => safeSet(KEYS.darkMode, value),
+    clear: () => safeClear(KEYS.darkMode),
   },
 };

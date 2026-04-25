@@ -14,7 +14,7 @@
       <div
         v-for="(item, index) in preguntas"
         :key="index"
-        class="dark:p-0.5 dark:pt-0 dark:border-0 border-2 border-gray-200 rounded-lg bg-gray-100 dark:bg-gradient-to-tr from-teal-400 to-blue-800 dark:border-slate-600 overflow-hidden animate-gradient"
+        class="dark:p-0.5 dark:pt-0 dark:border-0 border-2 border-gray-200 rounded-lg bg-gray-100 dark:bg-linear-to-tr from-teal-400 to-blue-800 dark:border-slate-600 overflow-hidden animate-gradient"
       >
         <div
           class="h-full w-full dark:bg-slate-600/90 rounded-md transition duration-300 ease-in-out"
@@ -28,11 +28,11 @@
             class="w-full text-left flex items-start p-4 focus:outline-none"
           >
             <span
-              class="text-sm sm:text-lg font-medium dark:text-white flex-grow mr-4"
+              class="text-sm sm:text-lg font-medium dark:text-white grow mr-4"
             >
               {{ item.pregunta }}
             </span>
-            <div class="flex-shrink-0 w-5 mt-1">
+            <div class="shrink-0 w-5 mt-1">
               <svg
                 :class="{ 'rotate-180': item.isOpen }"
                 class="w-5 h-5 transition-transform duration-200 text-teal-500"
@@ -60,7 +60,7 @@
               <span
                 v-for="(versiculo, vIndex) in item.versiculos"
                 :key="vIndex"
-                class="border-2 border-teal-600 rounded-lg text-xs sm:text-sm px-3 py-1 flex-shrink-0 text-teal-600 dark:text-teal-white dark:border-teal-400 dark:text-white hover:bg-teal-600 hover:text-white transition duration-300 cursor-pointer"
+                class="border-2 border-teal-600 rounded-lg text-xs sm:text-sm px-3 py-1 shrink-0 text-teal-600 dark:text-teal-white dark:border-teal-400 dark:text-white hover:bg-teal-600 hover:text-white transition duration-300 cursor-pointer"
               >
                 {{ versiculo }}
               </span>

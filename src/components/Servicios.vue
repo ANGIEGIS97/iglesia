@@ -38,7 +38,7 @@
             <swiper-slide
               v-for="(image, index) in images"
               :key="index"
-              class="aspect-[4/3]"
+              class="aspect-4/3"
             >
               <div class="relative w-full h-full">
                 <img
@@ -47,7 +47,7 @@
                   class="w-full h-full object-cover rounded-lg shadow-lg transition-transform duration-300"
                 />
                 <div
-                  class="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 rounded-lg"
+                  class="absolute inset-0 bg-linear-to-b from-transparent to-black/30 rounded-lg"
                 ></div>
               </div>
             </swiper-slide>
@@ -64,17 +64,17 @@
             <img
               :src="image.src"
               :alt="'Servicio ' + (index + 1)"
-              class="w-full aspect-[4/3] object-cover shadow-lg rounded-lg transition-all duration-300 hover:scale-[1.02]"
+              class="w-full aspect-4/3 object-cover shadow-lg rounded-lg transition-all duration-300 hover:scale-[1.02]"
             />
             <div
-              class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 rounded-lg"
+              class="absolute inset-0 bg-linear-to-b from-transparent to-black/20 rounded-lg"
             ></div>
           </div>
         </div>
 
     <!-- Contenedor con borde gradiente -->
         <div
-          class="relative mt-10 overflow-hidden rounded-2xl p-[1px] bg-gradient-to-r from-teal-400 via-blue-400 to-blue-500 dark:from-teal-500 dark:via-blue-500 dark:to-purple-500 transition-all duration-300"
+          class="relative mt-10 overflow-hidden rounded-2xl p-px bg-linear-to-r from-teal-400 via-blue-400 to-blue-500 dark:from-teal-500 dark:via-blue-500 dark:to-purple-500 transition-all duration-300"
         >
           <!-- Contenido interno -->
           <div
@@ -82,7 +82,7 @@
           >
             <!-- Gradiente de fondo sutil -->
             <div
-              class="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-blue-500/5 to-purple-500/5 dark:from-teal-500/10 dark:via-blue-500/10 dark:to-purple-500/10"
+              class="absolute inset-0 bg-linear-to-br from-teal-500/5 via-blue-500/5 to-purple-500/5 dark:from-teal-500/10 dark:via-blue-500/10 dark:to-purple-500/10"
             ></div>
             
             <div class="relative p-4">
@@ -126,53 +126,30 @@
   </section>
 </template>
 
-<script>
+<script setup lang="ts">
+import { onMounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { Pagination, Navigation } from "swiper/modules";
 
-export default {
-  components: {
-    Swiper,
-    SwiperSlide,
-  },
-  data() {
-    return {
-      modules: [Pagination, Navigation],
-      images: [
-        { src: "/servicios/servicio.webp", alt: "Servicio 0" },
-        { src: "/servicios/servicio1.webp", alt: "Servicio 1" },
-        { src: "/servicios/servicio2.webp", alt: "Servicio 2" },
-        { src: "/servicios/servicio3.webp", alt: "Servicio 3" },
-        { src: "/servicios/servicio4.webp", alt: "Servicio 4" },
-        { src: "/servicios/servicio5.webp", alt: "Servicio 5" },
-      ],
-    };
-  },
-  computed: {
-    imageColumns() {
-      const columns = [[], [], []];
-      this.images.forEach((image, index) => {
-        columns[index % 3].push(image);
-      });
-      return columns;
-    },
-  },
-  mounted() {
-    this.loadFontAwesome();
-  },
-  methods: {
-    loadFontAwesome() {
-      const link = document.createElement("link");
-      link.href =
-        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css";
-      link.rel = "stylesheet";
-      document.head.appendChild(link);
-    },
-  },
-};
+const modules = [Pagination, Navigation];
+const images = [
+  { src: "/servicios/servicio.webp", alt: "Servicio 0" },
+  { src: "/servicios/servicio1.webp", alt: "Servicio 1" },
+  { src: "/servicios/servicio2.webp", alt: "Servicio 2" },
+  { src: "/servicios/servicio3.webp", alt: "Servicio 3" },
+  { src: "/servicios/servicio4.webp", alt: "Servicio 4" },
+  { src: "/servicios/servicio5.webp", alt: "Servicio 5" },
+];
+
+onMounted(() => {
+  const link = document.createElement("link");
+  link.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css";
+  link.rel = "stylesheet";
+  document.head.appendChild(link);
+});
 </script>
 
 <style scoped>

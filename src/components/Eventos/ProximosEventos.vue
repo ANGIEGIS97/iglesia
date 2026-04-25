@@ -54,15 +54,15 @@
           >
             <swiper-slide v-for="evento in eventos" :key="evento.fecha">
               <div
-                class="p-[1px] rounded-lg mb-10 mx-auto group relative overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                class="p-px rounded-lg mb-10 mx-auto group relative overflow-hidden hover:shadow-xl transition-shadow duration-300"
               >
                 <div
-                  class="absolute inset-0 dark:bg-gradient-to-tr from-blue-500 to-teal-500 rounded-lg animate-gradient opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                  class="absolute inset-0 dark:bg-linear-to-tr from-blue-500 to-teal-500 rounded-lg animate-gradient opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                 ></div>
                 <div
                   class="bg-white dark:bg-slate-600/85 rounded-lg shadow flex flex-col h-[340px] md:h-[330px] relative z-10 backdrop-blur-sm"
                 >
-                  <div class="flex-grow py-2 px-[6px] sm:px-6">
+                  <div class="grow py-2 px-[6px] sm:px-6">
                     <div class="flex items-center justify-center p-4">
                       <div
                         :class="[
@@ -175,7 +175,7 @@
                           'fas fa-map-marker-alt': !isUrl(evento.lugar),
                           'fas fa-link': isUrl(evento.lugar),
                         }"
-                        class="mr-2 mt-1 flex-shrink-0"
+                        class="mr-2 mt-1 shrink-0"
                       ></i>
                       <template v-if="isUrl(evento.lugar)">
                         <a
@@ -186,7 +186,7 @@
                           "
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="mr-[2px] sm:mr-[6px] break-words whitespace-normal text-blue-500 dark:text-white hover:underline"
+                          class="mr-[2px] sm:mr-[6px] wrap-break-word whitespace-normal text-blue-500 dark:text-white hover:underline"
                         >
                           <template v-if="evento.lugar.includes('tinyurl.com')">
                             Ubicación Google Maps
@@ -195,7 +195,7 @@
                             {{ evento.lugar }}
                           </template>
                         </a>
-                      </template>                      <span v-else class="mr-[2px] sm:mr-[6px] break-words whitespace-normal">
+                      </template>                      <span v-else class="mr-[2px] sm:mr-[6px] wrap-break-word whitespace-normal">
                         {{ evento.lugar }}
                       </span>
                     </p>

@@ -186,4 +186,3 @@
   </footer>
 </template>
 
-<script></script>

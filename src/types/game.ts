@@ -9,6 +9,7 @@ export interface Achievement {
 
 export interface StreakEntry {
   current: number;
+  maxReached: number;
   lastActivity: string | null;
   weeklyGoalMet: boolean;
   lastWeekStart: string | null;

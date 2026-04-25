@@ -2,7 +2,7 @@
   <!-- Indicador de carga para generación de anuncio -->
   <div
     v-if="isGeneratingAnuncio"
-    class="bg-black bg-opacity-50 flex items-center justify-center z-50"
+    class="bg-black/50 flex items-center justify-center z-50"
     style="
       position: fixed;
       top: 0;
@@ -46,11 +46,18 @@ import EventoModal from "../modals/EventoModal.vue";
 import { eventos, fechas } from "../../../lib/api";
 import { geminiService } from "../../../lib/gemini";
 import { unsplashService } from "../../../lib/unsplash";
+import { formatDateBogota } from "../../../composables/useFormatters";
+import { isValidUrl as checkValidUrl } from "../../../composables/useValidation";
+import { useConfirm } from "../../../composables/useConfirm";
 
 export default {
   name: "FechaToEventoConverter",
   components: {
     EventoModal,
+  },
+  setup() {
+    const { confirm: confirmDialog } = useConfirm();
+    return { _confirmDialog: confirmDialog };
   },
   props: {
     fecha: {
@@ -279,36 +286,7 @@ export default {
     },
 
     isValidUrl(string) {
-      try {
-        if (!string) return false;
-
-        // Patrón más preciso para URLs
-        // Debe comenzar con http://, https://, o www. seguido de un dominio válido
-        const urlPattern =
-          /^(https?:\/\/|www\.)[a-z\d]+(\.[a-z\d]+)*\.[a-z]{2,}(:\d{1,5})?(\/.*)?$/i;
-
-        // Verificar si es una dirección de correo electrónico
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-        // Patrones que indican que probablemente es una dirección física
-        const addressIndicators = [
-          /calle|carrera|avenida|av\.|transversal|diagonal|autopista|cra\.|cl\.|tv\.|dg\.|auto\./i, // Términos comunes en direcciones
-          /\d+\s*[a-z]?\s*#\s*\d+\s*-\s*\d+/i, // Patrón como "23 # 45-30" o "23A # 45-30"
-          /\d+\s*[a-z]?\s*-\s*\d+/i, // Patrón como "23-30" o "23A-30"
-        ];
-
-        // Si contiene indicadores de dirección física, no es una URL
-        for (const pattern of addressIndicators) {
-          if (pattern.test(string)) {
-            return false;
-          }
-        }
-
-        // Verificar si es una URL o correo electrónico
-        return urlPattern.test(string) || emailPattern.test(string);
-      } catch (err) {
-        return false;
-      }
+      return checkValidUrl(string);
     },
 
     async handleCreateAnuncio(anuncioData) {
@@ -377,8 +355,7 @@ export default {
 
     async handleDeleteAnuncio() {
       try {
-        // Reemplazar confirm con una forma más amigable en un futuro
-        if (!confirm("¿Estás seguro que deseas eliminar este anuncio?")) {
+        if (!await this._confirmDialog("¿Estás seguro que deseas eliminar este anuncio?", { danger: true })) {
           return;
         }
 
@@ -429,15 +406,7 @@ export default {
     },
 
     formatDate(date) {
-      // Crear la fecha en la zona horaria de Bogotá
-      const fechaBogota = new Date(date + "T00:00:00-05:00");
-      return fechaBogota.toLocaleDateString("es-CO", {
-        timeZone: "America/Bogota",
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
+      return formatDateBogota(date);
     },
 
     formatHora(hora) {

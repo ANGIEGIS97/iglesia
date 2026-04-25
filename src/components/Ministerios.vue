@@ -35,7 +35,7 @@
             :alt="ministerio.titulo"
           />
           <div
-            class="dark:p-0.5 dark:pt-0 dark:border-0 border border-gray-200 rounded-b-lg border-t-0 bg-gray-100 dark:bg-gradient-to-tr from-teal-400 to-blue-800 dark:border-slate-600 animate-gradient"
+            class="dark:p-0.5 dark:pt-0 dark:border-0 border border-gray-200 rounded-b-lg border-t-0 bg-gray-100 dark:bg-linear-to-tr from-teal-400 to-blue-800 dark:border-slate-600 animate-gradient"
           >
             <div
               class="h-full w-full dark:bg-slate-600/90 rounded-b-md transition duration-300 ease-in-out"
@@ -57,7 +57,7 @@
                   <span
                     v-for="verse in ministerio.versiculos"
                     :key="verse"
-                    class="border border-teal-600 rounded-lg text-xs sm:text-sm px-2 sm:px-3 py-1 flex-shrink-0 text-teal-600 dark:text-teal-white dark:text-white dark:border-teal-400 hover:bg-teal-600 hover:text-white transition duration-300 cursor-pointer"
+                    class="border border-teal-600 rounded-lg text-xs sm:text-sm px-2 sm:px-3 py-1 shrink-0 text-teal-600 dark:text-teal-white dark:text-white dark:border-teal-400 hover:bg-teal-600 hover:text-white transition duration-300 cursor-pointer"
                   >
                     {{ verse }}
                   </span>
@@ -71,12 +71,8 @@
   </section>
 </template>
 
-<script>
-export default {
-  name: "Ministerios",
-  data() {
-    return {
-      ministerios: [
+<script setup lang="ts">
+const ministerios = [
         {
           titulo: "Varones",
           image: "/ministerios/varones.webp",
@@ -141,10 +137,7 @@ export default {
             "Salmos 119:9",
           ],
         },
-      ],
-    };
-  },
-};
+];
 </script>
 
 <style scoped>

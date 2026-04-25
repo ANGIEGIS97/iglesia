@@ -140,158 +140,119 @@ bienvenida
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { usuarios, auth_api } from "../lib/api";
 
-export default {
-  data() {
-    return {
-      heroImage: "/bienvenida2.webp",
-      displayName: "",
-      unsubscribe: null,
-      authUnsubscribe: null,
-      isLoading: true,
-      previousDisplayName: "",
-      rotatingWords: ["fe", "comunidad", "crecimiento espiritual"],
-      currentWordIndex: 0,
-      wordRotationInterval: null,
-    };
-  },
+const heroImage = "/bienvenida2.webp";
+const rotatingWords = ["fe", "comunidad", "crecimiento espiritual"];
 
-  methods: {
-    // Helper method for localStorage operations
-    setLocalStorage(key, value) {
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.setItem(key, value);
-        } catch (error) {
-          console.error("Error guardando en localStorage:", error);
-        }
-      }
-    },
-    removeLocalStorage(key) {
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.removeItem(key);
-        } catch (error) {
-          console.error("Error removiendo de localStorage:", error);
-        }
-      }
-    },
-    clearDisplayName() {
-      this.previousDisplayName = this.displayName;
-      this.displayName = "";
-      this.removeLocalStorage("userDisplayName");
-    },
+const displayName = ref("");
+const isLoading = ref(true);
+const currentWordIndex = ref(0);
 
-    initializeFromLocalStorage() {
-      try {
-        if (typeof window !== "undefined") {
-          const storedName = localStorage.getItem("userDisplayName");
-          if (storedName) {
-            this.displayName = storedName;
-            this.isLoading = false;
-          }
-        }
-      } catch (error) {
-        console.error("Error accediendo a localStorage:", error);
-      }
-    },
-    async setupProfileSubscription() {
-      const user = auth_api.getCurrentUser();
-      if (user) {
-        try {
-          // Primero intentamos obtener el perfil directamente
-          const profile = await usuarios.getById(user.uid);
-          this.previousDisplayName = this.displayName;
-          this.displayName = profile.data.displayName;
-          // Actualizamos el localStorage con el nuevo valor
-          if (profile.data.displayName) {
-            this.setLocalStorage("userDisplayName", profile.data.displayName);
-          }
+let previousDisplayName = "";
+let unsubscribe: (() => void) | null = null;
+let authUnsubscribe: (() => void) | null = null;
+let wordRotationInterval: ReturnType<typeof setInterval> | null = null;
 
-          // Luego nos suscribimos a los cambios
-          this.unsubscribe = usuarios.subscribeToProfile(
-            user.uid,
-            (profile) => {
-              this.previousDisplayName = this.displayName;
-              this.displayName = profile.displayName;
-              // Actualizamos el localStorage cuando cambie el perfil
-              if (profile.displayName) {
-                this.setLocalStorage("userDisplayName", profile.displayName);
-              }
-            }
-          );
-        } catch (error) {
-          console.error("Error al obtener el perfil:", error);
-        } finally {
-          this.isLoading = false;
-        }
-      } else {
-        this.clearDisplayName();
-        this.isLoading = false;
-      }
-    },
-    loadDailyVerseScript() {
-      // Limpiar el contenedor del versículo
-      const verseContainer = document.getElementById('dailyVersesWrapper');
-      if (verseContainer) {
-        verseContainer.innerHTML = '';
-      }
+function setLocalStorage(key: string, value: string) {
+  if (typeof window !== "undefined") {
+    try { localStorage.setItem(key, value); }
+    catch (error) { console.error("Error guardando en localStorage:", error); }
+  }
+}
 
-      // Remover scripts anteriores de DailyVerses para evitar duplicados
-      const existingScripts = document.querySelectorAll('script[src*="dailyverses.net"]');
-      existingScripts.forEach(script => script.remove());
+function removeLocalStorage(key: string) {
+  if (typeof window !== "undefined") {
+    try { localStorage.removeItem(key); }
+    catch (error) { console.error("Error removiendo de localStorage:", error); }
+  }
+}
 
-      // Crear y agregar el nuevo script
-      const script = document.createElement("script");
-      script.src = "https://dailyverses.net/get/random.js?language=nvi&t=" + Date.now();
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-    },
-    startWordRotation() {
-      this.wordRotationInterval = setInterval(() => {
-        this.currentWordIndex = (this.currentWordIndex + 1) % this.rotatingWords.length;
-      }, 2500); // Cambia cada 2.5 segundos
-    },
-  },
-  async mounted() {
-    this.initializeFromLocalStorage();
-    this.loadDailyVerseScript();
-    this.startWordRotation();
+function clearDisplayName() {
+  previousDisplayName = displayName.value;
+  displayName.value = "";
+  removeLocalStorage("userDisplayName");
+}
 
-    // Suscribirse a cambios en el estado de autenticación
-    this.authUnsubscribe = auth_api.onAuthStateChange(async (user) => {
-      if (user) {
-        await this.setupProfileSubscription();
-        // Recargar el versículo cuando el usuario inicie sesión
-        this.$nextTick(() => {
-          setTimeout(() => this.loadDailyVerseScript(), 100);
-        });
-      } else {
-        this.clearDisplayName();
-        if (this.unsubscribe) {
-          this.unsubscribe();
-        }
-        this.isLoading = false;
+function initializeFromLocalStorage() {
+  try {
+    if (typeof window !== "undefined") {
+      const storedName = localStorage.getItem("userDisplayName");
+      if (storedName) {
+        displayName.value = storedName;
+        isLoading.value = false;
       }
-    });
-  },
-  beforeUnmount() {
-    // Limpiar todas las suscripciones
-    if (this.unsubscribe) {
-      this.unsubscribe();
     }
-    if (this.authUnsubscribe) {
-      this.authUnsubscribe();
+  } catch (error) {
+    console.error("Error accediendo a localStorage:", error);
+  }
+}
+
+async function setupProfileSubscription() {
+  const user = auth_api.getCurrentUser();
+  if (user) {
+    try {
+      const profile = await usuarios.getById(user.uid);
+      previousDisplayName = displayName.value;
+      displayName.value = profile.data.displayName;
+      if (profile.data.displayName) setLocalStorage("userDisplayName", profile.data.displayName);
+
+      unsubscribe = usuarios.subscribeToProfile(user.uid, (p: any) => {
+        previousDisplayName = displayName.value;
+        displayName.value = p.displayName;
+        if (p.displayName) setLocalStorage("userDisplayName", p.displayName);
+      });
+    } catch (error) {
+      console.error("Error al obtener el perfil:", error);
+    } finally {
+      isLoading.value = false;
     }
-    // Limpiar el intervalo de rotación de palabras
-    if (this.wordRotationInterval) {
-      clearInterval(this.wordRotationInterval);
+  } else {
+    clearDisplayName();
+    isLoading.value = false;
+  }
+}
+
+function loadDailyVerseScript() {
+  const verseContainer = document.getElementById("dailyVersesWrapper");
+  if (verseContainer) verseContainer.innerHTML = "";
+  document.querySelectorAll('script[src*="dailyverses.net"]').forEach((s) => s.remove());
+  const script = document.createElement("script");
+  script.src = "https://dailyverses.net/get/random.js?language=nvi&t=" + Date.now();
+  script.async = true;
+  script.defer = true;
+  document.body.appendChild(script);
+}
+
+function startWordRotation() {
+  wordRotationInterval = setInterval(() => {
+    currentWordIndex.value = (currentWordIndex.value + 1) % rotatingWords.length;
+  }, 2500);
+}
+
+onMounted(async () => {
+  initializeFromLocalStorage();
+  loadDailyVerseScript();
+  startWordRotation();
+  authUnsubscribe = auth_api.onAuthStateChange(async (user: any) => {
+    if (user) {
+      await setupProfileSubscription();
+      setTimeout(() => loadDailyVerseScript(), 100);
+    } else {
+      clearDisplayName();
+      if (unsubscribe) unsubscribe();
+      isLoading.value = false;
     }
-  },
-};
+  });
+});
+
+onBeforeUnmount(() => {
+  if (unsubscribe) unsubscribe();
+  if (authUnsubscribe) authUnsubscribe();
+  if (wordRotationInterval) clearInterval(wordRotationInterval);
+});
 </script>
 
 <style scoped>

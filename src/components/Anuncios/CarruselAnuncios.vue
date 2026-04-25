@@ -65,7 +65,7 @@ carrusel
             <FavoritoOverlay v-if="slide.favorito" />
             <div
               v-if="slide.titulo || slide.descripcion || slide.eslogan"
-              class="absolute inset-0 flex flex-col items-center justify-center text-white bg-black bg-opacity-50 rounded-lg"
+              class="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/50rounded-lg"
             >
               <div
                 class="w-full max-w-4xl sm:px-6 text-center sm:space-y-6 sm:pr-16"
@@ -114,7 +114,7 @@ carrusel
             />
             <FavoritoOverlay v-if="slide.favorito" />
             <div
-              class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg"
+              class="absolute inset-0 flex items-center justify-center bg-black/50rounded-lg"
             >
               <div
                 class="bg-transparent border-2 sm:border-4 border-white w-[90%] sm:w-4/5 h-[90%] sm:h-4/5 flex flex-col items-center justify-center p-3 sm:p-6 text-center sm:pr-16 overflow-hidden"
@@ -168,7 +168,7 @@ carrusel
             />
             <FavoritoOverlay v-if="slide.favorito" />
             <div
-              class="absolute inset-0 flex items-center justify-end pr-4 sm:pr-24 bg-black bg-opacity-50 rounded-lg"
+              class="absolute inset-0 flex items-center justify-end pr-4 sm:pr-24 bg-black/50rounded-lg"
             >
               <div
                 class="w-[70%] sm:w-3/5 text-right p-3 sm:p-0 rounded-lg sm:rounded-none"
@@ -211,7 +211,7 @@ carrusel
             />
             <FavoritoOverlay v-if="slide.favorito" />
             <div
-              class="absolute inset-0 flex flex-col items-center justify-center text-center bg-black bg-opacity-50 rounded-lg"
+              class="absolute inset-0 flex flex-col items-center justify-center text-center bg-black/50rounded-lg"
             >
               <div class="w-full max-w-2xl px-4 sm:pr-16">
                 <p
@@ -250,7 +250,7 @@ carrusel
             />
             <FavoritoOverlay v-if="slide.favorito" />
             <div
-              class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50"
+              class="absolute inset-0 flex items-center justify-center bg-black/50"
             >
               <div class="w-full max-w-4xl flex flex-col items-center">
                 <!-- Contenedor central con fondo turquesa -->
@@ -259,11 +259,11 @@ carrusel
                 >
                   <!-- Franja vertical turquesa -->
                   <div
-                    class="absolute inset-0 bg-teal-400 bg-opacity-80 flex flex-col items-center justify-center"
+                    class="absolute inset-0 bg-teal-400/80 flex flex-col items-center justify-center"
                   >
                     <!-- Texto central con fondo negro -->
                     <div
-                      class="bg-black bg-opacity-50 text-white p-2 sm:p-4 text-center mx-4 sm:mx-8 mb-4 rounded-lg border border-white"
+                      class="bg-black/50 text-white p-2 sm:p-4 text-center mx-4 sm:mx-8 mb-4 rounded-lg border border-white"
                     >
                       <p
                         v-if="slide.descripcion"
@@ -615,6 +615,8 @@ export default {
 </script>
 
 <style lang="postcss">
+@reference "../../styles/global.css";
+
 .loader {
   width: 50px;
   padding: 8px;

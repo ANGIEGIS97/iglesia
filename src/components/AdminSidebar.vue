@@ -3,7 +3,7 @@
     <!-- Overlay -->
     <div
       v-if="isOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity touch-none"
+      class="fixed inset-0 bg-black/50 z-40 transition-opacity touch-none"
       @click="$emit('close')"
       @touchend="$emit('close')"
     ></div>
@@ -13,10 +13,9 @@
       :class="[
         'fixed right-0 top-0 h-full w-72 shadow-lg z-50',
         'transform transition-transform duration-300 ease-in-out',
+        'bg-linear-to-b from-white to-gray-100 text-gray-800',
+        'dark:from-gray-800 dark:to-gray-900 dark:text-white',
         isOpen ? 'translate-x-0' : 'translate-x-full',
-        isDarkMode
-          ? 'bg-gradient-to-b from-gray-800 to-gray-900 text-white'
-          : 'bg-gradient-to-b from-white to-gray-100 text-gray-800',
       ]"
     >
       <div class="py-4 h-full flex flex-col overflow-y-auto">
@@ -26,12 +25,7 @@
           <button
             @click="$emit('close')"
             @touchend="$emit('close')"
-            class="p-2 rounded-lg transition-colors cursor-pointer"
-            :class="
-              isDarkMode
-                ? 'hover:bg-gray-700/50 text-gray-300 hover:text-white'
-                : 'hover:bg-gray-200 text-gray-600 hover:text-gray-800'
-            "
+            class="p-2 rounded-lg transition-colors cursor-pointer hover:bg-gray-200 text-gray-600 hover:text-gray-800 dark:hover:bg-gray-700/50 dark:text-gray-300 dark:hover:text-white"
           >
             <i class="fas fa-times w-6 h-6"></i>
           </button>
@@ -39,24 +33,14 @@
 
         <!-- Perfil del Usuario con Nivel y XP -->
         <div
-          class="py-2 px-4 border backdrop-blur-sm"
-          :class="
-            isDarkMode
-              ? 'bg-gray-700/50 border-gray-600/50'
-              : 'bg-white/80 border-gray-200'
-          "
+          class="py-2 px-4 border backdrop-blur-sm bg-white/80 border-gray-200 dark:bg-gray-700/50 dark:border-gray-600/50"
         >
           <div class="flex items-center mb-2 relative px-1">
             <!-- Botón de apagado en la esquina superior derecha -->
             <button
               @click="handleLogout"
               @touchend="handleLogout"
-              class="absolute -top-2 -right-2 p-2 rounded-full transition-colors cursor-pointer"
-              :class="
-                isDarkMode
-                  ? 'text-red-400 hover:text-red-300'
-                  : 'text-red-500 hover:text-red-600'
-              "
+              class="absolute -top-2 -right-2 p-2 rounded-full transition-colors cursor-pointer text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
               title="Cerrar sesión"
             >
               <i class="fas fa-power-off w-5 h-5"></i>
@@ -65,14 +49,14 @@
             <!-- Avatar con barra de progreso circular -->
             <div class="relative">
               <!-- SVG para la barra de progreso circular -->
-              <svg class="w-16 h-16 transform rotate-[60deg]" viewBox="0 0 64 64">
+              <svg class="w-16 h-16 transform rotate-60" viewBox="0 0 64 64">
                 <!-- Círculo de fondo -->
                 <circle
                   cx="32"
                   cy="32"
                   r="25"
                   stroke="currentColor"
-                  :class="isDarkMode ? 'text-gray-600' : 'text-gray-200'"
+                  class="text-gray-200 dark:text-gray-600"
                   stroke-width="12"
                   fill="none"
                 />
@@ -106,15 +90,13 @@
             >
               {{ getUserInitial(displayName) }}
               <div
-                class="absolute -bottom-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2"
+                class="absolute -bottom-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white dark:border-gray-800"
                 :class="{
                   'bg-amber-500 text-amber-950 ': userRank === 1,
                   'bg-gray-400 text-gray-950': userRank === 2,
                   'bg-yellow-500 text-yellow-950': userRank === 3,
                   'bg-blue-500 text-blue-950 ': userRank === 4,
                   'bg-purple-500 text-purple-950 ': userRank === 5,
-                  'border-gray-800': isDarkMode,
-                  'border-white': !isDarkMode,
                 }"
               >
                 {{ userLevel }}
@@ -131,18 +113,13 @@
                 <span
                   v-if="userRank > 0"
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
-                  :class="{
-                    'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100':
-                      userRank === 1,
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200':
-                      userRank === 2,
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100':
-                      userRank === 3,
-                    'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100':
-                      userRank === 4,
-                    'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100':
-                      userRank === 5,
-                  }"
+                  :class="[
+                    userRank === 1 ? 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100' : '',
+                    userRank === 2 ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '',
+                    userRank === 3 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : '',
+                    userRank === 4 ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '',
+                    userRank === 5 ? 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100' : '',
+                  ]"
                 >
                   <i class="fas fa-star text-[8px] mr-0.5"></i>
                   {{ currentRankName }}
@@ -150,18 +127,13 @@
                 <!-- Nivel en pill -->
                 <span
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
-                  :class="{
-                    'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100':
-                      userRank === 1,
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200':
-                      userRank === 2,
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100':
-                      userRank === 3,
-                    'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100':
-                      userRank === 4,
-                    'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100':
-                      userRank === 5,
-                  }"
+                  :class="[
+                    userRank === 1 ? 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100' : '',
+                    userRank === 2 ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '',
+                    userRank === 3 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : '',
+                    userRank === 4 ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '',
+                    userRank === 5 ? 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100' : '',
+                  ]"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -183,12 +155,7 @@
               <button
                 @click="openProfileModal"
                 @touchend="openProfileModal"
-                class="text-xs mt-1 cursor-pointer"
-                :class="
-                  isDarkMode
-                    ? 'text-teal-400 hover:text-teal-300'
-                    : 'text-teal-600 hover:text-teal-700'
-                "
+                class="text-xs mt-1 cursor-pointer text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
               >
                 Editar perfil
               </button>
@@ -196,10 +163,7 @@
           </div>
 
           <!-- Información de XP -->
-          <div
-            class="flex items-center space-x-3 text-xs"
-            :class="isDarkMode ? 'text-gray-400' : 'text-gray-500'"
-          >
+          <div class="flex items-center space-x-3 text-xs text-gray-500 dark:text-gray-400">
             <span>XP: {{ userXp }}/{{ xpForNextLevel }}</span>
             
             <!-- Rachas máximas -->
@@ -241,42 +205,24 @@
         <div>
           <!-- Tabs Header -->
           <div class="relative">
-            <div 
-              class="flex border-b-2 border-transparent relative"
-              :class="isDarkMode ? 'border-gray-600' : 'border-gray-200'"
-            >
+            <div class="flex border-b-2 relative border-gray-200 dark:border-gray-600">
               <!-- Indicador de tab activo animado -->
               <div
-                class="absolute bottom-0 h-0.5 transition-all duration-300 ease-out"
-                :class="[
-                  activeTab === 'admin'
-                    ? isDarkMode
-                      ? 'bg-teal-500'
-                      : 'bg-teal-600'
-                    : activeTab === 'profile'
-                    ? isDarkMode
-                      ? 'bg-teal-500'
-                      : 'bg-teal-600'
-                    : ''
-                ]"
+                class="absolute bottom-0 h-0.5 transition-all duration-300 ease-out bg-teal-600 dark:bg-teal-500"
                 :style="{
                   width: '50%',
                   left: activeTab === 'admin' ? '0%' : '50%'
                 }"
               ></div>
-              
+
               <button
                 @click="activeTab = 'admin'"
                 @touchend="() => activeTab = 'admin'"
                 :class="[
-                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2 cursor-pointer',
+                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2 border-transparent cursor-pointer',
                   activeTab === 'admin'
-                    ? isDarkMode
-                      ? 'text-teal-400 border-transparent bg-gradient-to-t from-teal-500/30 to-transparent'
-                      : 'text-teal-600 border-transparent bg-gradient-to-t from-teal-200/40 to-transparent'
-                    : isDarkMode
-                    ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30 border-transparent'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'
+                    ? 'text-teal-600 bg-linear-to-t from-teal-200/40 to-transparent dark:text-teal-400 dark:from-teal-500/30'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700/30'
                 ]"
               >
                 <span class="relative">Gestión</span>
@@ -285,14 +231,10 @@
                 @click="activeTab = 'profile'"
                 @touchend="() => activeTab = 'profile'"
                 :class="[
-                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2 cursor-pointer',
+                  'flex-1 py-3 px-4 text-sm font-medium transition-all duration-200 relative border-b-2 border-transparent cursor-pointer',
                   activeTab === 'profile'
-                    ? isDarkMode
-                      ? 'text-teal-400 border-transparent bg-gradient-to-t from-teal-500/30 to-transparent'
-                      : 'text-teal-600 border-transparent bg-gradient-to-t from-teal-200/40 to-transparent'
-                    : isDarkMode
-                    ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30 border-transparent'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-transparent'
+                    ? 'text-teal-600 bg-linear-to-t from-teal-200/40 to-transparent dark:text-teal-400 dark:from-teal-500/30'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700/30'
                 ]"
               >
                 <span class="relative">Logros ({{ unlockedAchievementsCount }}/{{ totalAchievementsCount }})</span>
@@ -301,11 +243,8 @@
           </div>
 
           <!-- Tab Content Container -->
-          <div 
-            class="border-t-0 backdrop-blur-sm mt-0 "
-            :class="isDarkMode 
-              ? 'border-gray-600/50' 
-              : 'bg-white/50 border-gray-200/50'"
+          <div
+            class="border-t-0 mt-0 bg-white/50 border-gray-200/50 dark:bg-gray-900 dark:border-gray-600/50"
           >
             <!-- Tab Content: Administración -->
             <div v-show="activeTab === 'admin'" class="space-y-1">
@@ -316,26 +255,16 @@
               :class="[
                 'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4 cursor-pointer',
                 currentPath === '/admin/eventos'
-                  ? isDarkMode
-                    ? 'bg-teal-500/20 text-teal-400 border-teal-500'
-                    : 'bg-teal-50 text-teal-600 border-teal-500'
-                  : isDarkMode
-                  ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
+                  ? 'bg-teal-50 text-teal-600 border-teal-500 dark:bg-teal-500/20 dark:text-teal-400'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white',
               ]"
             >
               <i
                 class="fas fa-calendar-alt w-5 h-5 mr-3"
-                :class="
-                  currentPath === '/admin/eventos'
-                    ? isDarkMode
-                      ? 'text-teal-400'
-                      : 'text-teal-600'
-                    : ''
-                "
+                :class="currentPath === '/admin/eventos' ? 'text-teal-600 dark:text-teal-400' : ''"
               ></i>
               <span class="flex-1">Administrar Anuncios</span>
-              <i v-if="!streakStatus.anuncios.weeklyGoalMet" class="fas fa-exclamation-triangle text-xs text-yellow-500 flex-shrink-0"></i>
+              <i v-if="!streakStatus.anuncios.weeklyGoalMet" class="fas fa-exclamation-triangle text-xs text-yellow-500 shrink-0"></i>
             </a>
 
             <a
@@ -345,26 +274,16 @@
               :class="[
                 'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4 cursor-pointer',
                 currentPath === '/admin/fechas'
-                  ? isDarkMode
-                    ? 'bg-teal-500/20 text-teal-400 border-teal-500'
-                    : 'bg-teal-50 text-teal-600 border-teal-500'
-                  : isDarkMode
-                  ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
+                  ? 'bg-teal-50 text-teal-600 border-teal-500 dark:bg-teal-500/20 dark:text-teal-400'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white',
               ]"
             >
               <i
                 class="fas fa-clock w-5 h-5 mr-3"
-                :class="
-                  currentPath === '/admin/fechas'
-                    ? isDarkMode
-                      ? 'text-teal-400'
-                      : 'text-teal-600'
-                    : ''
-                "
+                :class="currentPath === '/admin/fechas' ? 'text-teal-600 dark:text-teal-400' : ''"
               ></i>
               <span class="flex-1">Administrar Fechas</span>
-              <i v-if="!streakStatus.fechas.weeklyGoalMet" class="fas fa-exclamation-triangle text-xs text-yellow-500 flex-shrink-0"></i>
+              <i v-if="!streakStatus.fechas.weeklyGoalMet" class="fas fa-exclamation-triangle text-xs text-yellow-500 shrink-0"></i>
             </a>
 
             <!-- Ranking button -->
@@ -375,23 +294,13 @@
               :class="[
                 'flex items-center px-6 py-[10px] transition-all duration-200 border-l-4 cursor-pointer',
                 currentPath === '/admin/ranking'
-                  ? isDarkMode
-                    ? 'bg-teal-500/20 text-teal-400 border-teal-500'
-                    : 'bg-teal-50 text-teal-600 border-teal-500'
-                  : isDarkMode
-                  ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white border-transparent'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent',
+                  ? 'bg-teal-50 text-teal-600 border-teal-500 dark:bg-teal-500/20 dark:text-teal-400'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 border-transparent dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white',
               ]"
             >
               <i
                 class="fas fa-crown w-5 h-5 mr-3"
-                :class="
-                  currentPath === '/admin/ranking'
-                    ? isDarkMode
-                      ? 'text-teal-400'
-                      : 'text-teal-600'
-                    : ''
-                "
+                :class="currentPath === '/admin/ranking' ? 'text-teal-600 dark:text-teal-400' : ''"
               ></i>
               <span>Ranking Global</span>
             </a>
@@ -399,12 +308,7 @@
             <button
               @click="openChangePassword"
               @touchend="openChangePassword"
-              :class="[
-                'flex items-center w-full px-6 py-[10px] text-left transition-all duration-200 border-l-4 border-transparent cursor-pointer',
-                isDarkMode
-                  ? 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900',
-              ]"
+              class="flex items-center w-full px-6 py-[10px] text-left transition-all duration-200 border-l-4 border-transparent cursor-pointer text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700/50 dark:hover:text-white"
             >
               <i class="fas fa-key w-5 h-5 mr-3"></i>
               <span>Cambiar Contraseña</span>
@@ -416,7 +320,7 @@
             <!-- Streaks Manager -->
             <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-600">
               <div class="mb-2">
-                <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <h4 class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Rachas Semanales
                 </h4>
               </div>
@@ -442,7 +346,7 @@
           </div>
         </div>
 
-        <div class="flex-grow"></div>
+        <div class="grow"></div>
       </div>
     </div>
 
@@ -516,12 +420,14 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { storeToRefs } from "pinia";
 import CambioContrasena from "./CambioContrasena.vue";
 import ProfileModal from "./ProfileModal.vue";
 import { auth_api, usuarios } from "../lib/api.ts";
 import ContadorEstadisticas from "./ContadorEstadisticas.vue";
 import Logros from "./Logros.vue";
 import StreakManager from "./StreakManager.vue";
+import { useGameStore } from "../stores/useGameStore";
 
 const props = defineProps({
   isOpen: {
@@ -584,19 +490,18 @@ const fechasWeeklyGoalMet = computed(() => {
   return streakManagerRef.value?.streakData?.fechas?.weeklyGoalMet || false;
 });
 
-// Theme state
-const isDarkMode = computed(() => props.darkMode);
-
-// Gamification state
-const userXp = ref(0);
-const userLevel = ref(1);
-const userRank = ref(1); // Iniciar con rango Bronce (1)
-const rankNames = ["Bronce", "Plata", "Oro", "Diamante", "Platino"];
-const xpForNextLevel = computed(() => userLevel.value * 100);
-const xpPercentage = computed(() =>
-  Math.min(100, Math.floor((userXp.value / xpForNextLevel.value) * 100))
+// Theme state - reactivo a la clase `dark` en <html> (fuente de verdad real del tema)
+const isDarkMode = ref(
+  typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark")
 );
-const loginStreak = ref(0);
+
+let darkObserver = null;
+
+// Gamification state (from store)
+const gameStore = useGameStore();
+const { userXp, userLevel, userRank, loginStreak, xpForNextLevel, xpPercentage } = storeToRefs(gameStore);
+const rankNames = gameStore.rankNames;
 const showLevelUp = ref(false);
 const showRankUp = ref(false);
 
@@ -633,41 +538,23 @@ const getUserColor = (name) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-// Función para otorgar XP
 const awardXp = (amount) => {
-  userXp.value += amount;
+  const { leveledUp, rankedUp } = gameStore.awardXp(amount);
 
-  // Check for level up
-  if (userXp.value >= xpForNextLevel.value) {
-    userXp.value = userXp.value - xpForNextLevel.value;
-    userLevel.value++;
-
-    // Check if user reached level 10 to increase rank
-    if (userLevel.value > 10) {
-      userLevel.value = 1;
-      userRank.value++;
-
-      if (userRank.value <= rankNames.length) {
-        showRankUp.value = true;
-        setTimeout(() => {
-          showRankUp.value = false;
-        }, 3000);
-      }
-    } else {
-      showLevelUp.value = true;
-      setTimeout(() => {
-        showLevelUp.value = false;
-      }, 3000);
+  if (rankedUp) {
+    showRankUp.value = true;
+    setTimeout(() => { showRankUp.value = false; }, 3000);
+    if (logrosRef.value) {
+      logrosRef.value.checkRankAchievements(userRank.value, userLevel.value);
     }
-
-    // Check for level and rank achievements
+  } else if (leveledUp) {
+    showLevelUp.value = true;
+    setTimeout(() => { showLevelUp.value = false; }, 3000);
     if (logrosRef.value) {
       logrosRef.value.checkLevelAchievements(userLevel.value);
-      logrosRef.value.checkRankAchievements(userRank.value, userLevel.value);
     }
   }
 
-  // Save to localStorage
   saveGameState();
 };
 
@@ -716,26 +603,17 @@ const loadGameState = async () => {
     const firestoreGameState = await usuarios.getGameState(user.uid);
 
     if (firestoreGameState) {
-      // Si se encuentra en Firestore, usar esos datos
-      userXp.value = firestoreGameState.userXp || 0;
-      userLevel.value = firestoreGameState.userLevel || 1;
-      userRank.value = firestoreGameState.userRank || 1; // Usar rango 1 (Bronce) como valor predeterminado
-      loginStreak.value = firestoreGameState.loginStreak || 0;
+      gameStore.setFromSaved(firestoreGameState);
 
-      // Limpiar datos potencialmente obsoletos en localStorage antes de cargar datos de Firebase
       if (logrosRef.value) {
         logrosRef.value.clearAchievementsLocalStorage();
       }
 
-      // Cargar los logros en el componente Logros
       if (logrosRef.value && firestoreGameState.achievements) {
         logrosRef.value.loadAchievements(firestoreGameState);
       }
 
-      // Guardar una copia local
       saveGameState();
-      
-      // Emitir evento indicando que el estado del juego ha sido cargado completamente
       window.dispatchEvent(new CustomEvent("gameStateLoaded"));
       return;
     }
@@ -748,20 +626,13 @@ const loadGameState = async () => {
 
   if (savedState) {
     const gameState = JSON.parse(savedState);
-    userXp.value = gameState.userXp || 0;
-    userLevel.value = gameState.userLevel || 1;
-    userRank.value = gameState.userRank || 1; // Usar rango 1 (Bronce) como valor predeterminado
-    loginStreak.value = gameState.loginStreak || 0;
+    gameStore.setFromSaved(gameState);
 
-    // Cargar los logros en el componente Logros
     if (logrosRef.value) {
       logrosRef.value.loadAchievements(gameState);
     }
 
-    // Sincronizar con Firestore
     saveGameState();
-    
-    // Emitir evento indicando que el estado del juego ha sido cargado completamente
     window.dispatchEvent(new CustomEvent("gameStateLoaded"));
   } else {
     // First time - initialize
@@ -870,99 +741,59 @@ const setupStatsListener = () => {
   window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
   window.addEventListener("statisticsUpdated", checkStatsForAchievements);
 
-  // Agregar listener para forzar recarga de estado desde Firebase
   window.removeEventListener("forceGameStateReload", forceReloadGameState);
   window.addEventListener("forceGameStateReload", forceReloadGameState);
 
-  // Agregar listener para visita al ranking
   window.removeEventListener("rankingPageVisited", checkRankingVisitForAchievement);
   window.addEventListener("rankingPageVisited", checkRankingVisitForAchievement);
 
-  // Agregar listener para actividad de streaks
   window.removeEventListener("streakActivity", handleStreakActivity);
   window.addEventListener("streakActivity", handleStreakActivity);
-  
-  // Agregar listener para cuando se carga el estado del juego
+
   window.removeEventListener("gameStateLoaded", updateStreakStatus);
   window.addEventListener("gameStateLoaded", updateStreakStatus);
-  
-  console.log("AdminSidebar - Event listeners configurados correctamente");
-  console.log("- statisticsUpdated listener: configurado");
-  console.log("- forceGameStateReload listener: configurado");
-  console.log("- rankingPageVisited listener: configurado");
-  console.log("- streakActivity listener: configurado");
-  console.log("- gameStateLoaded listener: configurado");
 };
 
-// Función para forzar recarga del estado desde Firebase
 const forceReloadGameState = async () => {
-  console.log("Forzando recarga de estado desde Firebase");
   try {
     const user = auth_api.getCurrentUser();
     if (!user?.uid) return;
 
-    // Cargar datos directamente desde Firebase
     const firestoreGameState = await usuarios.getGameState(user.uid);
-
     if (firestoreGameState) {
-      userXp.value = firestoreGameState.userXp || 0;
-      userLevel.value = firestoreGameState.userLevel || 1;
-      userRank.value = firestoreGameState.userRank || 1; // Usar rango 1 (Bronce) como valor predeterminado
-      loginStreak.value = firestoreGameState.loginStreak || 0;
-
-      // Cargar los logros en el componente Logros
+      gameStore.setFromSaved(firestoreGameState);
       if (logrosRef.value && firestoreGameState.achievements) {
         logrosRef.value.loadAchievements(firestoreGameState);
       }
-
-      console.log("Estado recargado exitosamente desde Firebase");
     }
   } catch (error) {
     console.error("Error al forzar recarga desde Firebase:", error);
   }
 };
 
-// Función para verificar logros cuando se actualizan las estadísticas
 const checkStatsForAchievements = () => {
-  console.log("Evento statisticsUpdated recibido - verificando logros");
   if (logrosRef.value) {
     logrosRef.value.checkAchievementsFromStats();
   }
 };
 
-// Función para verificar logros cuando se visita el ranking
 const checkRankingVisitForAchievement = () => {
-  console.log("Evento rankingPageVisited recibido - verificando logro de ranking");
-  console.log("logrosRef.value:", logrosRef.value);
-  
   if (logrosRef.value) {
-    console.log("Llamando a checkRankingVisitAchievement...");
     logrosRef.value.checkRankingVisitAchievement();
-  } else {
-    console.warn("logrosRef.value no está disponible");
   }
 };
 
-// Función para manejar actualizaciones de streaks
 const handleStreakUpdate = ({ tipo, streak }) => {
-  console.log(`Streak actualizado para ${tipo}:`, streak);
-  // Actualizar el estado local de streaks
   streakStatus.value[tipo] = { weeklyGoalMet: streak.weeklyGoalMet };
 };
 
-// Función para manejar verificación de logros de streaks
 const handleCheckStreakAchievements = (streakData) => {
-  console.log("Verificando logros de streaks con datos:", streakData);
   if (logrosRef.value) {
     logrosRef.value.checkStreakAchievements(streakData);
-  } else {
-    console.warn("logrosRef no está disponible para verificar logros de streaks");
   }
 };
 
-// Función para manejar eventos de actividad de streaks
 const handleStreakActivity = (event) => {
-  console.log("Evento de actividad de streak recibido:", event.detail);
   if (streakManagerRef.value) {
     const { tipo, fecha } = event.detail;
     streakManagerRef.value.reportActivity(tipo, fecha);
@@ -972,6 +803,16 @@ const handleStreakActivity = (event) => {
 onMounted(async () => {
   updateCurrentPath();
   window.addEventListener("popstate", updateCurrentPath);
+
+  // Sincronizar estado del tema con la clase `dark` en <html>
+  isDarkMode.value = document.documentElement.classList.contains("dark");
+  darkObserver = new MutationObserver(() => {
+    isDarkMode.value = document.documentElement.classList.contains("dark");
+  });
+  darkObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
 
   // Suscribirse a cambios de autenticación
   unsubscribeAuth = auth_api.onAuthStateChange(async (user) => {
@@ -984,17 +825,6 @@ onMounted(async () => {
 
       // Configurar listener para actualizaciones de estadísticas
       setupStatsListener();
-
-      // Revisar si hay XP temporal para agregar desde localStorage
-      const tempXpKey = `tempXp_${user.uid}`;
-      const tempXp = localStorage.getItem(tempXpKey);
-      if (tempXp) {
-        const xpToAdd = parseInt(tempXp);
-        if (!isNaN(xpToAdd) && xpToAdd > 0) {
-          awardXp(xpToAdd);
-          localStorage.removeItem(tempXpKey);
-        }
-      }
     } else {
       displayName.value = "";
       // Limpiar la suscripción del perfil si existe
@@ -1008,27 +838,8 @@ onMounted(async () => {
   // Asegurar que los event listeners se configuren después del montaje completo
   setTimeout(() => {
     setupStatsListener();
-    console.log("AdminSidebar - Event listeners reconfigurados después del montaje");
-    // Actualizar estado de streaks después de que todo esté cargado
     updateStreakStatus();
   }, 500);
-
-  // Registrar el componente como un elemento customizado para poder acceder desde otros componentes
-  if (
-    typeof window !== "undefined" &&
-    typeof customElements !== "undefined" &&
-    !customElements.get("admin-sidebar")
-  ) {
-    class AdminSidebarElement extends HTMLElement {}
-    customElements.define("admin-sidebar", AdminSidebarElement);
-
-    // Crear una instancia y adjuntar un método puente para awardXp
-    const sidebarElement = document.createElement("admin-sidebar");
-    sidebarElement.awardXp = (amount) => {
-      awardXp(amount);
-    };
-    document.body.appendChild(sidebarElement);
-  }
 });
 
 // Watch for changes in isOpen to control body scroll
@@ -1055,6 +866,11 @@ onBeforeUnmount(() => {
   window.removeEventListener("rankingPageVisited", checkRankingVisitForAchievement);
   window.removeEventListener("streakActivity", handleStreakActivity);
   window.removeEventListener("gameStateLoaded", updateStreakStatus);
+
+  if (darkObserver) {
+    darkObserver.disconnect();
+    darkObserver = null;
+  }
 
   // Limpiar todas las suscripciones
   if (unsubscribeAuth) {

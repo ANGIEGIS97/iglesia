@@ -171,7 +171,7 @@ onUnmounted(() => {
     >
       <div>
         <h2
-          class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent flex items-center gap-2"
+          class="text-2xl sm:text-3xl font-bold bg-linear-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent flex items-center gap-2"
         >
           <svg
             class="w-8 h-8"
@@ -195,7 +195,7 @@ onUnmounted(() => {
       </div>
       <button
         @click="loadRanking"
-        class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600"
+        class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-linear-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -431,12 +431,12 @@ onUnmounted(() => {
             class="absolute inset-0 opacity-20"
             :class="[
               index === 0
-                ? 'bg-gradient-to-br from-yellow-400/70 to-yellow-600/20 dark:from-yellow-500/70 dark:to-yellow-700/20'
+                ? 'bg-linear-to-br from-yellow-400/70 to-yellow-600/20 dark:from-yellow-500/70 dark:to-yellow-700/20'
                 : index === 1
-                ? 'bg-gradient-to-br from-gray-300/70 to-gray-500/20 dark:from-gray-400/70 dark:to-gray-600/20'
+                ? 'bg-linear-to-br from-gray-300/70 to-gray-500/20 dark:from-gray-400/70 dark:to-gray-600/20'
                 : index === 2
-                ? 'bg-gradient-to-br from-amber-600/70 to-amber-800/20 dark:from-amber-700/70 dark:to-amber-900/20'
-                : 'bg-gradient-to-br from-teal-600/30 to-teal-800/20 dark:from-teal-600/70 dark:to-teal-800/20'
+                ? 'bg-linear-to-br from-amber-600/70 to-amber-800/20 dark:from-amber-700/70 dark:to-amber-900/20'
+                : 'bg-linear-to-br from-teal-600/30 to-teal-800/20 dark:from-teal-600/70 dark:to-teal-800/20'
             ]"
           ></div>
           

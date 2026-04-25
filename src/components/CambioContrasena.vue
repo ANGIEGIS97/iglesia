@@ -1,42 +1,6 @@
 <template>
-  <!-- Overlay del modal -->
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 flex items-center justify-center"
-  >
-    <!-- Modal -->
-    <div
-      class="relative bg-white dark:bg-gray-800/90 backdrop-blur-md rounded-lg shadow-xl max-w-md w-full m-4 border border-white/20 animate__animated animate__fadeInDown"
-    >
-      <!-- Header con título y botón de cerrar -->
-      <div
-        class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700"
-      >
-        <h2 class="text-xl font-bold text-gray-800 dark:text-white">
-          Cambiar Contraseña
-        </h2>
-        <button
-          @click="closeModal"
-          class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-
-      <form @submit.prevent="handleSubmit" class="p-6 pt-4">
+  <BaseModal :open="isOpen" title="Cambiar Contraseña" @close="closeModal">
+    <form @submit.prevent="handleSubmit" class="p-6 pt-4">
         <!-- Old Password Field -->
         <div class="mb-4">
           <label
@@ -160,15 +124,14 @@
             ></div>
           </button>
         </div>
-      </form>
-    </div>
-  </div>
+    </form>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed } from "vue";
 import { auth_api } from "../lib/api";
-import "animate.css";
+import BaseModal from "./common/BaseModal.vue";
 
 const isOpen = ref(false);
 const formData = reactive({
@@ -300,16 +263,6 @@ defineExpose({ openModal, closeModal });
 </script>
 
 <style scoped>
-.animate__animated {
-  --animate-duration: 0.5s;
-  position: relative;
-  z-index: 10;
-}
-
-.animate__fadeInDown {
-  animation-duration: 0.5s;
-}
-
 :global(body.modal-open) {
   overflow: hidden;
 }

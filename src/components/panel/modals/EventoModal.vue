@@ -3,6 +3,7 @@ import { ref, defineEmits, defineProps, watch, onBeforeUnmount } from "vue";
 import "animate.css";
 import { geminiService } from "../../../lib/gemini";
 import { unsplashService } from "../../../lib/unsplash";
+import BaseModal from "../../common/BaseModal.vue";
 
 // Importaciones de ProseMirror
 import { EditorState } from "prosemirror-state";
@@ -105,7 +106,6 @@ const imageOptions = [
   { value: "custom", label: "7- URL Imagen / YouTube" },
 ];
 
-const showModal = ref(false);
 const isGeneratingDescription = ref(false);
 const isGeneratingImage = ref(false);
 const isUpdating = ref(false);
@@ -429,14 +429,12 @@ watch(
   (newValue) => {
     console.log("EventoModal - isOpen cambiado a:", newValue);
     if (newValue) {
-      showModal.value = true;
       document.body.classList.add("modal-open");
       // Inicializar el editor después de que el DOM se actualice
       setTimeout(() => {
         initEditor();
       }, 0);
     } else {
-      showModal.value = false;
       document.body.classList.remove("modal-open");
       // Destruir el editor cuando se cierra el modal
       if (editorView) {
@@ -788,44 +786,14 @@ const findParentNodeOfType = (selection, nodeType) => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen p-4">
-      <div
-        class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-      ></div>
-      <div
-        v-if="showModal"
-        class="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl shadow-xl transform border border-gray-200 dark:border-gray-700 animate__animated animate__fadeInDown animate__faster"
-      >
-        <!-- Modal header -->
-        <div class="bg-gray-100 dark:bg-gray-700 px-4 py-3 rounded-t-lg">
-          <div class="flex justify-between items-center">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {{ isEdit ? "Editar Anuncio" : "Nuevo Anuncio" }}
-            </h3>
-            <button
-              @click="$emit('cancel')"
-              class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition duration-300"
-            >
-              <svg
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <!-- Modal content -->
-        <div class="p-6 bg-white dark:bg-gray-800 rounded-b-lg">
-          <form @submit.prevent="handleSubmit" class="space-y-6">
+  <BaseModal
+    :open="isOpen"
+    size="2xl"
+    :title="isEdit ? 'Editar Anuncio' : 'Nuevo Anuncio'"
+    @close="$emit('cancel')"
+  >
+    <div class="p-6">
+      <form @submit.prevent="handleSubmit" class="space-y-6">
             <div>
               <div class="relative">
                 <input
@@ -837,7 +805,7 @@ const findParentNodeOfType = (selection, nodeType) => {
                 />
                 <label
                   for="titulo"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Título (Opcional)
                 </label>
@@ -855,7 +823,7 @@ const findParentNodeOfType = (selection, nodeType) => {
                   ></div>
                   <label
                     for="prosemirror-editor"
-                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 left-1"
+                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 left-1"
                   >
                     Descripción (Opcional)
                   </label>
@@ -882,7 +850,7 @@ const findParentNodeOfType = (selection, nodeType) => {
                 </select>
                 <label
                   for="imagen"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Imagen
                 </label>
@@ -920,7 +888,7 @@ const findParentNodeOfType = (selection, nodeType) => {
                   />
                   <label
                     for="customUrl"
-                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                   >
                     URL de la imagen o YouTube
                   </label>
@@ -939,7 +907,7 @@ const findParentNodeOfType = (selection, nodeType) => {
                 />
                 <label
                   for="eslogan"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Eslogan (Opcional)
                 </label>
@@ -984,7 +952,7 @@ const findParentNodeOfType = (selection, nodeType) => {
                 />
                 <label
                   for="linkBoton"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Link del Eslogan (Opcional)
                 </label>
@@ -1008,13 +976,13 @@ const findParentNodeOfType = (selection, nodeType) => {
               </button>
             </div>
           </form>
-        </div>
-      </div>
     </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style>
+@reference "../../../styles/global.css";
+
 :root {
   height: 100%;
 }

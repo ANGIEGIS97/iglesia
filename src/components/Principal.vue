@@ -1,6 +1,5 @@
 <template>
   <div>
-    <MenuInicio />
     <Bienvenida id="inicio" />
     <SobreNosotros />
     <CarruselAnuncios id="anuncios" />
@@ -21,7 +20,6 @@ import Ubicacion from "./Ubicacion.vue";
 import Servicios from "./Servicios.vue";
 import Pastor from "./Pastor.vue";
 import Bienvenida from "./Bienvenida.vue";
-import MenuInicio from "./MenuInicio.vue";
 import ProximosEventos from "./Eventos/ProximosEventos.vue";
 import CarruselAnuncios from "./Anuncios/CarruselAnuncios.vue";
 import Ministerios from "./Ministerios.vue";
@@ -38,7 +36,6 @@ export default {
     Pastor,
     CarruselAnuncios,
     Bienvenida,
-    MenuInicio,
     SobreNosotros,
     ProximosEventos,
     BotonTop,

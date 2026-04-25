@@ -58,7 +58,7 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <!-- <button
               @click="showPaymentInfo('online')"
-              class="flex items-center justify-center space-x-2 py-4 px-6 rounded-lg hover:bg-opacity-90 transition-all"
+              class="flex items-center justify-center space-x-2 py-4 px-6 rounded-lg hover:opacity-90 transition-all"
               :class="
                 selectedPayment === 'online'
                   ? 'bg-teal-600 dark:bg-teal-500 text-white'
@@ -70,7 +70,7 @@
             </button> -->
             <button
               @click="showPaymentInfo('cash')"
-              class="flex items-center justify-center space-x-2 py-4 px-6 rounded-lg hover:bg-opacity-90 transition-all"
+              class="flex items-center justify-center space-x-2 py-4 px-6 rounded-lg hover:opacity-90 transition-all"
               :class="
                 selectedPayment === 'cash'
                   ? 'bg-teal-600 dark:bg-teal-500 text-white'
@@ -82,7 +82,7 @@
             </button>
             <button
               @click="showPaymentInfo('bank')"
-              class="flex items-center justify-center space-x-2 py-4 px-6 rounded-lg hover:bg-opacity-90 transition-all"
+              class="flex items-center justify-center space-x-2 py-4 px-6 rounded-lg hover:opacity-90 transition-all"
               :class="
                 selectedPayment === 'bank'
                   ? 'bg-teal-600 dark:bg-teal-500 text-white'

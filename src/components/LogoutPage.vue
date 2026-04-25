@@ -67,7 +67,7 @@ const redirectToHome = () => {
 
 <template>
   <div
-    class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 relative overflow-hidden"
+    class="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 relative overflow-hidden"
   >
     <!-- Decorative background elements -->
     <div
@@ -112,7 +112,7 @@ const redirectToHome = () => {
       <div class="space-y-4">
         <div class="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
-            class="absolute top-0 left-0 h-full bg-gradient-to-r from-teal-400 to-teal-600 transition-all duration-100 ease-linear"
+            class="absolute top-0 left-0 h-full bg-linear-to-r from-teal-400 to-teal-600 transition-all duration-100 ease-linear"
             :style="{ width: `${progress}%` }"
           ></div>
         </div>

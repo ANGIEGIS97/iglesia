@@ -22,7 +22,7 @@
           class="relative flex items-center sm:bg-gray-100 lg:rounded-r-lg sm:dark:bg-slate-600 transition duration-300 ease-in-out"
         >
           <span
-            class="hidden lg:absolute lg:inset-y-0 lg:-start-16 lg:block lg:w-16 lg:bg-gray-100 rounded-l-lg dark:bg-slate-600 transition duration-300 ease-in-out"
+            class="hidden lg:absolute lg:inset-y-0 lg:-inset-s-16 lg:block lg:w-16 lg:bg-gray-100 rounded-l-lg dark:bg-slate-600 transition duration-300 ease-in-out"
           ></span>
           <div class="p-0 py-4 s sm:p-16 lg:p-14">
             <div class="mb-6 text-center">

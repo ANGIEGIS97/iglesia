@@ -11,7 +11,7 @@
       "
       aria-label="Breadcrumb"
     >
-      <ol class="mx-auto max-w-screen-xl px-4 py-1 md:px-0 md:py-0 flex items-center gap-2 text-sm overflow-x-auto">
+      <ol class="mx-auto max-w-(--breakpoint-xl) px-4 py-1 md:px-0 md:py-0 flex items-center gap-2 text-sm overflow-x-auto">
         <li v-for="(item, index) in items" :key="index" class="flex items-center gap-2 whitespace-nowrap">
           <template v-if="item.href && index !== items.length - 1">
             <a :href="item.href" class="text-azul hover:underline font-medium">{{ item.label }}</a>

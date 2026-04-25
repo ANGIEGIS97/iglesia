@@ -1,64 +1,16 @@
 <template>
-  <div class="fixed inset-0 z-50 overflow-y-auto" v-show="showModal">
-    <div class="flex items-center justify-center min-h-screen p-4">
-      <Transition
-        enter-active-class="transition-opacity duration-300 ease-out"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition-opacity duration-200 ease-in"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div
-          v-show="showModal"
-          class="fixed inset-0 bg-black bg-opacity-50"
-        ></div>
-      </Transition>
-
-      <Transition enter-active-class="animate__animated animate__fadeInDown">
-        <div
-          v-show="showModal"
-          class="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-2xl shadow-xl transform border border-gray-200 dark:border-gray-700"
-        >
-          <!-- Modal header -->
-          <div class="bg-gray-100 dark:bg-gray-700 px-4 py-3 rounded-t-lg">
-            <div class="flex justify-between items-center">
-              <h3
-                class="text-lg font-semibold text-gray-900 dark:text-gray-100"
-              >
-                {{
-                  editingFecha &&
-                  editingFecha.titulo &&
-                  editingFecha.titulo.includes("(Copia)")
-                    ? "Duplicar Fecha"
-                    : editingFecha
-                    ? "Editar Fecha"
-                    : "Agregar Nueva Fecha"
-                }}
-              </h3>
-              <button
-                @click="closeModal"
-                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition duration-300"
-              >
-                <svg
-                  class="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <!-- Modal content -->
-          <div class="p-6 bg-white dark:bg-gray-800 rounded-b-lg">
-            <form @submit.prevent="saveFecha" class="space-y-6">
+  <BaseModal
+    :open="showModal"
+    size="2xl"
+    :title="editingFecha && editingFecha.titulo && editingFecha.titulo.includes('(Copia)')
+      ? 'Duplicar Fecha'
+      : editingFecha
+      ? 'Editar Fecha'
+      : 'Agregar Nueva Fecha'"
+    @close="closeModal"
+  >
+    <div class="p-6">
+      <form @submit.prevent="saveFecha" class="space-y-6">
               <div class="grid grid-cols-2 gap-4">
                 <div class="relative">
                   <input
@@ -70,7 +22,7 @@
                   />
                   <label
                     for="fecha"
-                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                   >
                     Fecha
                   </label>
@@ -86,7 +38,7 @@
                   />
                   <label
                     for="hora"
-                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                   >
                     Hora
                   </label>
@@ -104,7 +56,7 @@
                 />
                 <label
                   for="titulo"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Título
                 </label>
@@ -121,7 +73,7 @@
                 />
                 <label
                   for="lugar"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Lugar/Link
                 </label>
@@ -146,7 +98,7 @@
                 ></textarea>
                 <label
                   for="descripcion"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Descripción
                 </label>
@@ -186,7 +138,7 @@
                 </select>
                 <label
                   for="infoAdiccional"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                 >
                   Icono de Información
                 </label>
@@ -233,7 +185,7 @@
                 </button>
                 <label
                   for="iconSelector"
-                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 left-1"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 left-1"
                 >
                   {{
                     fechaForm.infoAdiccional === 1
@@ -243,7 +195,7 @@
                 </label>
                 <div
                   v-if="showDropdown"
-                  class="absolute z-10 bottom-full mb-1 w-full bg-white dark:bg-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+                  class="absolute z-10 bottom-full mb-1 w-full bg-white dark:bg-gray-700 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black/5 overflow-auto focus:outline-none sm:text-sm"
                 >
                   <div
                     v-for="option in iconOptions"
@@ -307,7 +259,7 @@
                   />
                   <label
                     for="banner"
-                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
+                    class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-left bg-white dark:bg-gray-800 px-2 peer-focus:px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-1"
                   >
                     URL del Banner
                   </label>
@@ -331,20 +283,20 @@
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      </Transition>
     </div>
-  </div>
+  </BaseModal>
 </template>
 
 <script>
 import "animate.css";
 import { geminiService } from "../../../lib/gemini";
 import { auth_api } from "../../../lib/api";
+import { iconOptions } from "../../../data/iconOptions";
+import BaseModal from "../../common/BaseModal.vue";
 
 export default {
   name: "FechaModal",
+  components: { BaseModal },
   props: {
     showModal: {
       type: Boolean,
@@ -360,86 +312,7 @@ export default {
       isClosing: false,
       showDropdown: false,
       isGeneratingDescription: false,
-      iconOptions: [
-        {
-          value: "Info",
-          label: "Info",
-          colorClass: "bg-teal-500",
-          icon: "default.svg",
-          colorName: "Verde Azulado",
-          noTooltip: true,
-        },
-        {
-          value: "Reunión de jovenes",
-          label: "Reunión de jovenes",
-          colorClass: "bg-indigo-500",
-          icon: "reunion-de-jovenes.svg",
-          colorName: "Índigo",
-        },
-        {
-          value: "Cumpleaños",
-          label: "Cumpleaños",
-          colorClass: "bg-yellow-500",
-          icon: "cumple.svg",
-          colorName: "Amarillo",
-        },
-        {
-          value: "Canasta de amor",
-          label: "Canasta de amor",
-          colorClass: "bg-red-500",
-          icon: "canasta-de-amor.svg",
-          colorName: "Rojo",
-        },
-        {
-          value: "Cena del Señor",
-          label: "Cena del Señor",
-          colorClass: "bg-red-700",
-          icon: "cena-del-senor.svg",
-          colorName: "Rojo Oscuro",
-        },
-        {
-          value: "Reunión de damas",
-          label: "Reunión de damas",
-          colorClass: "bg-pink-500",
-          icon: "reunion-de-damas.svg",
-          colorName: "Rosa",
-        },
-        {
-          value: "Reunión de varones",
-          label: "Reunión de varones",
-          colorClass: "bg-blue-500",
-          icon: "reunion-de-varones.svg",
-          colorName: "Azul",
-        },
-        {
-          value: "Domingo misionero",
-          label: "Domingo misionero",
-          colorClass: "bg-green-500",
-          icon: "domingo-misionero.svg",
-          colorName: "Verde",
-        },
-        {
-          value: "Culto de oración",
-          label: "Culto de oración",
-          colorClass: "bg-violet-500",
-          icon: "culto-de-oracion.svg",
-          colorName: "Violeta",
-        },
-        {
-          value: "Noches navideñas",
-          label: "Noches navideñas",
-          colorClass: "bg-red-400",
-          icon: "noches-navidenas.svg",
-          colorName: "Rojo Navidad",
-        },
-        {
-          value: "Reuniones caseras",
-          label: "Reuniones caseras",
-          colorClass: "bg-orange-500",
-          icon: "reuniones-caseras.svg",
-          colorName: "Naranja",
-        },
-      ],
+      iconOptions,
       fechaForm: {
         fecha: "",
         titulo: "",

@@ -9,15 +9,15 @@ import {
   type Evento,
 } from "../../lib/api.ts";
 import EventoModal from "./modals/EventoModal.vue";
-import NotificacionXP from "../NotificacionXP.vue";
+import { useGameStore } from "../../stores/useGameStore";
+import { useStatsStore } from "../../stores/useStatsStore";
+import { useToast } from "../../composables/useToast";
+import { useConfirm } from "../../composables/useConfirm";
 
-// Declaración para TypeScript: extender la interfaz Window
-declare global {
-  interface Window {
-    actualizarContadorEstadisticas?: () => void;
-    actualizarContador?: (tipo: string, accion: string) => void;
-  }
-}
+const gameStore = useGameStore();
+const statsStore = useStatsStore();
+const { xp: toastXp } = useToast();
+const { confirm: confirmDialog } = useConfirm();
 
 const eventList = ref<Evento[]>([]);
 const error = ref("");
@@ -37,110 +37,22 @@ const checkIfMobile = () => {
   isMobile.value = window.innerWidth < 768;
 };
 
-// Notificaciones XP
-const showXpNotification = ref(false);
-const xpAmount = ref(0);
-const xpMessage = ref("");
-const tipoXP = ref("evento");
-const accionXP = ref("agregados");
-
-// Función para reportar actividad de streaks
 const reportStreakActivity = (tipo: string, fecha = new Date()) => {
-  // Dispatch evento personalizado para notificar actividad de streak
-  window.dispatchEvent(new CustomEvent('streakActivity', {
-    detail: { tipo, fecha }
-  }));
-  console.log(`AdminEventList - Reportando actividad de streak: ${tipo}`);
+  window.dispatchEvent(new CustomEvent('streakActivity', { detail: { tipo, fecha } }));
 };
 
-// Función para mostrar notificación XP
 const showXpNotif = (
   amount: number,
   message: string,
   tipo: string = "evento",
   accion: string = "agregados"
 ) => {
-  xpAmount.value = amount;
-  xpMessage.value = message;
-  tipoXP.value = tipo;
-  accionXP.value = accion;
-  showXpNotification.value = true;
-
-  console.log(`AdminEventList - showXpNotif: tipo=${tipo}, accion=${accion}`);
-
-  // Reportar actividad para streaks (solo para creación/actualización, no eliminación)
   if (accion === "agregados" || accion === "modificados") {
     reportStreakActivity("anuncios");
   }
-
-  // Actualizar experiencia en el sidebar si está disponible
-  const sidebarComponent = document.querySelector("admin-sidebar");
-  if (sidebarComponent && "awardXp" in sidebarComponent) {
-    (sidebarComponent as any).awardXp(amount);
-  } else {
-    // Si no existe aún el componente, guardar el XP en localStorage
-    const user = auth_api.getCurrentUser();
-    if (user?.uid) {
-      const tempXpKey = `tempXp_${user.uid}`;
-      const currentXp = localStorage.getItem(tempXpKey)
-        ? parseInt(localStorage.getItem(tempXpKey) || "0")
-        : 0;
-      localStorage.setItem(tempXpKey, (currentXp + amount).toString());
-    }
-  }
-
-  // Actualizar contador manualmente para mayor seguridad
-  actualizarContadorManualmente(tipo, accion);
-
-  // Actualizar contadores mediante función global
-  if (window.actualizarContadorEstadisticas) {
-    setTimeout(() => window.actualizarContadorEstadisticas(), 500);
-  }
-
-  // Ocultar después de 3 segundos
-  setTimeout(() => {
-    showXpNotification.value = false;
-  }, 3000);
-};
-
-// Función para actualizar el contador manualmente
-const actualizarContadorManualmente = (tipo: string, accion: string) => {
-  // Verificar si existe la función global para actualizar contadores
-  if (window.actualizarContador) {
-    window.actualizarContador(tipo, accion);
-    console.log(
-      `Contador actualizado para ${tipo}.${accion} usando función global en AdminEventList`
-    );
-    return;
-  }
-
-  // Método de respaldo en caso de que la función global no esté disponible
-  console.warn(
-    "La función global actualizarContador no está disponible, usando método local"
-  );
-
-  const contadorKey = "estadisticasContador";
-  let contador = JSON.parse(localStorage.getItem(contadorKey) || "{}");
-
-  // Inicializar contador si no existe
-  if (!contador) contador = {};
-
-  // Estructura: { eventos: { agregados: 0, eliminados: 0, modificados: 0 }, fechas: { agregados: 0, eliminados: 0, modificados: 0 } }
-  if (!contador.eventos)
-    contador.eventos = { agregados: 0, eliminados: 0, modificados: 0 };
-  if (!contador.fechas)
-    contador.fechas = { agregados: 0, eliminados: 0, modificados: 0 };
-
-  // Incrementar el contador correspondiente
-  if (tipo === "evento" || tipo === "eventos") {
-    contador.eventos[accion] = (contador.eventos[accion] || 0) + 1;
-  } else if (tipo === "fecha" || tipo === "fechas") {
-    contador.fechas[accion] = (contador.fechas[accion] || 0) + 1;
-  }
-
-  // Guardar en localStorage
-  localStorage.setItem(contadorKey, JSON.stringify(contador));
-  console.log("Contador actualizado manualmente en AdminEventList:", contador);
+  gameStore.awardXp(amount);
+  statsStore.incrementar(tipo, accion);
+  toastXp(amount, message);
 };
 
 const loadUserProfiles = async (events: Evento[]) => {
@@ -245,7 +157,7 @@ const handleUpdate = async (eventData) => {
 };
 
 const handleDelete = async (id) => {
-  if (!confirm("¿Estás seguro de que deseas eliminar este evento?")) return;
+  if (!await confirmDialog("¿Estás seguro de que deseas eliminar este anuncio?", { danger: true })) return;
 
   try {
     error.value = "";
@@ -303,11 +215,7 @@ const toggleSelectAll = () => {
 const deleteSelected = async () => {
   if (selectedEvents.value.length === 0) return;
 
-  if (
-    !confirm(
-      `¿Estás seguro de que deseas eliminar ${selectedEvents.value.length} anuncios seleccionados?`
-    )
-  )
+  if (!await confirmDialog(`¿Estás seguro de que deseas eliminar ${selectedEvents.value.length} anuncio${selectedEvents.value.length !== 1 ? "s" : ""} seleccionado${selectedEvents.value.length !== 1 ? "s" : ""}?`, { danger: true }))
     return;
 
   try {
@@ -441,15 +349,6 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6 mt-24">
-    <!-- Notificación XP -->
-    <NotificacionXP
-      :show="showXpNotification"
-      :amount="xpAmount"
-      :message="xpMessage"
-      :tipo="tipoXP"
-      :accion="accionXP"
-    />
-
     <div
       class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 sm:px-0"
     >
@@ -457,7 +356,7 @@ onMounted(() => {
         <!-- Título -->
         <div>
           <h2
-            class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent flex items-center gap-2"
+            class="text-2xl sm:text-3xl font-bold bg-linear-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent flex items-center gap-2"
           >
             Administrar Anuncios
           </h2>
@@ -502,7 +401,7 @@ onMounted(() => {
         </transition>
         <button
           @click="formMode = 'create'"
-          class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600 order-1 sm:order-2"
+          class="w-full sm:w-auto px-6 py-2.5 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 shadow-md flex items-center justify-center gap-2 text-sm font-medium bg-linear-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600 order-1 sm:order-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -604,14 +503,14 @@ onMounted(() => {
         ]"
       >
               <!-- Drag Handle Icon -->
-              <div v-if="!isMobile" class="absolute top-3 left-12 z-[5] text-gray-400 dark:text-gray-500 cursor-move" title="Arrastra para reordenar">
+              <div v-if="!isMobile" class="absolute top-3 left-12 z-5 text-gray-400 dark:text-gray-500 cursor-move" title="Arrastra para reordenar">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
                 </svg>
               </div>
               <!-- Botón de visibilidad -->
               <button
-          class="absolute top-3 right-[84px] z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
+          class="absolute top-3 right-[84px] z-6 rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
           :aria-label="(evento as any).visible !== false ? 'Ocultar anuncio' : 'Mostrar anuncio'"
           @click="toggleVisible(evento)"
           :title="(evento as any).visible !== false ? 'Ocultar en carrusel' : 'Mostrar en carrusel'"
@@ -632,7 +531,7 @@ onMounted(() => {
         </button>
         <!-- Botón favorito -->
         <button
-          class="absolute top-3 right-[48px] z-[6] rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
+          class="absolute top-3 right-[48px] z-6 rounded-full w-8 h-8 flex items-center justify-center bg-gray-800/80 hover:scale-105 transition shadow-md"
           :aria-label="(evento as any).favorito ? 'Quitar de favoritos' : 'Marcar como favorito'"
           @click="toggleFavorito(evento)"
           title="Favorito"
@@ -644,7 +543,7 @@ onMounted(() => {
           </svg>
         </button>
         <!-- Checkbox para selección -->
-        <div class="absolute top-3 left-3 z-[5]">
+        <div class="absolute top-3 left-3 z-5">
           <input
             type="checkbox"
             :checked="selectedEvents.includes(evento.id)"
@@ -654,7 +553,7 @@ onMounted(() => {
         </div>
         <!-- Numeración -->
         <div
-          class="absolute top-3 right-[12px] z-[5] bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-md"
+          class="absolute top-3 right-[12px] z-5 bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-md"
         >
           {{ index + 1 }}
         </div>
@@ -666,7 +565,7 @@ onMounted(() => {
               class="w-full h-[200px] object-cover rounded-md"
             />
             <div
-              class="absolute inset-0 bg-black bg-opacity-50 rounded-md flex flex-col justify-center p-4 text-white"
+              class="absolute inset-0 bg-black/50 rounded-md flex flex-col justify-center p-4 text-white"
             >
               <h3 class="sm:text-xl text-[16px] font-bold mb-1">
                 {{ evento.titulo }}
@@ -681,7 +580,7 @@ onMounted(() => {
                   :href="evento.linkBoton"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="border border-white bg-transparent text-white px-2 rounded hover:bg-white hover:bg-opacity-20 transition duration-300 font-vivaldi text-xl inline-block"
+                  class="border border-white bg-transparent text-white px-2 rounded hover:bg-white/20 transition duration-300 font-vivaldi text-xl inline-block"
                 >
                   {{ evento.eslogan || "Ver más" }}
                 </a>
@@ -695,7 +594,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <div v-else class="flex-grow">
+          <div v-else class="grow">
             <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               {{ evento.titulo }}
             </h3>
@@ -767,6 +666,8 @@ onMounted(() => {
 </template>
 
 <style>
+@reference "../../styles/global.css";
+
 @font-face {
   font-family: "Vivaldi";
   src: url("/fonts/vivaldi.ttf") format("truetype");
@@ -804,8 +705,7 @@ onMounted(() => {
 }
 
 /* Estilos específicos para listas sobre fondo oscuro */
-.bg-black .admin-event-description :deep(ul),
-.bg-opacity-50 .admin-event-description :deep(ul) {
+.bg-black .admin-event-description :deep(ul) {
   color: white;
 }
 

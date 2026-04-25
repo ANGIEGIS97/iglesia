@@ -51,84 +51,71 @@
   </section>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      activeEvent: 'inicio',
-      isDragging: false,
-      startX: 0,
-      scrollLeft: 0,
-      events: [
-        {
-          id: 'inicio',
-          date: '2021',
-          title: 'Los Inicios',
-          icon: '🙏',
-          content: 'La fundación de nuestra Iglesia fue posible gracias a la misericordia de Dios, el cual usó a la Iglesia Bautista Emanuel De Perdomo, Iglesia Bautista Gracia En Abundancia, e Iglesia Bautista Esperanza De Soacha. Después de tres años de estar orando como iglesias, Dios como respuesta a estas oraciones dispone el lugar para el desarrollo de su obra en la UNIDAD DE PLANEAMIENTO ZONAL (UPZ) Bosa Centro. El desarrollo de la obra empezó con estudios bíblicos a través de la plataforma Zoom (esto debido a la pandemia mundial COVID-19) en el año 2021 los días sábados, dando como resultado las primeras familias que se convirtieron al cristianismo, así como hermanos que se ubicaban en la localidad de Bosa.'
-        },
-        {
-          id: 'encomendacion',
-          date: '6 Feb 2022',
-          title: 'Encomendación',
-          icon: '✝️',
-          content: 'Para el liderazgo de la iglesia, Dios por medio del Pastor Marco Orjuela (pastor Iglesia Bautista Emanuel De Perdomo), Héctor Lopez (pastor Iglesia Bautista Gracia En Abundancia), Julián Martínez (pastor Iglesia Bautista Esperanza De Soacha), y Daniel Mee (misionero ABWE-Asociación Bautista para la Evangelización Mundial) encomendaron al pastor Oscar Páez, quien tras ser elegido por llamado de Dios, realizó el establecimiento de la congregación. Luego de un servicio de encomendación el día 06 de febrero de 2022 hecho por todas las Iglesias madres, el equipo comenzó a liderar el crecimiento de la congregación.'
-        },
-        {
-          id: 'fundacion',
-          date: '13 Feb 2022',
-          title: 'Fundación',
-          icon: '⛪',
-          content: 'La Iglesia Bautista de Bosa SU GRACIA ES MAYOR fue fundada el 13 de febrero de 2022 en la localidad de Bosa. Dado que sabemos que la Iglesia local es el cuerpo reunido de las personas que confesaron y pusieron la fe en nuestro señor Jesucristo, comenzaron a solicitar un lugar presencial para congregarse. Se empezó con las reuniones presenciales el día 13 de febrero de 2022 en salón comunal Piamonte, pero a través de los meses Dios nos guió al salón comunal ASOVIVIR, lugar donde nos encontramos actualmente.'
-        },
-        {
-          id: 'mision',
-          date: 'Actualidad',
-          title: 'Nuestra Misión',
-          icon: '🌟',
-          content: 'La iglesia nació con el firme propósito de difundir el mensaje bíblico de Jesucristo a través de la predicación expositiva, evangelismo, discipulado y misiones, además de servir a la comunidad, apoyada por un grupo de iglesias madres de la Federación Bautista Independiente De Colombia. Nuestra iglesia ha crecido con la misión de seguir los principios y enseñanzas establecidos por medio de nuestro señor Jesucristo, a través de su palabra (2 Tim 3:16) ofreciendo un espacio para el estudio de la palabra de Dios, la oración, la comunión, y crecimiento espiritual para las personas en Bosa (Mat 28:19-20). La Iglesia Bautista De Bosa Su Gracia Es Mayor es una iglesia con el propósito de evangelizar, desarrollar la gran comisión, así como un lugar donde encontrarás una familia.'
-        }
-      ]
-    };
+<script setup lang="ts">
+import { ref, computed } from "vue";
+
+const pillsContainer = ref<HTMLElement | null>(null);
+const activeEvent = ref("inicio");
+const isDragging = ref(false);
+let startX = 0;
+let scrollLeft = 0;
+
+const events = [
+  {
+    id: "inicio",
+    date: "2021",
+    title: "Los Inicios",
+    content: "La fundación de nuestra Iglesia fue posible gracias a la misericordia de Dios, el cual usó a la Iglesia Bautista Emanuel De Perdomo, Iglesia Bautista Gracia En Abundancia, e Iglesia Bautista Esperanza De Soacha. Después de tres años de estar orando como iglesias, Dios como respuesta a estas oraciones dispone el lugar para el desarrollo de su obra en la UNIDAD DE PLANEAMIENTO ZONAL (UPZ) Bosa Centro. El desarrollo de la obra empezó con estudios bíblicos a través de la plataforma Zoom (esto debido a la pandemia mundial COVID-19) en el año 2021 los días sábados, dando como resultado las primeras familias que se convirtieron al cristianismo, así como hermanos que se ubicaban en la localidad de Bosa.",
   },
-  computed: {
-    activeEventIndex() {
-      return this.events.findIndex(e => e.id === this.activeEvent);
-    },
-    currentEventContent() {
-      const event = this.events.find(e => e.id === this.activeEvent);
-      return event ? event.content : '';
-    }
+  {
+    id: "encomendacion",
+    date: "6 Feb 2022",
+    title: "Encomendación",
+    content: "Para el liderazgo de la iglesia, Dios por medio del Pastor Marco Orjuela (pastor Iglesia Bautista Emanuel De Perdomo), Héctor Lopez (pastor Iglesia Bautista Gracia En Abundancia), Julián Martínez (pastor Iglesia Bautista Esperanza De Soacha), y Daniel Mee (misionero ABWE-Asociación Bautista para la Evangelización Mundial) encomendaron al pastor Oscar Páez, quien tras ser elegido por llamado de Dios, realizó el establecimiento de la congregación. Luego de un servicio de encomendación el día 06 de febrero de 2022 hecho por todas las Iglesias madres, el equipo comenzó a liderar el crecimiento de la congregación.",
   },
-  methods: {
-    startDrag(e) {
-      this.isDragging = true;
-      const container = this.$refs.pillsContainer;
-      this.startX = e.pageX - container.offsetLeft;
-      this.scrollLeft = container.scrollLeft;
-    },
-    onDrag(e) {
-      if (!this.isDragging) return;
-      e.preventDefault();
-      const container = this.$refs.pillsContainer;
-      const x = e.pageX - container.offsetLeft;
-      const walk = (x - this.startX) * 2; // Multiplicador para velocidad de scroll
-      container.scrollLeft = this.scrollLeft - walk;
-    },
-    stopDrag() {
-      this.isDragging = false;
-    },
-    handlePillClick(eventId) {
-      // Solo cambiar el evento activo si no estamos arrastrando
-      if (!this.isDragging) {
-        this.activeEvent = eventId;
-      }
-    }
-  }
-};
+  {
+    id: "fundacion",
+    date: "13 Feb 2022",
+    title: "Fundación",
+    content: "La Iglesia Bautista de Bosa SU GRACIA ES MAYOR fue fundada el 13 de febrero de 2022 en la localidad de Bosa. Dado que sabemos que la Iglesia local es el cuerpo reunido de las personas que confesaron y pusieron la fe en nuestro señor Jesucristo, comenzaron a solicitar un lugar presencial para congregarse. Se empezó con las reuniones presenciales el día 13 de febrero de 2022 en salón comunal Piamonte, pero a través de los meses Dios nos guió al salón comunal ASOVIVIR, lugar donde nos encontramos actualmente.",
+  },
+  {
+    id: "mision",
+    date: "Actualidad",
+    title: "Nuestra Misión",
+    content: "La iglesia nació con el firme propósito de difundir el mensaje bíblico de Jesucristo a través de la predicación expositiva, evangelismo, discipulado y misiones, además de servir a la comunidad, apoyada por un grupo de iglesias madres de la Federación Bautista Independiente De Colombia. Nuestra iglesia ha crecido con la misión de seguir los principios y enseñanzas establecidos por medio de nuestro señor Jesucristo, a través de su palabra (2 Tim 3:16) ofreciendo un espacio para el estudio de la palabra de Dios, la oración, la comunión, y crecimiento espiritual para las personas en Bosa (Mat 28:19-20). La Iglesia Bautista De Bosa Su Gracia Es Mayor es una iglesia con el propósito de evangelizar, desarrollar la gran comisión, así como un lugar donde encontrarás una familia.",
+  },
+];
+
+const currentEventContent = computed(
+  () => events.find((e) => e.id === activeEvent.value)?.content ?? ""
+);
+
+function startDrag(e: MouseEvent) {
+  isDragging.value = true;
+  startX = e.pageX - (pillsContainer.value?.offsetLeft ?? 0);
+  scrollLeft = pillsContainer.value?.scrollLeft ?? 0;
+}
+
+function onDrag(e: MouseEvent) {
+  if (!isDragging.value) return;
+  e.preventDefault();
+  const x = e.pageX - (pillsContainer.value?.offsetLeft ?? 0);
+  if (pillsContainer.value) pillsContainer.value.scrollLeft = scrollLeft - (x - startX) * 2;
+}
+
+function stopDrag() {
+  isDragging.value = false;
+}
+
+function handlePillClick(eventId: string) {
+  if (!isDragging.value) activeEvent.value = eventId;
+}
 </script>
 
 <style scoped>
+@reference "../styles/global.css";
+
 .text-outline {
   -webkit-text-stroke: 1.5px black;
   color: transparent;
