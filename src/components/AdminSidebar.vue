@@ -314,9 +314,6 @@
               <span>Cambiar Contraseña</span>
             </button>
 
-            <!-- Contador de Estadísticas -->
-            <ContadorEstadisticas :darkMode="isDarkMode" />
-
             <!-- Streaks Manager -->
             <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-600">
               <div class="mb-2">
@@ -424,7 +421,6 @@ import { storeToRefs } from "pinia";
 import CambioContrasena from "./CambioContrasena.vue";
 import ProfileModal from "./ProfileModal.vue";
 import { auth_api, usuarios } from "../lib/api.ts";
-import ContadorEstadisticas from "./ContadorEstadisticas.vue";
 import Logros from "./Logros.vue";
 import StreakManager from "./StreakManager.vue";
 import { useGameStore, GAME_AWARD_XP_EVENT } from "../stores/useGameStore";

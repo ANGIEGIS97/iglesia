@@ -215,7 +215,7 @@
       :show="showModal"
       :dark-mode="isDarkMode"
       @close="closeModal"
-      :key="'modal-logros-' + (selectedAchievement.id || Math.random())"
+      :key="'modal-logros-' + selectedAchievement.id"
     />
   </div>
 </template>
@@ -1105,6 +1105,17 @@ onMounted(() => {
   setTimeout(() => {
     window.addEventListener("click", handleGlobalClick);
   }, 100);
+
+  if (import.meta.env.DEV) {
+    import("../lib/debug/logrosDebug").then(({ installLogrosDebug }) => {
+      installLogrosDebug({
+        get achievements() { return achievements.value; },
+        get uid() { return auth_api.getCurrentUser()?.uid || ""; },
+        unlock: unlockAchievement,
+        clearAll: clearAchievementsLocalStorage,
+      });
+    });
+  }
 });
 
 onUnmounted(() => {

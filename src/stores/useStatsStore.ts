@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { auth_api } from "../lib/api";
 
 interface Estadisticas {
   eventos: { agregados: number; eliminados: number; modificados: number };
@@ -18,6 +19,7 @@ function crearVacias(): Estadisticas {
 export const useStatsStore = defineStore("stats", () => {
   const estadisticas = ref<Estadisticas>(crearVacias());
   const uid = ref("");
+  let unsubscribeAuth: (() => void) | null = null;
 
   function _key() {
     return `estadisticasContador_${uid.value}`;
@@ -37,8 +39,8 @@ export const useStatsStore = defineStore("stats", () => {
     _cargarDesdeStorage();
   }
 
-  // Copia exacta del comportamiento de ContadorEstadisticas.actualizarContador:
-  // recarga desde localStorage antes de incrementar para evitar race conditions
+  // Recarga desde localStorage antes de incrementar para evitar race conditions
+  // entre islands de Astro que comparten datos vía localStorage.
   function incrementar(tipo: string, accion: TipoAccion) {
     if (!uid.value) return;
     _cargarDesdeStorage();
@@ -58,5 +60,28 @@ export const useStatsStore = defineStore("stats", () => {
     }
   }
 
-  return { estadisticas, uid, cargar, incrementar, reiniciar };
+  function dispose() {
+    unsubscribeAuth?.();
+    unsubscribeAuth = null;
+  }
+
+  if (typeof window !== "undefined" && !unsubscribeAuth) {
+    unsubscribeAuth = auth_api.onAuthStateChange((user: any) => {
+      cargar(user?.uid || "invitado");
+    });
+  }
+
+  if (import.meta.env.DEV && typeof window !== "undefined") {
+    import("../lib/debug/statsDebug").then(({ installStatsDebug }) => {
+      installStatsDebug({
+        get estadisticas() { return estadisticas.value; },
+        get uid() { return uid.value; },
+        cargar,
+        incrementar,
+        reiniciar,
+      });
+    });
+  }
+
+  return { estadisticas, uid, cargar, incrementar, reiniciar, dispose };
 });

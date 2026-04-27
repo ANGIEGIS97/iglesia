@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey:            import.meta.env.PUBLIC_FIREBASE_API_KEY,
-  authDomain:        import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId:         import.meta.env.PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket:     import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId:             import.meta.env.PUBLIC_FIREBASE_APP_ID,
+  apiKey:            "AIzaSyAnCG79O4QorOhTkvgSwIXtT2zV4yimCUw",
+  authDomain:        "iglesia-87cd3.firebaseapp.com",
+  projectId:         "iglesia-87cd3",
+  storageBucket:     "iglesia-87cd3.firebasestorage.app",
+  messagingSenderId: "366923103958",
+  appId:             "1:366923103958:web:ef0d86dec0dd88f4359377",
 };
 
 // Inicializar Firebase solo en el cliente
