@@ -4,7 +4,7 @@
       v-if="open"
       :class="[
         'fixed inset-0 flex items-center justify-center',
-        zClass ?? 'z-50',
+        zClass ?? 'z-[60]',
         backdropClass ?? 'bg-black/30 backdrop-blur-sm',
       ]"
       @click.self="emitClose"

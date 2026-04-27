@@ -50,7 +50,10 @@ const showXpNotif = (
   if (accion === "agregados" || accion === "modificados") {
     reportStreakActivity("anuncios");
   }
-  gameStore.awardXp(amount);
+  // Cross-island: el sidebar (otro island con su propia Pinia) aplica el XP
+  // sobre su instancia y persiste. Mutar el store local no se reflejaría en
+  // la barra del sidebar.
+  gameStore.requestXp(amount);
   statsStore.incrementar(tipo, accion);
   toastXp(amount, message);
 };

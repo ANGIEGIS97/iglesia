@@ -50,7 +50,7 @@ bienvenida
             <!-- Bible Verse (Solo para miembros) -->
             <div class="inline-block animate-fade-in-up-more-delayed">
               <blockquote class="text-sm sm:text-base text-gray-300 italic border-l-4 border-white pl-4 py-2 bg-black/20 backdrop-blur-sm rounded-r-lg">
-                <div id="dailyVersesWrapper" class="verse-content"></div>
+                <div id="dailyVersesWrapper" ref="verseContainerRef" class="verse-content"></div>
               </blockquote>
             </div>
           </div>
@@ -141,7 +141,7 @@ bienvenida
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { usuarios, auth_api } from "../lib/api";
 
 const heroImage = "/bienvenida2.webp";
@@ -150,6 +150,7 @@ const rotatingWords = ["fe", "comunidad", "crecimiento espiritual"];
 const displayName = ref("");
 const isLoading = ref(true);
 const currentWordIndex = ref(0);
+const verseContainerRef = ref<HTMLElement | null>(null);
 
 let previousDisplayName = "";
 let unsubscribe: (() => void) | null = null;
@@ -215,14 +216,24 @@ async function setupProfileSubscription() {
   }
 }
 
-function loadDailyVerseScript() {
-  const verseContainer = document.getElementById("dailyVersesWrapper");
-  if (verseContainer) verseContainer.innerHTML = "";
+function cleanupVerseScript() {
   document.querySelectorAll('script[src*="dailyverses.net"]').forEach((s) => s.remove());
+}
+
+function loadDailyVerseScript() {
+  if (!verseContainerRef.value) return;
+  cleanupVerseScript();
+  verseContainerRef.value.innerHTML = "";
   const script = document.createElement("script");
   script.src = "https://dailyverses.net/get/random.js?language=nvi&t=" + Date.now();
   script.async = true;
   script.defer = true;
+  script.onerror = () => {
+    if (verseContainerRef.value) {
+      verseContainerRef.value.innerHTML =
+        '<span style="opacity:0.7">No se pudo cargar el versículo</span>';
+    }
+  };
   document.body.appendChild(script);
 }
 
@@ -232,14 +243,24 @@ function startWordRotation() {
   }, 2500);
 }
 
+watch(
+  () => !!displayName.value && !isLoading.value,
+  async (shouldShowVerse) => {
+    if (shouldShowVerse) {
+      await nextTick();
+      loadDailyVerseScript();
+    } else {
+      cleanupVerseScript();
+    }
+  }
+);
+
 onMounted(async () => {
   initializeFromLocalStorage();
-  loadDailyVerseScript();
   startWordRotation();
   authUnsubscribe = auth_api.onAuthStateChange(async (user: any) => {
     if (user) {
       await setupProfileSubscription();
-      setTimeout(() => loadDailyVerseScript(), 100);
     } else {
       clearDisplayName();
       if (unsubscribe) unsubscribe();
@@ -252,6 +273,7 @@ onBeforeUnmount(() => {
   if (unsubscribe) unsubscribe();
   if (authUnsubscribe) authUnsubscribe();
   if (wordRotationInterval) clearInterval(wordRotationInterval);
+  cleanupVerseScript();
 });
 </script>
 

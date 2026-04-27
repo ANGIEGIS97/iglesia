@@ -48,7 +48,7 @@ function toastClass(type: ToastType): string {
   position: fixed;
   top: 5rem;
   right: 1rem;
-  z-index: 50;
+  z-index: 80;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

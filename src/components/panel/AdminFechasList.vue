@@ -1105,7 +1105,10 @@ function reportStreakActivity(tipo: string, fecha = new Date()) {
 
 function showXpNotif(amount: number, message: string, tipo = "fecha", accion: "agregados" | "eliminados" | "modificados" = "agregados") {
   if (accion === "agregados" || accion === "modificados") reportStreakActivity("fechas");
-  gameStore.awardXp(amount);
+  // Cross-island: el sidebar (otro island con su propia Pinia) aplica el XP
+  // sobre su instancia y persiste. Mutar el store local no se reflejaría en
+  // la barra del sidebar.
+  gameStore.requestXp(amount);
   statsStore.incrementar(tipo, accion);
   toastXp(amount, message);
 }

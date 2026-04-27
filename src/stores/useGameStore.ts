@@ -1,5 +1,8 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
+import { publish } from "../lib/eventBus";
+
+export const GAME_AWARD_XP_EVENT = "game:awardXp";
 
 export const useGameStore = defineStore("game", () => {
   const userXp = ref(0);
@@ -47,9 +50,19 @@ export const useGameStore = defineStore("game", () => {
     loginStreak.value = state.loginStreak ?? 0;
   }
 
+  // Puente cross-island: las páginas admin (AdminEventList, AdminFechasList)
+  // viven en islands de Astro distintos al MenuInicio/AdminSidebar y por tanto
+  // tienen su propia instancia de Pinia. Mutar `userXp` localmente no se refleja
+  // en el sidebar. Esta acción publica un evento global; el sidebar (único dueño
+  // de la UI de XP y de la persistencia en Firestore) lo recibe y aplica el XP
+  // sobre su propia instancia del store.
+  function requestXp(amount: number) {
+    publish<number>(GAME_AWARD_XP_EVENT, amount);
+  }
+
   return {
     userXp, userLevel, userRank, loginStreak, rankNames,
     xpForNextLevel, xpPercentage,
-    awardXp, setFromSaved,
+    awardXp, requestXp, setFromSaved,
   };
 });

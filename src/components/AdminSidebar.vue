@@ -427,7 +427,8 @@ import { auth_api, usuarios } from "../lib/api.ts";
 import ContadorEstadisticas from "./ContadorEstadisticas.vue";
 import Logros from "./Logros.vue";
 import StreakManager from "./StreakManager.vue";
-import { useGameStore } from "../stores/useGameStore";
+import { useGameStore, GAME_AWARD_XP_EVENT } from "../stores/useGameStore";
+import { subscribe } from "../lib/eventBus";
 
 const props = defineProps({
   isOpen: {
@@ -450,6 +451,7 @@ const streakManagerRef = ref(null);
 const activeTab = ref('admin'); // Estado para controlar qué tab está activo
 let unsubscribeAuth = null;
 let unsubscribeProfile = null;
+let unsubscribeAwardXp = null;
 
 // Estado de los streaks para mostrar indicadores
 const streakStatus = ref({
@@ -804,6 +806,14 @@ onMounted(async () => {
   updateCurrentPath();
   window.addEventListener("popstate", updateCurrentPath);
 
+  // Recibir XP otorgado desde otros islands de Astro (AdminEventList,
+  // AdminFechasList) que tienen su propia instancia de Pinia. El sidebar es el
+  // único dueño de la UI de XP y de la persistencia, así que aplica el monto
+  // sobre su instancia local con el flujo completo (level-up, rank-up, save).
+  unsubscribeAwardXp = subscribe(GAME_AWARD_XP_EVENT, (amount) => {
+    if (typeof amount === "number" && amount > 0) awardXp(amount);
+  });
+
   // Sincronizar estado del tema con la clase `dark` en <html>
   isDarkMode.value = document.documentElement.classList.contains("dark");
   darkObserver = new MutationObserver(() => {
@@ -880,6 +890,10 @@ onBeforeUnmount(() => {
   if (unsubscribeProfile) {
     unsubscribeProfile();
     unsubscribeProfile = null;
+  }
+  if (unsubscribeAwardXp) {
+    unsubscribeAwardXp();
+    unsubscribeAwardXp = null;
   }
 });
 

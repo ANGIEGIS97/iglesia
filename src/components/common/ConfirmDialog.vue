@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="confirmState.open"
-    class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70] flex items-center justify-center p-4"
     @click.self="_cancel()"
   >
     <div
