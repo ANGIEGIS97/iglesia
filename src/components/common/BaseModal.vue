@@ -43,7 +43,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onBeforeUnmount, computed } from "vue";
+import { ref, watch, nextTick, onBeforeUnmount, computed, toRef } from "vue";
+import { useBodyScrollLock } from "../../composables/useBodyScrollLock";
 import "animate.css";
 
 const props = defineProps<{
@@ -54,6 +55,8 @@ const props = defineProps<{
   backdropClass?: string;
   zClass?: string;
 }>();
+
+useBodyScrollLock(toRef(props, "open"));
 
 const panelRef = ref<HTMLElement | null>(null);
 const labelId = `modal-title-${Math.random().toString(36).slice(2)}`;

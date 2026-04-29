@@ -66,15 +66,7 @@
                   cy="32"
                   r="25"
                   stroke="currentColor"
-                  :class="{
-                    'text-amber-500': userRank === 1,
-                    'text-gray-400': userRank === 2,
-                    'text-yellow-500': userRank === 3,
-                    'text-blue-500': userRank === 4,
-                    'text-purple-500': userRank === 5,
-                    'text-teal-500': userRank > 5 || userRank < 1
-                  }"
-                  class="transition-all duration-300"
+                  :class="['transition-all duration-300', rankStyle.text]"
                   stroke-width="12"
                   fill="none"
                   stroke-linecap="butt"
@@ -91,13 +83,7 @@
               {{ getUserInitial(displayName) }}
               <div
                 class="absolute -bottom-1 -right-1 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white dark:border-gray-800"
-                :class="{
-                  'bg-amber-500 text-amber-950 ': userRank === 1,
-                  'bg-gray-400 text-gray-950': userRank === 2,
-                  'bg-yellow-500 text-yellow-950': userRank === 3,
-                  'bg-blue-500 text-blue-950 ': userRank === 4,
-                  'bg-purple-500 text-purple-950 ': userRank === 5,
-                }"
+                :class="rankStyle.bgWithText"
               >
                 {{ userLevel }}
               </div>
@@ -113,13 +99,7 @@
                 <span
                   v-if="userRank > 0"
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
-                  :class="[
-                    userRank === 1 ? 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100' : '',
-                    userRank === 2 ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '',
-                    userRank === 3 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : '',
-                    userRank === 4 ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '',
-                    userRank === 5 ? 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100' : '',
-                  ]"
+                  :class="rankStyle.badge"
                 >
                   <i class="fas fa-star text-[8px] mr-0.5"></i>
                   {{ currentRankName }}
@@ -127,13 +107,7 @@
                 <!-- Nivel en pill -->
                 <span
                   class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium"
-                  :class="[
-                    userRank === 1 ? 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100' : '',
-                    userRank === 2 ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' : '',
-                    userRank === 3 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : '',
-                    userRank === 4 ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '',
-                    userRank === 5 ? 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100' : '',
-                  ]"
+                  :class="rankStyle.badge"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -368,14 +342,7 @@
     >
       <div
         class="w-14 h-14 rounded-full flex items-center justify-center font-bold"
-        :class="{
-          'bg-amber-500 text-amber-950': userRank === 1, // Bronce
-          'bg-gray-400 text-gray-950': userRank === 2, // Plata
-          'bg-yellow-500 text-yellow-950': userRank === 3, // Oro
-          'bg-blue-500 text-blue-950': userRank === 4, // Diamante
-          'bg-purple-500 text-purple-950': userRank === 5, // Platino
-          'bg-yellow-500 text-gray-900': userRank > 5 || userRank < 1, // Fallback
-        }"
+        :class="rankStyle.bgWithText"
       >
         {{ userLevel }}
       </div>
@@ -393,14 +360,7 @@
       <div class="w-14 h-14 relative">
         <i
           class="fas fa-star text-4xl absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"
-          :class="{
-            'text-amber-400': userRank === 1, // Bronce
-            'text-gray-400': userRank === 2, // Plata
-            'text-yellow-400': userRank === 3, // Oro
-            'text-blue-400': userRank === 4, // Diamante
-            'text-purple-400': userRank === 5, // Platino
-            'text-yellow-400': userRank > 5 || userRank < 1, // Fallback
-          }"
+          :class="rankStyle.textLight"
         ></i>
         <span
           class="absolute inset-0 flex items-center justify-center text-base font-bold text-black"
@@ -424,7 +384,9 @@ import { auth_api, usuarios } from "../lib/api.ts";
 import Logros from "./Logros.vue";
 import StreakManager from "./StreakManager.vue";
 import { useGameStore, GAME_AWARD_XP_EVENT } from "../stores/useGameStore";
-import { subscribe } from "../lib/eventBus";
+import { publish, subscribe } from "../lib/eventBus";
+import { useUserAvatar } from "../composables/useUserAvatar";
+import { useRankStyle } from "../composables/useRankStyle";
 
 const props = defineProps({
   isOpen: {
@@ -510,31 +472,10 @@ const currentRankName = computed(() => {
   return rankNames[Math.min(rankIndex, rankNames.length - 1)];
 });
 
-// Función para obtener la inicial del nombre de usuario
-const getUserInitial = (name) => {
-  return name ? name.charAt(0).toUpperCase() : "U";
-};
+// Estilos visuales del rango actual (color de texto, fondo, badge)
+const rankStyle = useRankStyle(userRank);
 
-// Función para generar un color basado en el nombre de usuario
-const getUserColor = (name) => {
-  const colors = [
-    "#2196F3", // Azul
-    "#4CAF50", // Verde
-    "#F44336", // Rojo
-    "#9C27B0", // Púrpura
-    "#FF9800", // Naranja
-    "#009688", // Verde azulado
-    "#E91E63", // Rosa
-    "#673AB7", // Violeta
-  ];
-
-  if (!name) return colors[0];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-};
+const { initial: getUserInitial, color: getUserColor } = useUserAvatar();
 
 const awardXp = (amount) => {
   const { leveledUp, rankedUp } = gameStore.awardXp(amount);
@@ -612,7 +553,7 @@ const loadGameState = async () => {
       }
 
       saveGameState();
-      window.dispatchEvent(new CustomEvent("gameStateLoaded"));
+      publish("gameStateLoaded", undefined);
       return;
     }
   } catch (error) {
@@ -734,22 +675,20 @@ const updateStreakStatus = () => {
   }
 };
 
-// Función para configurar el listener de estadísticas
+const busUnsubs = [];
+
+// Suscribe (idempotente) los listeners del bus de eventos. Se invoca una vez
+// cuando el usuario se autentica; las suscripciones se limpian en unmount.
 const setupStatsListener = () => {
-  window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
-  window.addEventListener("statisticsUpdated", checkStatsForAchievements);
-
-  window.removeEventListener("forceGameStateReload", forceReloadGameState);
-  window.addEventListener("forceGameStateReload", forceReloadGameState);
-
-  window.removeEventListener("rankingPageVisited", checkRankingVisitForAchievement);
-  window.addEventListener("rankingPageVisited", checkRankingVisitForAchievement);
-
-  window.removeEventListener("streakActivity", handleStreakActivity);
-  window.addEventListener("streakActivity", handleStreakActivity);
-
-  window.removeEventListener("gameStateLoaded", updateStreakStatus);
-  window.addEventListener("gameStateLoaded", updateStreakStatus);
+  // Limpia suscripciones previas si reentra (cambio de usuario)
+  busUnsubs.splice(0).forEach((u) => u());
+  busUnsubs.push(
+    subscribe("statisticsUpdated", checkStatsForAchievements),
+    subscribe("forceGameStateReload", forceReloadGameState),
+    subscribe("rankingPageVisited", checkRankingVisitForAchievement),
+    subscribe("streakActivity", handleStreakActivity),
+    subscribe("gameStateLoaded", updateStreakStatus),
+  );
 };
 
 const forceReloadGameState = async () => {
@@ -791,9 +730,8 @@ const handleCheckStreakAchievements = (streakData) => {
   }
 };
 
-const handleStreakActivity = (event) => {
-  if (streakManagerRef.value) {
-    const { tipo, fecha } = event.detail;
+const handleStreakActivity = ({ tipo, fecha } = {}) => {
+  if (streakManagerRef.value && tipo) {
     streakManagerRef.value.reportActivity(tipo, fecha);
   }
 };
@@ -868,10 +806,7 @@ watch(
 
 onBeforeUnmount(() => {
   window.removeEventListener("popstate", updateCurrentPath);
-  window.removeEventListener("statisticsUpdated", checkStatsForAchievements);
-  window.removeEventListener("rankingPageVisited", checkRankingVisitForAchievement);
-  window.removeEventListener("streakActivity", handleStreakActivity);
-  window.removeEventListener("gameStateLoaded", updateStreakStatus);
+  busUnsubs.splice(0).forEach((u) => u());
 
   if (darkObserver) {
     darkObserver.disconnect();
@@ -957,18 +892,5 @@ button:active {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Filtros para colorear los SVG de streaks */
-.filter-red {
-  filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
-}
-
-.filter-blue {
-  filter: brightness(0) saturate(100%) invert(26%) sepia(81%) saturate(2851%) hue-rotate(206deg) brightness(102%) contrast(103%);
-}
-
-.filter-gray {
-  filter: brightness(0) saturate(100%) invert(62%) sepia(2%) saturate(1031%) hue-rotate(314deg) brightness(89%) contrast(85%);
 }
 </style>

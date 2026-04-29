@@ -31,3 +31,20 @@ html {
 body {
   font-family: "Poppins", sans-serif;
 }
+
+/* Filtros para colorear los SVG de rachas (flama).
+   Compartidos entre StreakManager y AdminSidebar. */
+.filter-red {
+  filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%)
+    hue-rotate(346deg) brightness(104%) contrast(97%);
+}
+
+.filter-blue {
+  filter: brightness(0) saturate(100%) invert(26%) sepia(81%) saturate(2851%)
+    hue-rotate(206deg) brightness(102%) contrast(103%);
+}
+
+.filter-gray {
+  filter: brightness(0) saturate(100%) invert(62%) sepia(2%) saturate(1031%)
+    hue-rotate(314deg) brightness(89%) contrast(85%);
+}

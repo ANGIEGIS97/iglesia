@@ -13,6 +13,7 @@ import { useGameStore } from "../../stores/useGameStore";
 import { useStatsStore } from "../../stores/useStatsStore";
 import { useToast } from "../../composables/useToast";
 import { useConfirm } from "../../composables/useConfirm";
+import { publish } from "../../lib/eventBus";
 
 const gameStore = useGameStore();
 const statsStore = useStatsStore();
@@ -38,7 +39,7 @@ const checkIfMobile = () => {
 };
 
 const reportStreakActivity = (tipo: string, fecha = new Date()) => {
-  window.dispatchEvent(new CustomEvent('streakActivity', { detail: { tipo, fecha } }));
+  publish("streakActivity", { tipo, fecha });
 };
 
 const showXpNotif = (

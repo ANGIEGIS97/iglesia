@@ -8,7 +8,9 @@ interface Estadisticas {
 const KEYS = {
   gameState: (uid: string) => `adminGameState_${uid}`,
   streaks: (uid: string) => `streakData_${uid}`,
-  stats: (uid: string) => `estadisticas_${uid}`,
+  // Unificada con la key histórica usada por useStatsStore y Logros.vue
+  // para evitar inconsistencias entre lectores y escritores.
+  stats: (uid: string) => `estadisticasContador_${uid}`,
   token: "token",
   darkMode: "darkMode",
 } as const;

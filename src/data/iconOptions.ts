@@ -87,3 +87,33 @@ export const iconOptions: IconOption[] = [
     colorName: "Naranja",
   },
 ];
+
+// Las clases se declaran literalmente para que Tailwind las detecte al escanear
+// este archivo (no se construyen dinámicamente con string concatenation).
+const ICON_COLOR_VARIANTS: Record<string, { bg: string; "border-t": string; text: string; border: string }> = {
+  Info:                    { bg: "bg-teal-500",    "border-t": "border-t-teal-500",    text: "text-teal-500",    border: "border-teal-500" },
+  "Reunión de jovenes":    { bg: "bg-indigo-500",  "border-t": "border-t-indigo-500",  text: "text-indigo-500",  border: "border-indigo-500" },
+  "Cumpleaños":            { bg: "bg-yellow-500",  "border-t": "border-t-yellow-500",  text: "text-yellow-500",  border: "border-yellow-500" },
+  "Canasta de amor":       { bg: "bg-red-500",     "border-t": "border-t-red-500",     text: "text-red-500",     border: "border-red-500" },
+  "Cena del Señor":        { bg: "bg-red-700",     "border-t": "border-t-red-700",     text: "text-red-700",     border: "border-red-700" },
+  "Reunión de damas":      { bg: "bg-pink-500",    "border-t": "border-t-pink-500",    text: "text-pink-500",    border: "border-pink-500" },
+  "Reunión de varones":    { bg: "bg-blue-500",    "border-t": "border-t-blue-500",    text: "text-blue-500",    border: "border-blue-500" },
+  "Domingo misionero":     { bg: "bg-green-500",   "border-t": "border-t-green-500",   text: "text-green-500",   border: "border-green-500" },
+  "Culto de oración":      { bg: "bg-violet-500",  "border-t": "border-t-violet-500",  text: "text-violet-500",  border: "border-violet-500" },
+  "Noches navideñas":      { bg: "bg-red-400",     "border-t": "border-t-red-400",     text: "text-red-400",     border: "border-red-400" },
+  "Reuniones caseras":     { bg: "bg-orange-500",  "border-t": "border-t-orange-500",  text: "text-orange-500",  border: "border-orange-500" },
+};
+
+const FALLBACK_VARIANTS = ICON_COLOR_VARIANTS.Info;
+
+/**
+ * Devuelve la clase de color asociada al tipo de evento con el prefijo solicitado.
+ * Las variantes se enumeran estáticamente para que Tailwind las detecte.
+ */
+export function getIconColorClass(
+  tipo: string | null | undefined,
+  prefix: "bg" | "border-t" | "text" | "border" = "bg",
+): string {
+  const variants = (tipo && ICON_COLOR_VARIANTS[tipo]) || FALLBACK_VARIANTS;
+  return variants[prefix];
+}

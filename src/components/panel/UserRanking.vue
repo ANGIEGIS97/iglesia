@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { usuarios, type UserWithId } from "../../lib/api.ts";
+import { publish, subscribe } from "../../lib/eventBus";
 
 const users = ref<UserWithId[]>([]);
 const isLoading = ref(true);
@@ -105,21 +106,16 @@ const getAchievementPercentage = (user: UserWithId) => {
   return Math.round((unlockedCount / user.achievements.length) * 100);
 };
 
-// Variables para manejar el listener del estado del juego
-let gameStateLoadedListener = null;
-let timeoutId = null;
+// Aviso al sidebar de que el ranking se visitó (para el logro
+// EXPLORADOR_RANGOS). Esperamos a que el estado del juego se cargue, con
+// un timeout de respaldo si el evento "gameStateLoaded" no se dispara.
+let unsubGameStateLoaded: (() => void) | null = null;
+let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-const handleGameStateLoaded = () => {
-  console.log("UserRanking: Estado del juego cargado, emitiendo evento rankingPageVisited");
-  window.dispatchEvent(new CustomEvent("rankingPageVisited"));
-  
-  // Limpiar el listener después de usarlo
-  if (gameStateLoadedListener) {
-    window.removeEventListener("gameStateLoaded", gameStateLoadedListener);
-    gameStateLoadedListener = null;
-  }
-  
-  // Limpiar el timeout si existe
+const notifyRankingVisited = () => {
+  publish("rankingPageVisited", undefined);
+  unsubGameStateLoaded?.();
+  unsubGameStateLoaded = null;
   if (timeoutId) {
     clearTimeout(timeoutId);
     timeoutId = null;
@@ -128,34 +124,13 @@ const handleGameStateLoaded = () => {
 
 onMounted(() => {
   loadRanking();
-  
-  // Configurar el listener para el evento de carga del estado del juego
-  gameStateLoadedListener = handleGameStateLoaded;
-  window.addEventListener("gameStateLoaded", gameStateLoadedListener);
-  
-  // Timeout de respaldo en caso de que el evento no se dispare
-  timeoutId = setTimeout(() => {
-    console.log("UserRanking: Timeout de respaldo - emitiendo evento rankingPageVisited");
-    window.dispatchEvent(new CustomEvent("rankingPageVisited"));
-    
-    // Limpiar el listener si el timeout se ejecuta
-    if (gameStateLoadedListener) {
-      window.removeEventListener("gameStateLoaded", gameStateLoadedListener);
-      gameStateLoadedListener = null;
-    }
-    timeoutId = null;
-  }, 5000); // Timeout de respaldo de 5 segundos
+  unsubGameStateLoaded = subscribe("gameStateLoaded", notifyRankingVisited);
+  timeoutId = setTimeout(notifyRankingVisited, 5000);
 });
 
-// Limpiar listeners cuando el componente se desmonte
 onUnmounted(() => {
-  // Limpiar cualquier listener que pueda quedar
-  if (typeof window !== 'undefined' && gameStateLoadedListener) {
-    window.removeEventListener("gameStateLoaded", gameStateLoadedListener);
-    gameStateLoadedListener = null;
-  }
-  
-  // Limpiar timeout si existe
+  unsubGameStateLoaded?.();
+  unsubGameStateLoaded = null;
   if (timeoutId) {
     clearTimeout(timeoutId);
     timeoutId = null;

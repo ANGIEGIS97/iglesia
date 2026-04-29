@@ -67,48 +67,7 @@
                       <div
                         :class="[
                           'relative text-3xl font-bold text-black border py-2 px-6 rounded-md shadow-md bg-white folded-corner',
-                          evento.infoIconoTexto === 'Cumpleaños'
-                            ? 'border-t-yellow-500'
-                            : '',
-                          evento.infoIconoTexto === 'Canasta de amor'
-                            ? 'border-t-red-500'
-                            : '',
-                          evento.infoIconoTexto === 'Cena del Señor'
-                            ? 'border-t-red-700'
-                            : '',
-                          evento.infoIconoTexto === 'Reunión de damas'
-                            ? 'border-t-pink-500'
-                            : '',
-                          evento.infoIconoTexto === 'Domingo misionero'
-                            ? 'border-t-green-500'
-                            : '',
-                          evento.infoIconoTexto === 'Culto de oración'
-                            ? 'border-t-violet-500'
-                            : '',
-                          evento.infoIconoTexto === 'Reunión de varones'
-                            ? 'border-t-blue-500'
-                            : '',
-                          evento.infoIconoTexto === 'Reunión de jovenes'
-                            ? 'border-t-indigo-500'
-                            : '',
-                          evento.infoIconoTexto === 'Noches navideñas'
-                            ? 'border-t-red-400'
-                            : '',
-                          evento.infoIconoTexto === 'Reuniones caseras'
-                            ? 'border-t-orange-500'
-                            : '',
-                          evento.infoIconoTexto !== 'Cumpleaños' &&
-                          evento.infoIconoTexto !== 'Canasta de amor' &&
-                          evento.infoIconoTexto !== 'Cena del Señor' &&
-                          evento.infoIconoTexto !== 'Reunión de damas' &&
-                          evento.infoIconoTexto !== 'Domingo misionero' &&
-                          evento.infoIconoTexto !== 'Culto de oración' &&
-                          evento.infoIconoTexto !== 'Reunión de varones' &&
-                          evento.infoIconoTexto !== 'Reunión de jovenes' &&
-                          evento.infoIconoTexto !== 'Noches navideñas' &&
-                          evento.infoIconoTexto !== 'Reuniones caseras'
-                            ? 'border-t-teal-500'
-                            : '',
+                          getIconColorClass(evento.infoIconoTexto, 'border-t'),
                           'border-t-4',
                           'transition-transform duration-300 group-hover:scale-105',
                         ]"
@@ -248,6 +207,7 @@ import "swiper/css/navigation";
 import InfoIcono from "./InfoIcono.vue";
 import EventoModal from "./EventoModal.vue";
 import { fechas } from "../../lib/api";
+import { getIconColorClass } from "../../data/iconOptions";
 
 export default {
   components: {
@@ -462,6 +422,7 @@ export default {
       modificarServicioDominical,
       formatTime,
       isUrl,
+      getIconColorClass,
     };
   },
 };

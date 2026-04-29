@@ -725,6 +725,7 @@ import { useGameStore } from "../../stores/useGameStore";
 import { useStatsStore } from "../../stores/useStatsStore";
 import { useToast } from "../../composables/useToast";
 import { useConfirm } from "../../composables/useConfirm";
+import { publish } from "../../lib/eventBus";
 
 const { xp: toastXp } = useToast();
 const { confirm: confirmDialog } = useConfirm();
@@ -1100,7 +1101,7 @@ async function handleDeleteEvento() {
 }
 
 function reportStreakActivity(tipo: string, fecha = new Date()) {
-  window.dispatchEvent(new CustomEvent("streakActivity", { detail: { tipo, fecha } }));
+  publish("streakActivity", { tipo, fecha });
 }
 
 function showXpNotif(amount: number, message: string, tipo = "fecha", accion: "agregados" | "eliminados" | "modificados" = "agregados") {

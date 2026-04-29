@@ -2,12 +2,10 @@
 import { ref, onMounted } from "vue";
 import { auth_api, usuarios } from "../../lib/api";
 import BaseModal from "../common/BaseModal.vue";
+import { useUserAvatar } from "../../composables/useUserAvatar";
+import { accountsStorage, type SavedAccount as StoredAccount } from "../../lib/accountsStorage";
 
-interface SavedAccount {
-  username: string;
-  password: string;
-  displayName?: string;
-  email?: string;
+interface SavedAccount extends StoredAccount {
   index?: number;
 }
 
@@ -24,41 +22,17 @@ const isLoading = ref(false);
 const error = ref("");
 const isLoggingIn = ref(false);  // Agregamos esta ref
 
-// Función para obtener la inicial del nombre de usuario
+const { initial: avatarInitial, color: getUserColor } = useUserAvatar();
+
+// Si hay un displayName guardado úsalo para la inicial; si no, la del correo.
 const getUserInitial = (username: string) => {
-  // Si hay un displayName guardado, usar ese
-  const displayName = localStorage.getItem(`displayName_${username}`);
-  if (displayName) {
-    return displayName.charAt(0).toUpperCase();
-  }
-  // Si no, usar la primera letra del correo
-  return username ? username.charAt(0).toUpperCase() : "U";
-};
-
-// Función para generar un color basado en el nombre de usuario
-const getUserColor = (username: string) => {
-  const colors = [
-    "#2196F3", // Azul
-    "#4CAF50", // Verde
-    "#F44336", // Rojo
-    "#9C27B0", // Púrpura
-    "#FF9800", // Naranja
-    "#009688", // Verde azulado
-    "#E91E63", // Rosa
-    "#673AB7", // Violeta
-  ];
-
-  if (!username) return colors[0];
-  let hash = 0;
-  for (let i = 0; i < username.length; i++) {
-    hash = username.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
+  const displayName = accountsStorage.getDisplayName(username);
+  return avatarInitial(displayName || username);
 };
 
 // Función para obtener el nombre a mostrar
 const getDisplayName = (username: string) => {
-  const displayName = localStorage.getItem(`displayName_${username}`);
+  const displayName = accountsStorage.getDisplayName(username);
   return displayName || username.split('@')[0];
 };
 
@@ -84,12 +58,13 @@ const selectAccount = async (account: SavedAccount) => {
         const profile = await usuarios.getById(userProfile.uid);
         if (profile?.data?.displayName) {
           localStorage.setItem("userDisplayName", profile.data.displayName);
-          // Actualizar información asociada a la cuenta recordada
-          localStorage.setItem(`displayName_${account.username}`, profile.data.displayName);
         }
-        if (profile?.data?.email) {
-          localStorage.setItem(`email_${account.username}`, profile.data.email);
-        }
+        // Actualizar información asociada a la cuenta recordada
+        accountsStorage.updateProfile(
+          account.username,
+          profile?.data?.displayName,
+          profile?.data?.email,
+        );
       }
 
       // Emitir evento con toda la información necesaria (payload normalizado)
@@ -122,75 +97,27 @@ const useAnotherAccount = () => {
 const removeAccount = (event: Event, account: SavedAccount) => {
   // Detener la propagación para evitar que se seleccione la cuenta
   event.stopPropagation();
-  
-  try {
-    // Eliminar la cuenta del localStorage
-    const userKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith("rememberUser_") && 
-      localStorage.getItem(key) === account.username
-    );
-    
-    // Eliminar la clave de usuario
-    userKeys.forEach(key => localStorage.removeItem(key));
-    
-    // Eliminar la contraseña asociada
-    localStorage.removeItem(`rememberPassword_${account.username}`);
-    
-    // Eliminar el nombre para mostrar si existe
-    localStorage.removeItem(`displayName_${account.username}`);
-    
-    // Eliminar el email si existe
-    localStorage.removeItem(`email_${account.username}`);
-    
-    // Actualizar la lista de cuentas
-    savedAccounts.value = savedAccounts.value.filter(
-      acc => acc.username !== account.username
-    );
-    
-    // Si no quedan cuentas, cerrar el selector y abrir el formulario de login
-    if (savedAccounts.value.length === 0) {
-      useAnotherAccount();
-    }
-  } catch (error) {
-    console.error("Error al eliminar la cuenta:", error);
+
+  accountsStorage.remove(account.username);
+
+  // Actualizar la lista de cuentas
+  savedAccounts.value = savedAccounts.value.filter(
+    acc => acc.username !== account.username
+  );
+
+  // Si no quedan cuentas, cerrar el selector y abrir el formulario de login
+  if (savedAccounts.value.length === 0) {
+    useAnotherAccount();
   }
 };
 
 onMounted(() => {
-  // Cargar cuentas guardadas
-  try {
-    // Buscar todas las cuentas guardadas en localStorage
-    const accounts: SavedAccount[] = [];
-    
-    // Buscar todas las claves que empiezan con "rememberUser_"
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith("rememberUser_")) {
-        const username = localStorage.getItem(key);
-        if (username) {
-          const passwordKey = `rememberPassword_${username}`;
-          const password = localStorage.getItem(passwordKey);
-          if (password) {
-            accounts.push({
-              username,
-              password,
-              displayName: localStorage.getItem(`displayName_${username}`) || undefined,
-              email: localStorage.getItem(`email_${username}`) || username
-            });
-          }
-        }
-      }
-    }
-    
-    // Asignar índices para la animación escalonada
-    accounts.forEach((account, index) => {
-      account.index = index;
-    });
-    
-    savedAccounts.value = accounts;
-  } catch (error) {
-    console.error("Error al cargar cuentas guardadas:", error);
-  }
+  const accounts: SavedAccount[] = accountsStorage.list();
+  // Asignar índices para la animación escalonada
+  accounts.forEach((account, index) => {
+    account.index = index;
+  });
+  savedAccounts.value = accounts;
 });
 </script>
 

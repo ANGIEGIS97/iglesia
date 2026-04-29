@@ -5,41 +5,39 @@
     panel-class="max-w-xl w-full m-4 relative p-[2px] dark:bg-linear-to-r from-teal-500 to-blue-500 rounded-lg shadow-xl animate-gradient animate__animated animate__fadeInDown"
     @close="cerrar"
   >
-    <template #header><!-- header personalizado dentro del slot por defecto --></template>
-
-    <template #default="{ labelId }">
-      <div v-if="evento" class="bg-white dark:bg-slate-600/85 rounded-lg">
-        <div
-          :class="[
-            'p-4 rounded-t-lg flex justify-between items-center',
-            'dark:bg-transparent',
-            headerColorClass,
-          ]"
+    <template #header="{ labelId }">
+      <div
+        v-if="evento"
+        :class="['p-4 rounded-t-lg flex justify-between items-center', headerColorClass]"
+      >
+        <h2 :id="labelId" class="text-xl sm:text-2xl font-bold text-white">
+          {{ evento.titulo }}
+        </h2>
+        <button
+          @click="cerrar"
+          class="text-white hover:text-gray-200 transition duration-300"
+          aria-label="Cerrar"
         >
-          <h2 :id="labelId" class="text-xl sm:text-2xl font-bold text-white">
-            {{ evento.titulo }}
-          </h2>
-          <button
-            @click="cerrar"
-            class="text-white hover:text-gray-200 transition duration-300"
-            aria-label="Cerrar"
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+    </template>
+
+    <template #default>
+      <div v-if="evento" class="bg-white dark:bg-slate-600/85 rounded-b-lg">
         <div class="p-6 dark:text-white">
           <div class="flex flex-col md:flex-row">
             <div
@@ -150,6 +148,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import "animate.css";
 import confetti from "canvas-confetti";
 import BaseModal from "../common/BaseModal.vue";
+import { getIconColorClass } from "../../data/iconOptions";
 
 interface Evento {
   titulo: string;
@@ -169,22 +168,9 @@ const imagenAmpliada = ref(false);
 const tiempoRestante = ref("");
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
-const headerColorClass = computed(() => {
-  const tipo = props.evento?.infoIconoTexto;
-  const map: Record<string, string> = {
-    "Cumpleaños": "bg-yellow-500",
-    "Canasta de amor": "bg-red-500",
-    "Cena del Señor": "bg-red-700",
-    "Reunión de damas": "bg-pink-500",
-    "Domingo misionero": "bg-green-500",
-    "Culto de oración": "bg-violet-500",
-    "Reunión de varones": "bg-blue-500",
-    "Reunión de jovenes": "bg-indigo-500",
-    "Noches navideñas": "bg-red-400",
-    "Reuniones caseras": "bg-orange-500",
-  };
-  return tipo && map[tipo] ? map[tipo] : "bg-teal-500";
-});
+const headerColorClass = computed(() =>
+  getIconColorClass(props.evento?.infoIconoTexto, "bg"),
+);
 
 function formatTime(time: string) {
   if (!time) return "";

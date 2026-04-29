@@ -3,6 +3,7 @@ import { ref} from "vue";
 import { auth_api, usuarios } from "../../lib/api";
 import AccountSelector from "./AccountSelector.vue";
 import BaseModal from "../common/BaseModal.vue";
+import { accountsStorage } from "../../lib/accountsStorage";
 
 const username = ref("");
 const password = ref("");
@@ -76,21 +77,7 @@ const openModal = () => {
   }
 };
 
-const checkForSavedAccounts = (): boolean => {
-  try {
-    // Verificar si hay al menos una cuenta guardada
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith("rememberUser_")) {
-        return true;
-      }
-    }
-    return false;
-  } catch (error) {
-    console.error("Error al verificar cuentas guardadas:", error);
-    return false;
-  }
-};
+const checkForSavedAccounts = (): boolean => accountsStorage.hasAny();
 
 const closeModal = () => {
   isOpen.value = false;
@@ -151,32 +138,21 @@ const animateProgress = () => {
 
 const guardarPerfilUsuario = async (userProfile: any) => {
   if (!userProfile?.uid) return;
-  
+
   try {
     const profile = await usuarios.getById(userProfile.uid);
     if (profile?.data && typeof window !== "undefined") {
-      try {
-        // Guardar el nombre para mostrar en la sesión actual
-        localStorage.setItem("userDisplayName", profile.data.displayName || "");
-        
-        if (rememberMe.value) {
-          // Guardar con un prefijo para identificar múltiples cuentas
-          const userKey = `rememberUser_${userProfile.uid}`;
-          localStorage.setItem(userKey, username.value);
-          localStorage.setItem(`rememberPassword_${username.value}`, password.value);
-          
-          // Guardar el nombre para mostrar asociado a este usuario
-          if (profile.data.displayName) {
-            localStorage.setItem(`displayName_${username.value}`, profile.data.displayName);
-          }
-          
-          // También guardar el email si está disponible
-          if (profile.data.email) {
-            localStorage.setItem(`email_${username.value}`, profile.data.email);
-          }
-        }
-      } catch (error) {
-        console.error("Error guardando en localStorage:", error);
+      // Guardar el nombre para mostrar en la sesión actual
+      localStorage.setItem("userDisplayName", profile.data.displayName || "");
+
+      if (rememberMe.value) {
+        accountsStorage.save({
+          uid: userProfile.uid,
+          username: username.value,
+          password: password.value,
+          displayName: profile.data.displayName,
+          email: profile.data.email,
+        });
       }
     }
   } catch (err) {

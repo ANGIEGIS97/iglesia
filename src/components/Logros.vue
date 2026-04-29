@@ -233,6 +233,7 @@ import {
 } from "vue";
 import { auth_api } from "../lib/api.ts";
 import ModalLogros from "./ModalLogros.vue";
+import { publish, subscribe } from "../lib/eventBus";
 
 const props = defineProps({
   darkMode: {
@@ -985,29 +986,22 @@ const forceFirebaseSync = async () => {
     clearAchievementsLocalStorage();
 
     // Configurar un listener para restaurar los versículos después de la recarga
+    let unsubReload = null;
     const handleReload = () => {
-      // Restaurar versículos después de la carga
       setTimeout(() => {
         achievements.value.forEach((achievement, index) => {
           if (index < versiculosActuales.length) {
             achievement.verse = versiculosActuales[index];
           }
         });
-        // Sincronizar de nuevo para guardar los versículos
         syncAchievementsToLocalStorage(achievements.value);
-      }, 1000); // Dar tiempo a que se complete la carga
-
-      // Eliminar el listener después de usarlo
-      window.removeEventListener("gameStateLoaded", handleReload);
+      }, 1000);
+      unsubReload?.();
+      unsubReload = null;
     };
 
-    // Escuchar el evento de carga completada
-    window.addEventListener("gameStateLoaded", handleReload);
-
-    // Esto disparará una recarga completa desde Firebase
-    window.dispatchEvent(new CustomEvent("forceGameStateReload"));
-
-    console.log("Sincronización forzada con Firebase solicitada");
+    unsubReload = subscribe("gameStateLoaded", handleReload);
+    publish("forceGameStateReload", undefined);
     return true;
   } catch (error) {
     console.error("Error al forzar sincronización con Firebase:", error);

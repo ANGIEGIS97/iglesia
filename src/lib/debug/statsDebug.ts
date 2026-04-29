@@ -1,3 +1,5 @@
+import { publish } from "../eventBus";
+
 type Tipo = "eventos" | "fechas";
 type Accion = "agregados" | "eliminados" | "modificados";
 
@@ -50,7 +52,7 @@ export function installStatsDebug(store: StoreSurface) {
       }
       store.estadisticas[tipo][accion] = value;
       localStorage.setItem(STORAGE_PREFIX + store.uid, JSON.stringify(store.estadisticas));
-      window.dispatchEvent(new CustomEvent("statisticsUpdated"));
+      publish("statisticsUpdated", undefined);
       console.log(`✅ ${tipo}.${accion} = ${value}`);
     },
     inc(tipo: Tipo, accion: Accion) {

@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { auth_api } from "../lib/api";
+import { storage } from "../lib/storage";
+import { publish } from "../lib/eventBus";
 
 interface Estadisticas {
   eventos: { agregados: number; eliminados: number; modificados: number };
@@ -21,17 +23,12 @@ export const useStatsStore = defineStore("stats", () => {
   const uid = ref("");
   let unsubscribeAuth: (() => void) | null = null;
 
-  function _key() {
-    return `estadisticasContador_${uid.value}`;
-  }
-
   function _cargarDesdeStorage() {
-    const raw = localStorage.getItem(_key());
-    if (!raw) return;
-    try {
-      const parsed = JSON.parse(raw);
-      if (parsed.eventos && parsed.fechas) estadisticas.value = parsed;
-    } catch { /* mantener valores actuales */ }
+    if (!uid.value) return;
+    const stored = storage.stats.get(uid.value);
+    if (stored && stored.eventos && stored.fechas) {
+      estadisticas.value = stored;
+    }
   }
 
   function cargar(userId: string) {
@@ -48,15 +45,15 @@ export const useStatsStore = defineStore("stats", () => {
     const key = (tipo === "evento" || tipo === "eventos") ? "eventos" : "fechas";
     estadisticas.value[key][accion] = (estadisticas.value[key][accion] || 0) + 1;
 
-    localStorage.setItem(_key(), JSON.stringify(estadisticas.value));
-    window.dispatchEvent(new CustomEvent("statisticsUpdated"));
+    storage.stats.set(uid.value, estadisticas.value);
+    publish("statisticsUpdated", undefined);
   }
 
   function reiniciar() {
     estadisticas.value = crearVacias();
     if (uid.value) {
-      localStorage.setItem(_key(), JSON.stringify(estadisticas.value));
-      window.dispatchEvent(new CustomEvent("statisticsUpdated"));
+      storage.stats.set(uid.value, estadisticas.value);
+      publish("statisticsUpdated", undefined);
     }
   }
 
