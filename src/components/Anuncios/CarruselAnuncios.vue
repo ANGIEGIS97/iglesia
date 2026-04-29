@@ -65,7 +65,7 @@ carrusel
             <FavoritoOverlay v-if="slide.favorito" />
             <div
               v-if="slide.titulo || slide.descripcion || slide.eslogan"
-              class="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/50rounded-lg"
+              class="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/50 rounded-lg"
             >
               <div
                 class="w-full max-w-4xl sm:px-6 text-center sm:space-y-6 sm:pr-16"
@@ -114,7 +114,7 @@ carrusel
             />
             <FavoritoOverlay v-if="slide.favorito" />
             <div
-              class="absolute inset-0 flex items-center justify-center bg-black/50rounded-lg"
+              class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg"
             >
               <div
                 class="bg-transparent border-2 sm:border-4 border-white w-[90%] sm:w-4/5 h-[90%] sm:h-4/5 flex flex-col items-center justify-center p-3 sm:p-6 text-center sm:pr-16 overflow-hidden"
@@ -168,7 +168,7 @@ carrusel
             />
             <FavoritoOverlay v-if="slide.favorito" />
             <div
-              class="absolute inset-0 flex items-center justify-end pr-4 sm:pr-24 bg-black/50rounded-lg"
+              class="absolute inset-0 flex items-center justify-end pr-4 sm:pr-24 bg-black/50 rounded-lg"
             >
               <div
                 class="w-[70%] sm:w-3/5 text-right p-3 sm:p-0 rounded-lg sm:rounded-none"
@@ -211,7 +211,7 @@ carrusel
             />
             <FavoritoOverlay v-if="slide.favorito" />
             <div
-              class="absolute inset-0 flex flex-col items-center justify-center text-center bg-black/50rounded-lg"
+              class="absolute inset-0 flex flex-col items-center justify-center text-center bg-black/50 rounded-lg"
             >
               <div class="w-full max-w-2xl px-4 sm:pr-16">
                 <p
@@ -711,6 +711,10 @@ export default {
 }
 
 .custom-swiper {
+  --swiper-theme-color: #14b8a6;
+  --swiper-navigation-color: #14b8a6;
+  --swiper-pagination-color: #14b8a6;
+
   .custom-swiper-button {
     @apply text-white bg-teal-500 rounded-full w-12 h-12 flex items-center justify-center opacity-75 transition-all duration-300;
     &:hover {
