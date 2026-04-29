@@ -1,4 +1,4 @@
-# Plan de Migración a Tailwind CSS v4
+# Plan de Migración a Tailwind CSS v4 ejemplo
 
 ## Estado actual del proyecto
 
