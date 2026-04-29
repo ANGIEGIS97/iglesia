@@ -761,7 +761,7 @@ function showNotification(mensaje: string, isError = true, timeout = 5000) {
 async function loadFechas() {
   try {
     isLoading.value = true;
-    const response = await fechasApi.getAll();
+    const response = await fechasApi.getAllWithUserNames();
     const fechasConvertidas = response.data.map((fecha: any) => ({
       ...fecha,
       infoAdiccional: Number(fecha.infoAdiccional),
